@@ -58,20 +58,22 @@ Gladius is private and access-controlled.
 ## Architecture (diagram)
 
 ```mermaid
+
 flowchart LR
   A[Data Sources] --> B[Ingest]
   B --> C[Normalization & Storage]
   C --> D[Analysis Agents]
   D --> E[Report Generator]
-  E --> F[Archive (Notion / Disk)]
+  E --> F[Archive]
   D --> G[Action Orchestrator]
-  G --> H[Herald (Execution Agent)]
+  G --> H[Execution Agent]
   subgraph SLM
     I[Local SLM Runtimes]
   end
   D --> I
   G --> I
   G -->|Escalate| K[Frontier LLMs]
+
 ```
 
 ## Contributing & AI Policy
