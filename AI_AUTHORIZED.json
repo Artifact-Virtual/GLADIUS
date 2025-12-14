@@ -1,0 +1,7 @@
+{
+  "actors": [
+    "ronotic",
+    "ronotic-bot"
+  ],
+  "notes": "Add exact GitHub actor names for authorized AI bots or apps. Only actors listed here may open PRs that modify the repository contents."
+}

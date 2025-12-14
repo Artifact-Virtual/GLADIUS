@@ -1,0 +1,48 @@
+name: Enforce AI Contribution Policy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  enforce-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+
+      - name: Verify PR actor is authorized AI
+        env:
+          PR_AUTHOR: ${{ github.actor }}
+        run: |
+          echo "PR author: $PR_AUTHOR"
+          if [ ! -f AI_AUTHORIZED.json ]; then
+            echo "AI_AUTHORIZED.json not found"; exit 1
+          fi
+          if ! jq -e --arg author "$PR_AUTHOR" '.actors[] | select(. == $author)' AI_AUTHORIZED.json >/dev/null; then
+            echo "PR author '$PR_AUTHOR' is NOT an authorized AI actor. Rejecting PR."; exit 1
+          fi
+          echo "Author authorized." 
+
+      - name: Ensure attestation is present in PR
+        run: |
+          BASE_REF="${{ github.base_ref }}"
+          echo "Checking for attestation files against base $BASE_REF"
+          git fetch origin $BASE_REF --depth=1
+          CHANGED=$(git diff --name-only origin/$BASE_REF...HEAD)
+          echo "Changed files:\n$CHANGED"
+          if ! echo "$CHANGED" | grep -E '^AI_ATTESTATION' >/dev/null && ! echo "$CHANGED" | grep -E 'AI_ATTESTATION.*\.json$' >/dev/null && ! echo "$CHANGED" | grep -E '^AI_ATTESTATION.*' >/dev/null; then
+            echo "No AI attestation file detected in PR. Add an 'AI_ATTESTATION*.json' file to the PR."; exit 1
+          fi
+          echo "Attestation present." 
+
+      - name: Validate attestation schema (basic)
+        run: |
+          # Validate that the attestation JSON includes required keys
+          ATT_FILE=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E 'AI_ATTESTATION.*\.json$' | head -n1)
+          if [ -z "$ATT_FILE" ]; then echo "No attestation file found for validation (skipping)."; exit 0; fi
+          echo "Validating $ATT_FILE"
+          if ! jq -e '.ai_name and .ai_version and .model_hash and .commit_hash and .timestamp and .signature' "$ATT_FILE" >/dev/null; then
+            echo "Attestation $ATT_FILE is missing required fields."; exit 1
+          fi
+          echo "Attestation schema OK"
