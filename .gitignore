@@ -1,0 +1,3 @@
+# Local ignores for Gladius
+secrets.env
+venv/
