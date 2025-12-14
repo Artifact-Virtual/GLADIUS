@@ -8,13 +8,24 @@ jobs:
   enforce-policy:
     runs-on: ubuntu-latest
     steps:
-      - name: Optional bypass (admin-controlled)
-        if: ${{ vars.AI_POLICY_BYPASS == 'true' || secrets.AI_POLICY_BYPASS == 'true' }}
+      - name: Determine whether policy is bypassed
+        id: bypass
+        shell: bash
+        run: |
+          bypass="false"
+          if [ "${{ vars.AI_POLICY_BYPASS }}" = "true" ] || [ "${{ secrets.AI_POLICY_BYPASS }}" = "true" ]; then
+            bypass="true"
+          fi
+          echo "bypass=$bypass" >> "$GITHUB_OUTPUT"
+          echo "AI_POLICY_BYPASS evaluated to: $bypass"
+
+      - name: Policy bypass active
+        if: ${{ steps.bypass.outputs.bypass == 'true' }}
         run: |
           echo "AI policy checks bypassed (AI_POLICY_BYPASS=true)."
-          exit 0
 
       - name: Ensure `jq` is available
+        if: ${{ steps.bypass.outputs.bypass != 'true' }}
         run: |
           echo "Checking for jq..."
           if ! command -v jq >/dev/null; then
@@ -24,9 +35,11 @@ jobs:
           jq --version || true
 
       - name: Checkout PR
+        if: ${{ steps.bypass.outputs.bypass != 'true' }}
         uses: actions/checkout@v4
 
       - name: Verify PR actor is authorized AI
+        if: ${{ steps.bypass.outputs.bypass != 'true' }}
         env:
           PR_AUTHOR: ${{ github.actor }}
         run: |
@@ -78,6 +91,7 @@ jobs:
           echo "Author authorized." 
 
       - name: Ensure attestation is present in PR
+        if: ${{ steps.bypass.outputs.bypass != 'true' }}
         run: |
           BASE_REF="${{ github.base_ref }}"
           echo "Checking for attestation files against base $BASE_REF"
@@ -91,6 +105,7 @@ jobs:
           echo "Attestation present." 
 
       - name: Validate attestation schema (basic)
+        if: ${{ steps.bypass.outputs.bypass != 'true' }}
         run: |
           # Validate that the attestation JSON includes required keys
           ATT_FILE=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E 'AI_ATTESTATION.*\.json$' | head -n1)
