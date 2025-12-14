@@ -24,19 +24,50 @@ jobs:
         env:
           PR_AUTHOR: ${{ github.actor }}
         run: |
-          echo "PR author (raw): $PR_AUTHOR"
-          if [ ! -f AI_AUTHORIZED.json ]; then
-            echo "AI_AUTHORIZED.json not found"; exit 1
+          echo "github.actor: ${{ github.actor }}"
+          echo "pr user login: ${{ github.event.pull_request.user.login }}"
+          echo "event sender login: ${{ github.event.sender.login }}"
+          # Fetch base ref copy of AI_AUTHORIZED.json if available and prefer it for authoritative list
+          BASE_REF="${{ github.base_ref }}"
+          echo "Base ref: $BASE_REF"
+          git fetch origin $BASE_REF --depth=1 || true
+          AUTH_JSON=''
+          if git show origin/$BASE_REF:AI_AUTHORIZED.json >/dev/null 2>&1; then
+            echo "Using AI_AUTHORIZED.json from base branch origin/$BASE_REF"
+            AUTH_JSON=$(git show origin/$BASE_REF:AI_AUTHORIZED.json)
+          elif [ -f AI_AUTHORIZED.json ]; then
+            echo "Using AI_AUTHORIZED.json from the checked-out head"
+            AUTH_JSON=$(cat AI_AUTHORIZED.json)
+          else
+            echo "AI_AUTHORIZED.json not found in base or head"; exit 1
           fi
-          # Normalize actor: lowercase, strip trailing [bot], convert hyphens/underscores to spaces
-          PR_NORMALIZED=$(echo "$PR_AUTHOR" | tr '[:upper:]' '[:lower:]' | sed 's/\[bot\]$//' | sed 's/[-_]/ /g' | xargs)
-          echo "PR author (normalized): $PR_NORMALIZED"
-          # Build normalized authorized list
-          AUTHORIZED_NORMALIZED=$(jq -r '.actors[]' AI_AUTHORIZED.json | while read -r a; do echo "$a" | tr '[:upper:]' '[:lower:]' | sed 's/\[bot\]$//' | sed 's/[-_]/ /g' | xargs; done)
+
+          # Build normalized authorized list from chosen JSON
+          AUTHORIZED_NORMALIZED=$(echo "$AUTH_JSON" | jq -r '.actors[]' 2>/dev/null | while read -r a; do echo "$a" | tr '[:upper:]' '[:lower:]' | sed 's/\[bot\]$//' | sed 's/[-_]/ /g' | xargs; done)
           echo "Authorized actors (normalized):"
           echo "$AUTHORIZED_NORMALIZED"
-          if ! echo "$AUTHORIZED_NORMALIZED" | grep -Fx "$PR_NORMALIZED" >/dev/null; then
-            echo "PR author '$PR_AUTHOR' (normalized: '$PR_NORMALIZED') is NOT an authorized AI actor. Rejecting PR."; exit 1
+
+          # Compose candidate actor values to check
+          CANDIDATES="${{ github.actor }} ${ { github.event.pull_request.user.login }} ${{ github.event.sender.login }}"
+          # Also include the raw PR_AUTHOR env in case it's set differently
+          CANDIDATES="$CANDIDATES $PR_AUTHOR"
+          echo "Actor candidates:"
+          echo "$CANDIDATES"
+
+          matched=0
+          for c in $CANDIDATES; do
+            if [ -z "$c" ]; then continue; fi
+            PR_NORMALIZED=$(echo "$c" | tr '[:upper:]' '[:lower:]' | sed 's/\[bot\]$//' | sed 's/[-_]/ /g' | xargs)
+            echo "Checking candidate '$c' -> normalized '$PR_NORMALIZED'"
+            if echo "$AUTHORIZED_NORMALIZED" | grep -Fx "$PR_NORMALIZED" >/dev/null; then
+              echo "Match found: '$c' (normalized: '$PR_NORMALIZED')"
+              matched=1
+              break
+            fi
+          done
+
+          if [ "$matched" -ne 1 ]; then
+            echo "No authorized actor matched. Rejecting PR."; exit 1
           fi
           echo "Author authorized." 
 
