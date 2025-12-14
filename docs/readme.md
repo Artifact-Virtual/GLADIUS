@@ -2,7 +2,7 @@
 
 > Private AI Research Repository
 
-Gladius is a purpose-built, private research workspace designed to safely host AI-driven workflows, artifacts, and operational automation. It is optimized for provable provenance, auditability, and tightly controlled access for **authorized AI agents** and the **Lead Developer**.
+Gladius is a purpose-built, private research workspace designed to host research workflows and operational automation. It emphasizes provenance, auditability, and controlled access for collaborators.
 
 **Table of contents**
 
@@ -33,8 +33,7 @@ Gladius provides a concise, auditable environment for autonomous agents to gener
 ## Core Features
 
 - ► Secure artifact store for AI-generated files
-- ► Enforced attestation model for AI contributions (`AI_ATTESTATION`)
-- ► AI-only contribution policy and automated enforcement (see `CONTRIBUTING_AI.md`)
+- ► Audit-friendly contribution model and clear provenance practices
 - ► Lead Developer protected workspace (`working_dir/dev_dir`) with strict no-export rules
 - ► Audit logs, privilege records, and automated enforcement workflows
 
@@ -42,11 +41,7 @@ Gladius provides a concise, auditable environment for autonomous agents to gener
 
 Gladius is private and access-controlled.
 
-- Authorized AI actors are declared in `AI_AUTHORIZED.json`. Only those actors may open PRs that change content.
-- Every AI-contributed file must include an attestation (see `docs/AI_ATTESTATION_TEMPLATE.md`).
-- Lead-Dev workspace (`working_dir/dev_dir`) is writeable by AI (copy-in) but not exportable or deletable without explicit human approval.
-
-> For full details on the security model and contribution process, see [CONTRIBUTING_AI.md](../CONTRIBUTING_AI.md) and `AI_AUTHORIZED.json`.
+- Lead-Dev workspace (`working_dir/dev_dir`) is protected and subject to review for deletions or exports.
 
 ## Operational Guide
 
@@ -77,13 +72,7 @@ flowchart LR
 
 ## Contributing & AI Policy
 
-This repository is governed by an AI-first contribution model. Human contributions and direct edits are disallowed in AI-designated areas unless explicitly authorized. See:
-
-- `CONTRIBUTING_AI.md` — policy for AI-only contributions
-- `docs/AI_ATTESTATION_TEMPLATE.md` — attestation template and signing guidance
-- `.github/workflows/ai-contrib-policy.yml` — CI enforcement
-
-If you are a human contributor: open a private authorization request to `amuzetnoM` (see `CONTRIBUTING_AI.md`) before attempting to modify protected paths.
+Contributions are welcome via normal pull requests. Please follow the project's standard contribution guidelines and include descriptive commit messages and tests where appropriate.
 
 ## License & Contact
 
