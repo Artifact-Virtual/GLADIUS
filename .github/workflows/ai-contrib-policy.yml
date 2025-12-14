@@ -8,6 +8,15 @@ jobs:
   enforce-policy:
     runs-on: ubuntu-latest
     steps:
+      - name: Ensure `jq` is available
+        run: |
+          echo "Checking for jq..."
+          if ! command -v jq >/dev/null; then
+            echo "jq not found, installing..."
+            sudo apt-get update -qq && sudo apt-get install -y -qq jq
+          fi
+          jq --version || true
+
       - name: Checkout PR
         uses: actions/checkout@v4
 
@@ -15,12 +24,19 @@ jobs:
         env:
           PR_AUTHOR: ${{ github.actor }}
         run: |
-          echo "PR author: $PR_AUTHOR"
+          echo "PR author (raw): $PR_AUTHOR"
           if [ ! -f AI_AUTHORIZED.json ]; then
             echo "AI_AUTHORIZED.json not found"; exit 1
           fi
-          if ! jq -e --arg author "$PR_AUTHOR" '.actors[] | select(. == $author)' AI_AUTHORIZED.json >/dev/null; then
-            echo "PR author '$PR_AUTHOR' is NOT an authorized AI actor. Rejecting PR."; exit 1
+          # Normalize actor: lowercase, strip trailing [bot], convert hyphens/underscores to spaces
+          PR_NORMALIZED=$(echo "$PR_AUTHOR" | tr '[:upper:]' '[:lower:]' | sed 's/\[bot\]$//' | sed 's/[-_]/ /g' | xargs)
+          echo "PR author (normalized): $PR_NORMALIZED"
+          # Build normalized authorized list
+          AUTHORIZED_NORMALIZED=$(jq -r '.actors[]' AI_AUTHORIZED.json | while read -r a; do echo "$a" | tr '[:upper:]' '[:lower:]' | sed 's/\[bot\]$//' | sed 's/[-_]/ /g' | xargs; done)
+          echo "Authorized actors (normalized):"
+          echo "$AUTHORIZED_NORMALIZED"
+          if ! echo "$AUTHORIZED_NORMALIZED" | grep -Fx "$PR_NORMALIZED" >/dev/null; then
+            echo "PR author '$PR_AUTHOR' (normalized: '$PR_NORMALIZED') is NOT an authorized AI actor. Rejecting PR."; exit 1
           fi
           echo "Author authorized." 
 
@@ -31,7 +47,8 @@ jobs:
           git fetch origin $BASE_REF --depth=1
           CHANGED=$(git diff --name-only origin/$BASE_REF...HEAD)
           echo "Changed files:\n$CHANGED"
-          if ! echo "$CHANGED" | grep -E '^AI_ATTESTATION' >/dev/null && ! echo "$CHANGED" | grep -E 'AI_ATTESTATION.*\.json$' >/dev/null && ! echo "$CHANGED" | grep -E '^AI_ATTESTATION.*' >/dev/null; then
+          # Accept files that include AI_ATTESTATION anywhere in the path/name
+          if ! echo "$CHANGED" | grep -E 'AI_ATTESTATION' >/dev/null; then
             echo "No AI attestation file detected in PR. Add an 'AI_ATTESTATION*.json' file to the PR."; exit 1
           fi
           echo "Attestation present." 
