@@ -2,7 +2,7 @@
 
 > Private AI Research Repository
 
-Gladius is a purpose-built, private research workspace designed to safely host AI-driven workflows, artifacts, and operational automation. It is optimized for provable provenance, auditability, and tightly controlled access for authorized AI agents and the Lead Developer.
+Gladius is a purpose-built, private research workspace designed to safely host AI-driven workflows, artifacts, and operational automation. It is optimized for provable provenance, auditability, and tightly controlled access for **authorized AI agents** and the **Lead Developer**.
 
 **Table of contents**
 
