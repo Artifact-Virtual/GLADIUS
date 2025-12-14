@@ -26,9 +26,8 @@ Gladius provides a concise, auditable environment for autonomous agents to gener
 - Explicit attestation and provenance for AI-generated content
 - Strong separation between AI-operated areas and Lead Developer private spaces
 
-## Quick Start
+## Configuration:
 
-Configuration:
 - Edit `config.yaml` to register agent endpoints and artifact locations.
 
 ## Core Features
