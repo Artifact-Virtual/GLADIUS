@@ -8,6 +8,12 @@ jobs:
   enforce-policy:
     runs-on: ubuntu-latest
     steps:
+      - name: Optional bypass (admin-controlled)
+        if: ${{ vars.AI_POLICY_BYPASS == 'true' || secrets.AI_POLICY_BYPASS == 'true' }}
+        run: |
+          echo "AI policy checks bypassed (AI_POLICY_BYPASS=true)."
+          exit 0
+
       - name: Ensure `jq` is available
         run: |
           echo "Checking for jq..."
@@ -48,7 +54,7 @@ jobs:
           echo "$AUTHORIZED_NORMALIZED"
 
           # Compose candidate actor values to check
-          CANDIDATES="${{ github.actor }} ${ { github.event.pull_request.user.login }} ${{ github.event.sender.login }}"
+          CANDIDATES="${{ github.actor }} ${{ github.event.pull_request.user.login }} ${{ github.event.sender.login }}"
           # Also include the raw PR_AUTHOR env in case it's set differently
           CANDIDATES="$CANDIDATES $PR_AUTHOR"
           echo "Actor candidates:"
