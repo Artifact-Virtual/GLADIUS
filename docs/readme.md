@@ -28,16 +28,6 @@ Gladius provides a concise, auditable environment for autonomous agents to gener
 
 ## Quick Start
 
-Clone and prepare the environment:
-
-```bash
-git clone https://github.com/amuzetnoM/gladius.git
-cd gladius
-python -m venv .venv
-.venv\Scripts\activate    # Windows
-pip install -r requirements.txt
-```
-
 Configuration:
 - Edit `config.yaml` to register agent endpoints and artifact locations.
 
@@ -57,23 +47,7 @@ Gladius is private and access-controlled.
 - Every AI-contributed file must include an attestation (see `docs/AI_ATTESTATION_TEMPLATE.md`).
 - Lead-Dev workspace (`working_dir/dev_dir`) is writeable by AI (copy-in) but not exportable or deletable without explicit human approval.
 
-For full details on the security model and contribution process, see [CONTRIBUTING_AI.md](../CONTRIBUTING_AI.md) and `AI_AUTHORIZED.json`.
-
-## Usage Examples
-
-- Run the pipeline locally (example):
-
-```bash
-python scripts/run_pipeline.py --once
-```
-
-- Generate sample charts used in documentation:
-
-```bash
-python _dev/scripts/generate_sample_charts.py
-```
-
-- Archive outputs to Notion or other configured sinks via the provided publisher scripts.
+> For full details on the security model and contribution process, see [CONTRIBUTING_AI.md](../CONTRIBUTING_AI.md) and `AI_AUTHORIZED.json`.
 
 ## Operational Guide
 
@@ -84,20 +58,22 @@ python _dev/scripts/generate_sample_charts.py
 ## Architecture (diagram)
 
 ```mermaid
+
 flowchart LR
   A[Data Sources] --> B[Ingest]
   B --> C[Normalization & Storage]
   C --> D[Analysis Agents]
   D --> E[Report Generator]
-  E --> F[Archive (Notion / Disk)]
+  E --> F[Archive]
   D --> G[Action Orchestrator]
-  G --> H[Herald (Execution Agent)]
+  G --> H[Execution Agent]
   subgraph SLM
     I[Local SLM Runtimes]
   end
   D --> I
   G --> I
   G -->|Escalate| K[Frontier LLMs]
+
 ```
 
 ## Contributing & AI Policy
