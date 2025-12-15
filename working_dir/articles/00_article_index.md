@@ -1,16 +1,12 @@
-# Article Index
-*Gladius Articles Collection* | *58 Articles* | *12 Sections*
+# Index
+> *Repository of technical articles underpinning the Gladius Architectural Mandate*
+> **|  58 Articles |**
 
-> **Canonical Content Roadmap**
-> Exhaustive list of article topics derived from the Architectural Mandate
-
-Click any title to jump to the full article.
-
----
+< Scope: Gold Standard, Herald >>
 
 <p align="center">
 
-[![Coverage](https://img.shields.io/badge/coverage-58%2F58%20articles-success?style=for-the-badge&logo=checkmarx&logoColor=white)](#)
+[![Coverage](https://img.shields.io/badge/coverage-12%20Sections-success?style=for-the-badge&logo=checkmarx&logoColor=white)](#)
 [![Proofread](https://img.shields.io/badge/proofread-verified-blue?style=for-the-badge&logo=grammarly&logoColor=white)](#)
 [![Peer Review](https://img.shields.io/badge/peer%20review-complete-purple?style=for-the-badge&logo=gitbook&logoColor=white)](#)
 [![Citations](https://img.shields.io/badge/citations-internal-lightgrey?style=for-the-badge&logo=semanticscholar&logoColor=white)](#)
