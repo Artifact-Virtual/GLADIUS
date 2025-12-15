@@ -8,7 +8,7 @@
         
 ```
 
-# Gladius Articles Collection
+# Gladius Architectural Mandate
 *version 1.0.0*
 
 > **Agentic AI Research & Implementation Library**
