@@ -1,3 +1,4 @@
 # Local ignores for Gladius
 secrets.env
 venv/
+_dev/_build/*

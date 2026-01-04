@@ -2,7 +2,7 @@
 
 > Building Resilient and Compliant Autonomy for Financial Services
 
-**Executive TL;DR:** Gold Standard's architectural mandate balances high-performance autonomy with strict controls for safety, auditability, and regulatory compliance. Adopt a hybrid, SLM-first deployment for deterministic tasks, reserve frontier LLMs for escalation, and enforce human-in-the-loop gates and idempotent state machines for any high-risk financial action.
+**Executive TL;DR:** Syndicate's architectural mandate balances high-performance autonomy with strict controls for safety, auditability, and regulatory compliance. Adopt a hybrid, SLM-first deployment for deterministic tasks, reserve frontier LLMs for escalation, and enforce human-in-the-loop gates and idempotent state machines for any high-risk financial action.
 
 **Quick actions:** see `docs/mandate/ROADMAP.md` for owners, deadlines, and acceptance criteria.
 

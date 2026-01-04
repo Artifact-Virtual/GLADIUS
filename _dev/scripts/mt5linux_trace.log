@@ -1,0 +1,171 @@
++ URL_MT5=https://download.mql5.com/cdn/web/metaquotes.software.corp/mt5/mt5setup.exe
++ URL_WEBVIEW=https://msedge.sf.dl.delivery.mp.microsoft.com/filestreamingservice/files/f2910a1e-e5a6-4f17-b52d-7faf525d17f8/MicrosoftEdgeWebview2Setup.exe
++ WINE_VERSION=stable
++ . /etc/os-release
+++ PRETTY_NAME='Ubuntu 22.04.5 LTS'
+++ NAME=Ubuntu
+++ VERSION_ID=22.04
+++ VERSION='22.04.5 LTS (Jammy Jellyfish)'
+++ VERSION_CODENAME=jammy
+++ ID=ubuntu
+++ ID_LIKE=debian
+++ HOME_URL=https://www.ubuntu.com/
+++ SUPPORT_URL=https://help.ubuntu.com/
+++ BUG_REPORT_URL=https://bugs.launchpad.net/ubuntu/
+++ PRIVACY_POLICY_URL=https://www.ubuntu.com/legal/terms-and-policies/privacy-policy
+++ UBUNTU_CODENAME=jammy
++ echo OS: Ubuntu 22.04
+OS: Ubuntu 22.04
++ echo Update and install...
+Update and install...
++ '[' Ubuntu = 'Fedora Linux' ']'
++ echo Update system
+Update system
++ sudo apt update
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+Hit:1 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy InRelease
+Hit:2 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-updates InRelease
+Hit:3 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-backports InRelease
+Hit:4 https://dl.winehq.org/wine-builds/ubuntu jammy InRelease
+Hit:5 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Reading package lists...
+Building dependency tree...
+Reading state information...
+All packages are up to date.
++ sudo apt upgrade -y
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Calculating upgrade...
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
++ echo Get full version
+Get full version
++ sudo apt install bc wget curl -y
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+Reading package lists...
+Building dependency tree...
+Reading state information...
+bc is already the newest version (1.07.1-3build1).
+curl is already the newest version (7.81.0-1ubuntu1.21).
+wget is already the newest version (1.21.2-2ubuntu1.1).
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+++ echo '22.04 * 100'
+++ bc -l
+++ cut -d . -f1
++ VERSION_FULL=2204
++ echo Choose Wine repo
+Choose Wine repo
++ sudo rm /etc/apt/sources.list.d/winehq-jammy.sources
++ sudo dpkg --add-architecture i386
++ sudo mkdir -pm755 /etc/apt/keyrings
++ sudo wget -O - https://dl.winehq.org/wine-builds/winehq.key
++ sudo gpg --dearmor -o /etc/apt/keyrings/winehq-archive.key -
+gpg: cannot open '/dev/tty': No such device or address
+--2025-12-21 20:21:45--  https://dl.winehq.org/wine-builds/winehq.key
+Resolving dl.winehq.org (dl.winehq.org)... 151.101.2.217, 151.101.194.217, 151.101.130.217, ...
+Connecting to dl.winehq.org (dl.winehq.org)|151.101.2.217|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 3212 (3.1K) [application/pgp-keys]
+Saving to: ‘STDOUT’
+
+     0K                                                         0% 0.00 =0s
+
+
+Cannot write to ‘-’ (Success).
++ '[' Ubuntu = Ubuntu ']'
++ echo Ubuntu found: Ubuntu 22.04
+Ubuntu found: Ubuntu 22.04
++ ((  2204 >= 2410  ))
++ ((  2204 < 2410  ))
++ ((  2204 >= 2400  ))
++ ((  2204 < 2400  ))
++ ((  2204 >= 2300  ))
++ ((  2204 < 2300  ))
++ ((  2204 >= 2210  ))
++ ((  2204 < 2210  ))
++ ((  2204 >= 2100  ))
++ sudo wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources
+--2025-12-21 20:21:45--  https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources
+Resolving dl.winehq.org (dl.winehq.org)... 151.101.130.217, 151.101.194.217, 151.101.2.217, ...
+Connecting to dl.winehq.org (dl.winehq.org)|151.101.130.217|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 163 [binary/octet-stream]
+Saving to: ‘/etc/apt/sources.list.d/winehq-jammy.sources’
+
+     0K                                                       100% 11.7M=0s
+
+2025-12-21 20:21:45 (11.7 MB/s) - ‘/etc/apt/sources.list.d/winehq-jammy.sources’ saved [163/163]
+
++ echo Install Wine and Wine Mono
+Install Wine and Wine Mono
++ sudo apt update
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+Hit:1 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy InRelease
+Hit:2 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-updates InRelease
+Hit:3 http://europe-west1.gce.archive.ubuntu.com/ubuntu jammy-backports InRelease
+Hit:4 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Hit:5 https://dl.winehq.org/wine-builds/ubuntu jammy InRelease
+Reading package lists...
+Building dependency tree...
+Reading state information...
+All packages are up to date.
++ sudo apt install --install-recommends winehq-stable -y
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+Reading package lists...
+Building dependency tree...
+Reading state information...
+winehq-stable is already the newest version (10.0.0.0~jammy-1).
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
++ echo Download MetaTrader and WebView2 Runtime
+Download MetaTrader and WebView2 Runtime
++ curl https://download.mql5.com/cdn/web/metaquotes.software.corp/mt5/mt5setup.exe --output mt5setup.exe
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 22.6M  100 22.6M    0     0  84.1M      0 --:--:-- --:--:-- --:--:-- 84.3M
++ curl https://msedge.sf.dl.delivery.mp.microsoft.com/filestreamingservice/files/f2910a1e-e5a6-4f17-b52d-7faf525d17f8/MicrosoftEdgeWebview2Setup.exe --output webview2.exe
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 1611k  100 1611k    0     0  12.0M      0 --:--:-- --:--:-- --:--:-- 12.0M
++ echo Set environment to Windows 11
+Set environment to Windows 11
++ WINEPREFIX=/root/.mt5
++ winecfg -v=win11
+wine: created the configuration directory '/root/.mt5'
+002c:fixme:actctx:parse_depend_manifests Could not find dependent assembly L"Microsoft.Windows.Common-Controls" (6.0.0.0)
+0054:fixme:actctx:parse_depend_manifests Could not find dependent assembly L"Microsoft.Windows.Common-Controls" (6.0.0.0)
+004c:fixme:actctx:parse_depend_manifests Could not find dependent assembly L"Microsoft.Windows.Common-Controls" (6.0.0.0)
+error: XDG_RUNTIME_DIR not set in the environment.
+error: XDG_RUNTIME_DIR not set in the environment.
+0054:err:vulkan:vulkan_init_once Failed to load libvulkan.so.1
+0054:err:winediag:nodrv_CreateWindow Application tried to create a window, but no driver could be loaded.
+0054:err:winediag:nodrv_CreateWindow L"The explorer process failed to start."
+0054:err:systray:initialize_systray Could not create tray window
+0054:err:ole:StdMarshalImpl_MarshalInterface Failed to create ifstub, hr 0x80004002
+0054:err:ole:CoMarshalInterface Failed to marshal the interface {6d5140c1-7436-11ce-8034-00aa006009fa}, hr 0x80004002
+0054:err:ole:apartment_get_local_server_stream Failed: 0x80004002
+0044:err:winediag:nodrv_CreateWindow Application tried to create a window, but no driver could be loaded.
+0044:err:winediag:nodrv_CreateWindow L"Make sure that your display server is running and that its variables are set."
+004c:err:winediag:nodrv_CreateWindow Application tried to create a window, but no driver could be loaded.
+004c:err:winediag:nodrv_CreateWindow L"Make sure that your display server is running and that its variables are set."
+004c:err:ole:apartment_createwindowifneeded CreateWindow failed with error 1400
+004c:err:ole:apartment_createwindowifneeded CreateWindow failed with error 1400
+004c:err:ole:apartment_createwindowifneeded CreateWindow failed with error 1400
+004c:err:ole:StdMarshalImpl_MarshalInterface Failed to create ifstub, hr 0x80070578
+004c:err:ole:CoMarshalInterface Failed to marshal the interface {6d5140c1-7436-11ce-8034-00aa006009fa}, hr 0x80070578
+004c:err:ole:apartment_get_local_server_stream Failed: 0x80070578
+004c:err:ole:start_rpcss Failed to open RpcSs service
+002c:err:winediag:nodrv_CreateWindow Application tried to create a window, but no driver could be loaded.
+002c:err:winediag:nodrv_CreateWindow L"Make sure that your display server is running and that its variables are set."
+0094:err:winediag:nodrv_CreateWindow Application tried to create a window, but no driver could be loaded.
+0094:err:winediag:nodrv_CreateWindow L"Make sure that your display server is running and that its variables are set."
