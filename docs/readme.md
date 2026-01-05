@@ -96,7 +96,7 @@ This is a **private research repository**. Contributions are by invitation only 
 
 ### License
 
-This repository is **private and proprietary**. See [`docs/LICENSE.md`](LICENSE.md) for complete license details.
+This repository is **private and proprietary**. See [`LICENSE.md`](LICENSE.md) for complete license details.
 
 ### Contact
 
