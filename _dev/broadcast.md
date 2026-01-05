@@ -1,20 +1,21 @@
 # GOLD STANDARD
-> A SYSTEM THAT REFUSES TO LIE.
+
+> **A SYSTEM THAT REFUSES TO LIE.**
 
 **One-line summary:** A continuous, evidence-driven market memory that records and preserves market state for disciplined decision-making.
 
-**Disclaimer:** Not financial advice. This documentation explains system behavior and is not investment guidance.
+⚠️ **Disclaimer:** Not financial advice. This documentation explains system behavior and is not investment guidance.
 
 ---
 
-**Contents**
+## Contents
 
 - [T0: Before the system existed](#t0-before-the-system-existed)
 - [T1: The first rule](#t1-the-first-rule)
 - [T2: Infrastructure choice](#t2-infrastructure-choice)
 - [T3: What Gold Standard actually does](#t3-what-gold-standard-actually-does)
-- [T4: Charts](#t4-charts)
-- [T5: Reports](#t5-reports)
+- [T4: Charts – how the system sees the market](#t4-charts--how-the-system-sees-the-market)
+- [T5: Reports – turning structure into language](#t5-reports--turning-structure-into-language)
 - [T6: Journaling in Notion](#t6-journaling-in-notion)
 - [T7: The repository](#t7-the-repository)
 - [T8: Automation & continuity](#t8-automation--continuity)
@@ -25,18 +26,18 @@
 
 ---
 
-**At a glance:**
+## At a Glance
 
-- Runs unattended on a dedicated VM; stores every run permanently in Notion and on disk.
-- Produces six reproducible charts and a concise written report each run.
-- Provides deterministic evidence for human review; does not make trading calls.
-- Integrates with `Herald`, the execution agent under development; VM is the canonical runtime.
+- ✅ Runs unattended on a dedicated VM; stores every run permanently in Notion and on disk
+- 📊 Produces six reproducible charts and a concise written report each run
+- 🔍 Provides deterministic evidence for human review; does not make trading calls
+- 🤖 Integrates with `Herald`, the execution agent under development; VM is the canonical runtime
 
 ---
 
-## T0. Before the system existed
+## T0: Before the system existed
 
-*(Context matters)*
+*Context matters*
 
 I didn’t start with a thesis.
 
@@ -62,9 +63,9 @@ It was designed to **remember**.
 
 ---
 
-## T1. The first rule
+## T1: The first rule
 
-*(Design constraint, not a feature)*
+*Design constraint, not a feature*
 
 > Nothing is allowed to depend on my attention.
 > 
@@ -91,9 +92,9 @@ No moods.
 
 ---
 
-## T2. Infrastructure choice
+## T2: Infrastructure choice
 
-*(Why a dedicated VM, not a laptop or cloud abstraction)*
+*Why a dedicated VM, not a laptop or cloud abstraction*
 
 To enforce that rule, I deployed a **dedicated virtual machine**.
 
@@ -142,9 +143,9 @@ This matters because:
 
 ---
 
-## T3. What Gold Standard actually does
+## T3: What Gold Standard actually does
 
-*(At the core, stripped of narrative)*
+*At the core, stripped of narrative*
 
 Gold Standard is a **market analysis pipeline**.
 
@@ -167,9 +168,9 @@ No step depends on the outcome of the previous one “looking good”.
 
 ---
 
-## T4. Charts: how the system sees the market
+## T4: Charts – how the system sees the market
 
-*(This is not TA as content)*
+*This is not TA as content*
 
 Charts are not decoration here.
 
@@ -220,9 +221,9 @@ graph LR
 
 ---
 
-## T5. Reports: turning structure into language
+## T5: Reports – turning structure into language
 
-*(So humans can think, not react)*
+*So humans can think, not react*
 
 After charts, the system writes.
 
@@ -251,9 +252,9 @@ Because boring survives time.
 
 ---
 
-## T6. Journaling in Notion
+## T6: Journaling in Notion
 
-*(Why Notion, and why everything lives there)*
+*Why Notion, and why everything lives there*
 
 All outputs are archived in Notion:
 
@@ -296,9 +297,9 @@ You can scroll backwards and see:
 
 ---
 
-## T7. The repository
+## T7: The repository
 
-*(What the code actually represents)*
+*What the code actually represents*
 
 The GitHub repository is not a “product repo”.
 It’s a **research instrument**.
@@ -335,9 +336,9 @@ graph LR
 
 ---
 
-## T8. Automation & continuity
+## T8: Automation & continuity
 
-*(Why this is not a one-off system)*
+*Why this is not a one-off system*
 
 Gold Standard runs:
 
@@ -375,9 +376,9 @@ gantt
 
 ---
 
-## T9. What this system is NOT
+## T9: What this system is NOT
 
-*(Important clarity)*
+*Important clarity*
 
 Gold Standard is not:
 
@@ -401,9 +402,9 @@ It tells you:
 
 ---
 
-## T10. Who this is for
+## T10: Who this is for
 
-*(And who should ignore it)*
+*And who should ignore it*
 
 This is for:
 
@@ -447,9 +448,9 @@ To observe.
 
 ---
 
-## T12. What happens next
+## T12: What happens next
 
-*(Without promises)*
+*Without promises*
 
 This system will evolve.
 Every change will be logged.

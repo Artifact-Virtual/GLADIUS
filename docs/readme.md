@@ -1,10 +1,12 @@
 # Gladius
 
-> Private AI Research Repository
+> **Private AI Research Repository**
 
 Gladius is a purpose-built, private research workspace designed to host research workflows and operational automation. It emphasizes provenance, auditability, and controlled access for collaborators.
 
-**Table of contents**
+---
+
+## Table of Contents
 
 - [Overview](#overview)
 - [Quick Start](#quick-start)
@@ -22,37 +24,47 @@ Gladius is a purpose-built, private research workspace designed to host research
 
 Gladius provides a concise, auditable environment for autonomous agents to generate, process, and store research artifacts. It emphasizes:
 
-- Deterministic, repeatable pipelines
-- Explicit attestation and provenance for AI-generated content
-- Strong separation between AI-operated areas and Lead Developer private spaces
+- **Deterministic, repeatable pipelines**
+- **Explicit attestation and provenance** for AI-generated content
+- **Strong separation** between AI-operated areas and Lead Developer private spaces
 
-## Configuration
+### Configuration
 
-- Edit `config.yaml` to register agent endpoints and artifact locations.
+Edit `config.yaml` to register agent endpoints and artifact locations.
 
 ## Core Features
 
-- ► Secure artifact store for AI-generated files
-- ► Audit-friendly contribution model and clear provenance practices
-- ► Lead Developer protected workspace (`working_dir/dev_dir`) with strict no-export rules
-- ► Audit logs, privilege records, and automated enforcement workflows
+- 🔒 **Secure artifact store** for AI-generated files
+- 📋 **Audit-friendly contribution model** and clear provenance practices
+- 🛡️ **Lead Developer protected workspace** (`working_dir/dev_dir`) with strict no-export rules
+- 📊 **Audit logs, privilege records**, and automated enforcement workflows
 
 ## Security & Access
 
-Gladius is private and access-controlled.
+**Gladius is a private, access-controlled repository.**
 
-- Lead-Dev workspace (`working_dir/dev_dir`) is protected and subject to review for deletions or exports.
+- **Lead-Dev workspace** (`working_dir/dev_dir`) is protected and subject to review for deletions or exports
+- All access requires explicit authorization from the Lead Developer
+- Changes are tracked and auditable through comprehensive logging
 
 ## Operational Guide
 
-- Preserve audit lines for every automated write: `working_dir/dev_dir/.audit/actions.log`.
-- Use `NOTICE_TO_DEV` templates for deletion/export requests from AI.
-- Use the `scripts/configure_gh_global.ps1` helper to set up machine-level Git/GH authentication securely.
+### Audit & Logging
 
-## Architecture (diagram)
+- **Preserve audit lines** for every automated write: `working_dir/dev_dir/.audit/actions.log`
+- Use `NOTICE_TO_DEV` templates for deletion/export requests from AI
+
+### Setup & Configuration
+
+- Use the `scripts/configure_gh_global.ps1` helper to set up machine-level Git/GH authentication securely
+
+## Architecture (Diagram)
+
+### System Overview
+
+The following diagram illustrates the core data flow and agent orchestration within Gladius:
 
 ```mermaid
-
 flowchart LR
   A[Data Sources] --> B[Ingest]
   B --> C[Normalization & Storage]
@@ -67,18 +79,29 @@ flowchart LR
   D --> I
   G --> I
   G -->|Escalate| K[Frontier LLMs]
-
 ```
+
+### Key Components
+
+- **Data Sources**: External data ingestion points
+- **Analysis Agents**: AI-powered analysis and processing
+- **SLM Runtimes**: Local small language models for efficient processing
+- **Frontier LLMs**: Advanced models for complex tasks requiring escalation
 
 ## Contributing & AI Policy
 
-Contributions are welcome via normal pull requests. Please follow the project's standard contribution guidelines and include descriptive commit messages and tests where appropriate.
+This is a **private research repository**. Contributions are by invitation only and limited to authorized collaborators. All changes must be reviewed and approved by the Lead Developer before merging.
 
 ## License & Contact
 
-This repository is private. See `docs/LICENSE.md` for license details.
+### License
 
-Lead Developer & Contact: `amuzetnoM` on GitHub
+This repository is **private and proprietary**. See [`docs/LICENSE.md`](LICENSE.md) for complete license details.
+
+### Contact
+
+- **Lead Developer**: [`amuzetnoM`](https://github.com/amuzetnoM) on GitHub
+- **Repository Status**: Private Research Repository
 
 ---
 
