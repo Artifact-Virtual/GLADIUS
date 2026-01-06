@@ -125,6 +125,14 @@ Use the PowerShell helper for machine-level Git/GH authentication:
 
 ## 📖 Getting Started
 
+### 🚀 Quick Start
+New to the repository? **[Read the Quick Start Guide](QUICKSTART.md)** for a guided tour and learning paths.
+
+### 🗺️ Navigation
+Having trouble finding something? **[View the Navigation Map](NAVIGATION.md)** for a visual guide to the repository structure.
+
+### 📚 Main Documentation
+
 1. **Start with the main documentation**: [`docs/readme.md`](docs/readme.md)
 2. **Explore research articles**: [`dev_docs/articles/00_article_index.md`](dev_docs/articles/00_article_index.md)
 3. **Review system architecture**: [`dev_docs/docs/architectural_mandate.md`](dev_docs/docs/architectural_mandate.md)
@@ -148,6 +156,8 @@ This repository covers research in:
 ## 📝 Contributing & AI Policy
 
 This is a **private research repository**. Contributions are by invitation only and limited to authorized collaborators. All changes must be reviewed and approved by the Lead Developer before merging.
+
+**👉 [Read the Contributing Guide](CONTRIBUTING.md)** for detailed guidelines.
 
 ### AI Collaboration
 - Autonomous agents may operate within designated areas
