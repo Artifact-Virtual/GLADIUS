@@ -1,6 +1,8 @@
-# Vector Studio Research Directory
+# Research Materials
 
-This directory contains academically rigorous research articles exploring the theoretical foundations, algorithmic details, and practical implementations of key concepts in Vector Studio and vector databases generally.
+> Technical research papers, algorithms, and theoretical foundations
+
+This directory contains academically rigorous research articles exploring the theoretical foundations, algorithmic details, and practical implementations of key concepts used in the Gladius trading systems and AI infrastructure.
 
 ## Overview
 
@@ -183,73 +185,22 @@ All research papers in this directory are:
 
 ---
 
-## Contributing
+## Related Gladius Projects
 
-Contributions to the research directory are welcome! Please ensure:
-
-1. **Academic rigor**: All theorems must be proven or properly cited
-2. **Zero hallucination**: No invented results or citations
-3. **Reproducibility**: Include code and data for empirical claims
-4. **Clear writing**: Accessible to both theorists and practitioners
-5. **Proper citations**: Use standard academic citation format
-
-Submit research articles as pull requests with:
-- Complete mathematical derivations
-- Empirical validation where applicable
-- Code implementations (reference and optimized)
-- Bibliography with DOI links where available
-
----
-
-## Citation
-
-If you use these research materials in your work, please cite:
-
-```bibtex
-@techreport{vectorstudio2026research,
-  title={Vector Studio Research Compendium: Theoretical Foundations and Practical Implementations},
-  author={Vector Studio Research Team},
-  institution={Vector Studio Project},
-  year={2026},
-  url={https://github.com/amuzetnoM/vector_studio/tree/main/research}
-}
-```
-
-For individual articles:
-
-```bibtex
-@techreport{vectorstudio2026vst,
-  title={Vector Space Theory in High-Dimensional Embeddings: A Comprehensive Study},
-  author={Vector Studio Research Team},
-  institution={Vector Studio Project},
-  year={2026},
-  url={https://github.com/amuzetnoM/vector_studio/tree/main/research/vector_space_theory.md}
-}
-
-@techreport{vectorstudio2026hnsw,
-  title={Hierarchical Navigable Small World (HNSW) Graphs: Theory, Implementation, and Analysis},
-  author={Vector Studio Research Team},
-  institution={Vector Studio Project},
-  year={2026},
-  url={https://github.com/amuzetnoM/vector_studio/tree/main/research/hnsw_algorithm.md}
-}
-```
-
----
-
-## License
-
-All research materials in this directory are provided under the MIT License, consistent with the Vector Studio project. Academic use, reproduction, and extension are encouraged with proper attribution.
+### Applications of This Research
+- **RAG Systems**: [Articles on retrieval-augmented generation](../articles/README.md#-rag--vector-search-articles-16-20)
+- **Semantic Routing**: [Intelligent query routing](../articles/09_semantic_routing.md)
+- **Market Analysis**: [GoldMax system](../../projects/goldmax/) using time series analysis
+- **Data Engineering**: [Building reproducible pipelines](../articles/22_building_a_reproducible_analysis_pipelin.md)
 
 ---
 
 ## Contact
 
-For questions, corrections, or collaborations:
-- Open an issue on the [Vector Studio GitHub repository](https://github.com/amuzetnoM/vector_studio/issues)
-- Tag research-related issues with the `research` label
+For research questions or collaborations:
+- **Repository Owner**: [`amuzetnoM`](https://github.com/amuzetnoM)
+- **Focus Areas**: AI/ML systems, trading automation, vector databases
 
 ---
 
-*Last updated: January 4, 2026*  
-*Maintained by: Vector Studio Research Team*
+*Part of the Gladius research repository*
