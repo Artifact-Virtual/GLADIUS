@@ -9,19 +9,19 @@
 ## 🎯 Quick Start - What to Read First
 
 ### For Busy Executives (5 minutes)
-👉 **Read**: [REVIEW_SUMMARY_TABLE.md](REVIEW_SUMMARY_TABLE.md)  
+👉 **Read**: [REVIEW_SUMMARY_TABLE.md](obsidian_sync/dev_docs/_build/cthulu/review/REVIEW_SUMMARY_TABLE.md)  
 **What you'll get**: At-a-glance scorecard, priority matrix, quick decisions
 
 ### For Project Managers (15 minutes)
-👉 **Read**: [SYSTEM_OVERVIEW_COMPACT.md](SYSTEM_OVERVIEW_COMPACT.md)  
+👉 **Read**: [SYSTEM_OVERVIEW_COMPACT.md](obsidian_sync/dev_docs/_build/cthulu/review/SYSTEM_OVERVIEW_COMPACT.md)  
 **What you'll get**: System overview, strengths/weaknesses, roadmap, FAQ
 
 ### For Product Owners (30 minutes)
-👉 **Read**: [EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md)  
+👉 **Read**: [EXECUTIVE_SUMMARY.md](obsidian_sync/dev_docs/_build/cthulu/review/EXECUTIVE_SUMMARY.md)  
 **What you'll get**: Detailed findings, metrics, next steps, ROI analysis
 
 ### For Engineers & Architects (60 minutes)
-👉 **Read**: [COMPREHENSIVE_SYSTEM_REVIEW.md](COMPREHENSIVE_SYSTEM_REVIEW.md)  
+👉 **Read**: [COMPREHENSIVE_SYSTEM_REVIEW.md](obsidian_sync/dev_docs/_build/cthulu/review/COMPREHENSIVE_SYSTEM_REVIEW.md)  
 **What you'll get**: Deep technical analysis, code examples, implementation details
 
 ---
@@ -30,10 +30,10 @@
 
 | Document | Size | Pages | Audience | Purpose |
 |----------|------|-------|----------|---------|
-| **[REVIEW_SUMMARY_TABLE.md](REVIEW_SUMMARY_TABLE.md)** | 10KB | 6 | All | Quick reference tables |
-| **[SYSTEM_OVERVIEW_COMPACT.md](SYSTEM_OVERVIEW_COMPACT.md)** | 12KB | 10 | Stakeholders | Decision-making guide |
-| **[EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md)** | 17KB | 17 | Project teams | Kickoff and planning |
-| **[COMPREHENSIVE_SYSTEM_REVIEW.md](COMPREHENSIVE_SYSTEM_REVIEW.md)** | 49KB | 50 | Engineers | Technical deep dive |
+| **[REVIEW_SUMMARY_TABLE.md](obsidian_sync/dev_docs/_build/cthulu/review/REVIEW_SUMMARY_TABLE.md)** | 10KB | 6 | All | Quick reference tables |
+| **[SYSTEM_OVERVIEW_COMPACT.md](obsidian_sync/dev_docs/_build/cthulu/review/SYSTEM_OVERVIEW_COMPACT.md)** | 12KB | 10 | Stakeholders | Decision-making guide |
+| **[EXECUTIVE_SUMMARY.md](obsidian_sync/dev_docs/_build/cthulu/review/EXECUTIVE_SUMMARY.md)** | 17KB | 17 | Project teams | Kickoff and planning |
+| **[COMPREHENSIVE_SYSTEM_REVIEW.md](obsidian_sync/dev_docs/_build/cthulu/review/COMPREHENSIVE_SYSTEM_REVIEW.md)** | 49KB | 50 | Engineers | Technical deep dive |
 | **This README** | 5KB | 2 | All | Navigation guide |
 
 ---
@@ -168,7 +168,7 @@ Phase 4: Trading Edge (2 months)
 ### In This Repository
 - [CONTEXT.md](CONTEXT.md) - Original system documentation (960 lines)
 - [docs/](docs/) - User guides, tutorials, deployment (12+ files)
-- [SYSTEM_REPORT.md](SYSTEM_REPORT.md) - Recent battle test results
+- [SYSTEM_REPORT.md](system_report.md) - Recent battle test results
 
 ### External Links
 - [GitHub Issues](https://github.com/amuzetnoM/cthulu/issues) - Report bugs, request features

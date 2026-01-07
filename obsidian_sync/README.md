@@ -48,7 +48,7 @@ A continuous, evidence-driven market memory system that records and preserves ma
 - **Architecture**: VM-based automated analysis pipeline
 - **Output**: Daily charts, reports, and Notion journal entries
 - **Status**: Active development
-- See: [`dev_docs/broadcast.md`](dev_docs/broadcast.md) for detailed system overview
+- See: [`dev_docs/broadcast.md`](broadcast.md) for detailed system overview
 
 ### 2. **Cthulu** (`dev_docs/_build/cthulu/`)
 Trading system implementation and GCP VM deployment
@@ -75,7 +75,7 @@ Execution agent under development for automated trading
 - **Security & Compliance**: EU AI Act, SEC considerations, audit requirements
 - **Infrastructure**: VM hardening, CI/CD, model deployment
 
-See [`dev_docs/articles/00_article_index.md`](dev_docs/articles/00_article_index.md) for complete list.
+See [`dev_docs/articles/00_article_index.md`](00_article_index.md) for complete list.
 
 ### MQL5 Handbook (`dev_docs/mql5_handbook/`)
 Comprehensive trading strategy development documentation:
@@ -83,7 +83,7 @@ Comprehensive trading strategy development documentation:
 - **Phase 2**: Risk management and trading system development
 - **Phase 3**: Advanced strategies (ORB, linear regression, price action)
 
-See [`dev_docs/mql5_handbook/README.md`](dev_docs/mql5_handbook/README.md) for details.
+See [`dev_docs/mql5_handbook/README.md`](obsidian_sync/dev_docs/mql5_handbook/README.md) for details.
 
 ### Research Materials (`dev_docs/research/`)
 Technical research papers and references:
@@ -100,7 +100,7 @@ Technical research papers and references:
 - Repository owner: [`amuzetnoM`](https://github.com/amuzetnoM)
 - Access requires explicit authorization
 - All changes tracked and auditable
-- See [`docs/LICENSE.md`](docs/LICENSE.md) for complete license terms
+- See [`docs/LICENSE.md`](LICENSE.md) for complete license terms
 
 ### Protected Workspaces
 - `dev_dir/`: Lead Developer workspace with strict access controls
@@ -112,7 +112,7 @@ Technical research papers and references:
 
 ### Infrastructure Documentation
 - **VM Setup**: See [`dev_docs/virtual_machine/`](dev_docs/virtual_machine/) for GCP VM configuration
-- **SSH Access**: [`dev_docs/virtual_machine/ssh_setup_guide.md`](dev_docs/virtual_machine/ssh_setup_guide.md)
+- **SSH Access**: [`dev_docs/virtual_machine/ssh_setup_guide.md`](ssh_setup_guide.md)
 - **Scripts**: Utility scripts in [`dev_docs/scripts/`](dev_docs/scripts/)
 
 ### Git Configuration
@@ -134,11 +134,11 @@ Having trouble finding something? **[View the Navigation Map](NAVIGATION.md)** f
 ### 📚 Main Documentation
 
 1. **Start with the main documentation**: [`docs/readme.md`](docs/readme.md)
-2. **Explore research articles**: [`dev_docs/articles/00_article_index.md`](dev_docs/articles/00_article_index.md)
-3. **Review system architecture**: [`dev_docs/docs/architectural_mandate.md`](dev_docs/docs/architectural_mandate.md)
+2. **Explore research articles**: [`dev_docs/articles/00_article_index.md`](00_article_index.md)
+3. **Review system architecture**: [`dev_docs/docs/architectural_mandate.md`](architectural_mandate.md)
 4. **Check project documentation**: 
-   - GoldMax: [`dev_docs/broadcast.md`](dev_docs/broadcast.md)
-   - MQL5: [`dev_docs/mql5_handbook/README.md`](dev_docs/mql5_handbook/README.md)
+   - GoldMax: [`dev_docs/broadcast.md`](broadcast.md)
+   - MQL5: [`dev_docs/mql5_handbook/README.md`](obsidian_sync/dev_docs/mql5_handbook/README.md)
 
 ---
 
@@ -170,7 +170,7 @@ This is a **private research repository**. Contributions are by invitation only 
 
 - **Lead Developer**: [`amuzetnoM`](https://github.com/amuzetnoM)
 - **Repository Status**: Private Research Repository
-- **License**: All Rights Reserved — Proprietary License (see [`docs/LICENSE.md`](docs/LICENSE.md))
+- **License**: All Rights Reserved — Proprietary License (see [`docs/LICENSE.md`](LICENSE.md))
 
 ---
 

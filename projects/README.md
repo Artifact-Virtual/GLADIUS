@@ -14,7 +14,7 @@ This directory contains the main projects developed and documented in the Gladiu
 A continuous, evidence-driven market memory system that records and preserves market state for disciplined decision-making.
 
 - **Directory**: [`goldmax/`](goldmax/)
-- **Main Documentation**: [dev_docs/broadcast.md](../dev_docs/broadcast.md)
+- **Main Documentation**: [dev_docs/broadcast.md](broadcast.md)
 - **Purpose**: Unattended market analysis with automated reporting
 - **Output**: Daily charts, reports, and Notion journal entries
 - **Infrastructure**: Dedicated VM with persistent storage
@@ -25,7 +25,7 @@ A continuous, evidence-driven market memory system that records and preserves ma
 - Notion integration for persistent memory
 - Deterministic, reproducible analysis
 
-👉 **[Read More](goldmax/README.md)**
+👉 **[Read More](projects/goldmax/README.md)**
 
 ---
 
@@ -46,7 +46,7 @@ MQL5/MetaTrader 5 trading system with GCP VM deployment.
 - Remote development with VS Code Server
 - Comprehensive system review documentation
 
-👉 **[Read More](cthulu/README.md)**
+👉 **[Read More](projects/cthulu/README.md)**
 
 ---
 
@@ -67,7 +67,7 @@ Automated trading execution agent trained on BTCUSD.
 - Dry run and simulation modes
 - Comprehensive execution logging
 
-👉 **[Read More](herald/README.md)**
+👉 **[Read More](projects/herald/README.md)**
 
 ---
 
@@ -93,17 +93,17 @@ graph LR
 ## 📚 Supporting Documentation
 
 ### MQL5 Development
-- [MQL5 Handbook](../dev_docs/mql5_handbook/README.md) - Strategy development guide
+- [MQL5 Handbook](obsidian_sync/dev_docs/mql5_handbook/README.md) - Strategy development guide
 - 60+ articles on trading strategies and implementation
 
 ### Research Articles
-- [Article Index](../dev_docs/articles/00_article_index.md) - Complete listing
+- [Article Index](00_article_index.md) - Complete listing
 - 60+ articles on AI/ML systems, trading, compliance, and infrastructure
 
 ### Infrastructure
 - [Virtual Machine Documentation](../dev_docs/virtual_machine/) - VM setup and access
 - [Scripts & Utilities](../dev_docs/scripts/) - Deployment automation
-- [Architecture Documentation](../dev_docs/docs/architectural_mandate.md)
+- [Architecture Documentation](architectural_mandate.md)
 
 ---
 
@@ -146,7 +146,7 @@ Comprehensive logging, traceability, and compliance with financial regulations.
 4. Use provided scripts for automation
 
 ### VM Deployment
-1. Access GCP VM via SSH (see [ssh_setup_guide.md](../dev_docs/virtual_machine/ssh_setup_guide.md))
+1. Access GCP VM via SSH (see [ssh_setup_guide.md](ssh_setup_guide.md))
 2. Deploy using startup scripts
 3. Configure project-specific settings
 4. Monitor and maintain via remote access

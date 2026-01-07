@@ -122,17 +122,17 @@ Private credentials and secrets (restricted access):
 Automated startup and configuration scripts are available in [`../scripts/`](../scripts/):
 
 ### GCP Startup Scripts
-- **[gcp_startup_odyssey.sh](../scripts/gcp_startup_odyssey.sh)** - Main startup script
-- **[gcp_startup_soundwave.sh](../scripts/gcp_startup_soundwave.sh)** - Alternative startup
+- **[gcp_startup_odyssey.sh](gcp_startup_odyssey.sh)** - Main startup script
+- **[gcp_startup_soundwave.sh](gcp_startup_soundwave.sh)** - Alternative startup
 
 ### MetaTrader Automation
-- **[mt5_automate.sh](../scripts/mt5_automate.sh)** - MT5 automation script
-- **[mt5linux_trace.log](../scripts/mt5linux_trace.log)** - MT5 trace logs
+- **[mt5_automate.sh](mt5_automate.sh)** - MT5 automation script
+- **[mt5linux_trace.log](mt5linux_trace.log)** - MT5 trace logs
 
 ### Windows Scripts (PowerShell)
-- **[desktop_launch_herald_and_mt5.ps1](../scripts/desktop_launch_herald_and_mt5.ps1)** - Launch trading system
-- **[create_desktop_shortcut.ps1](../scripts/create_desktop_shortcut.ps1)** - Create shortcuts
-- **[fix_powershell_profile.ps1](../scripts/fix_powershell_profile.ps1)** - PowerShell configuration
+- **[desktop_launch_herald_and_mt5.ps1](desktop_launch_herald_and_mt5.ps1)** - Launch trading system
+- **[create_desktop_shortcut.ps1](create_desktop_shortcut.ps1)** - Create shortcuts
+- **[fix_powershell_profile.ps1](fix_powershell_profile.ps1)** - PowerShell configuration
 
 ---
 
@@ -258,10 +258,10 @@ For VM access issues or infrastructure questions:
 
 ## 🔗 Related Documentation
 
-- [Architecture Documentation](../docs/architectural_mandate.md)
+- [Architecture Documentation](architectural_mandate.md)
 - [Deployment Scripts](../scripts/)
 - [Projects Documentation](../../projects/)
-- [Main Repository README](../../README.md)
+- [Main Repository README](obsidian_sync/README.md)
 
 ---
 

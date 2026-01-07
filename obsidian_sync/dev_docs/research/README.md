@@ -188,10 +188,10 @@ All research papers in this directory are:
 ## Related Gladius Projects
 
 ### Applications of This Research
-- **RAG Systems**: [Articles on retrieval-augmented generation](../articles/README.md#-rag--vector-search-articles-16-20)
-- **Semantic Routing**: [Intelligent query routing](../articles/09_semantic_routing.md)
+- **RAG Systems**: [Articles on retrieval-augmented generation](obsidian_sync/dev_docs/articles/README.md#-rag--vector-search-articles-16-20)
+- **Semantic Routing**: [Intelligent query routing](09_semantic_routing.md)
 - **Market Analysis**: [GoldMax system](../../projects/goldmax/) using time series analysis
-- **Data Engineering**: [Building reproducible pipelines](../articles/22_building_a_reproducible_analysis_pipelin.md)
+- **Data Engineering**: [Building reproducible pipelines](22_building_a_reproducible_analysis_pipelin.md)
 
 ---
 

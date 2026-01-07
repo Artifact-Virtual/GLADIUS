@@ -259,7 +259,7 @@
 ## 📚 DETAILED DOCUMENTATION
 
 For comprehensive analysis, see:
-- **[COMPREHENSIVE_SYSTEM_REVIEW.md](./COMPREHENSIVE_SYSTEM_REVIEW.md)** - 50-page deep dive
+- **[COMPREHENSIVE_SYSTEM_REVIEW.md](obsidian_sync/dev_docs/_build/cthulu/review/COMPREHENSIVE_SYSTEM_REVIEW.md)** - 50-page deep dive
 - **[CONTEXT.md](./CONTEXT.md)** - System architecture and features
 - **[docs/](./docs/)** - Guides, tutorials, API reference
 

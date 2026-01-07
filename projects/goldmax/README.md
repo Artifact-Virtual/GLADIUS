@@ -9,14 +9,14 @@ A continuous, evidence-driven market memory system that records and preserves ma
 ## 📁 Project Files
 
 ### Core Documentation
-- **[Broadcast.md](../../dev_docs/broadcast.md)** - Complete system overview and philosophy (main documentation)
-- **[Architecture.md](Architecture.md)** - System architecture and technical design
-- **[Blueprint.md](Blueprint.md)** - Implementation blueprint
-- **[Foundation.md](Foundation.md)** - Foundation principles
-- **[Thesis.md](Thesis.md)** - Core thesis and approach
+- **[Broadcast.md](broadcast.md)** - Complete system overview and philosophy (main documentation)
+- **[Architecture.md](projects/goldmax/Architecture.md)** - System architecture and technical design
+- **[Blueprint.md](projects/goldmax/Blueprint.md)** - Implementation blueprint
+- **[Foundation.md](projects/goldmax/Foundation.md)** - Foundation principles
+- **[Thesis.md](projects/goldmax/Thesis.md)** - Core thesis and approach
 
 ### Research & Articles
-- **[argmax-syndrome_article.md](argmax-syndrome_article.md)** - Research on decision-making patterns
+- **[argmax-syndrome_article.md](projects/goldmax/argmax-syndrome_article.md)** - Research on decision-making patterns
 
 ### Assets
 - System diagrams and visualizations
@@ -98,7 +98,7 @@ Reports are intentionally boring and evidence-based, not predictive or opinion-b
 ## 📚 Documentation
 
 For complete system documentation, philosophy, and implementation details, see:
-- **[dev_docs/broadcast.md](../../dev_docs/broadcast.md)** - Main GoldMax documentation
+- **[dev_docs/broadcast.md](broadcast.md)** - Main GoldMax documentation
 
 ---
 

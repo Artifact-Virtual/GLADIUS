@@ -7,7 +7,7 @@
 ## 📁 Project Structure
 
 ### Configuration
-- **[config/wizard.py](config/wizard.py)** - Configuration wizard for Herald setup
+- **[projects/herald/config/wizard.py](projects/herald/config/wizard.py)** - Configuration wizard for Herald setup
 
 ---
 
@@ -72,25 +72,25 @@ The wizard will guide you through:
 
 ### Compliance
 - Follows principles outlined in research articles:
-  - [Introducing Herald](../../dev_docs/articles/26_introducing_herald_design_and_safety_for.md)
-  - [Exchange Integration Patterns](../../dev_docs/articles/27_exchange_integration_patterns_safe_order.md)
-  - [Testing Execution Agents](../../dev_docs/articles/28_testing_execution_agents_simulation_repl.md)
+  - [Introducing Herald](26_introducing_herald_design_and_safety_for.md)
+  - [Exchange Integration Patterns](27_exchange_integration_patterns_safe_order.md)
+  - [Testing Execution Agents](28_testing_execution_agents_simulation_repl.md)
 
 ---
 
 ## 📚 Related Documentation
 
 ### Research Articles
-- [Introducing Herald: Design and Safety](../../dev_docs/articles/26_introducing_herald_design_and_safety_for.md)
-- [Exchange Integration Patterns](../../dev_docs/articles/27_exchange_integration_patterns_safe_order.md)
-- [Testing Execution Agents](../../dev_docs/articles/28_testing_execution_agents_simulation_repl.md)
-- [Training and Evaluating Execution Models](../../dev_docs/articles/29_training_and_evaluating_execution_models.md)
-- [Operational Playbook for Live Execution](../../dev_docs/articles/30_operational_playbook_for_live_execution_.md)
+- [Introducing Herald: Design and Safety](26_introducing_herald_design_and_safety_for.md)
+- [Exchange Integration Patterns](27_exchange_integration_patterns_safe_order.md)
+- [Testing Execution Agents](28_testing_execution_agents_simulation_repl.md)
+- [Training and Evaluating Execution Models](29_training_and_evaluating_execution_models.md)
+- [Operational Playbook for Live Execution](30_operational_playbook_for_live_execution_.md)
 
 ### System Integration
-- [GoldMax Project](../goldmax/README.md) - Market analysis system
-- [Cthulu System](../cthulu/README.md) - MQL5/MT5 integration
-- [Broadcast Documentation](../../dev_docs/broadcast.md) - Complete system overview
+- [GoldMax Project](projects/goldmax/README.md) - Market analysis system
+- [Cthulu System](projects/cthulu/README.md) - MQL5/MT5 integration
+- [Broadcast Documentation](broadcast.md) - Complete system overview
 
 ---
 

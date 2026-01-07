@@ -7,16 +7,16 @@
 ## 📁 Project Structure
 
 ### Documentation
-- **[SUBPROGRAM_RECOMMENDATIONS.md](SUBPROGRAM_RECOMMENDATIONS.md)** - Recommended subprograms and modules
-- **[gcp_accesscontrol.md](gcp_accesscontrol.md)** - GCP access control configuration
+- **[SUBPROGRAM_RECOMMENDATIONS.md](projects/cthulu/SUBPROGRAM_RECOMMENDATIONS.md)** - Recommended subprograms and modules
+- **[gcp_accesscontrol.md](projects/cthulu/gcp_accesscontrol.md)** - GCP access control configuration
 
 ### System Review
 Complete system review documentation:
-- **[EXECUTIVE_SUMMARY.md](review/EXECUTIVE_SUMMARY.md)** - Executive summary
-- **[COMPREHENSIVE_SYSTEM_REVIEW.md](review/COMPREHENSIVE_SYSTEM_REVIEW.md)** - Detailed system review
-- **[SYSTEM_OVERVIEW_COMPACT.md](review/SYSTEM_OVERVIEW_COMPACT.md)** - Compact overview
-- **[REVIEW_SUMMARY_TABLE.md](review/REVIEW_SUMMARY_TABLE.md)** - Summary table
-- **[REVIEW_DOCS_README.md](review/REVIEW_DOCS_README.md)** - Review documentation index
+- **[EXECUTIVE_SUMMARY.md](projects/cthulu/review/EXECUTIVE_SUMMARY.md)** - Executive summary
+- **[COMPREHENSIVE_SYSTEM_REVIEW.md](projects/cthulu/review/COMPREHENSIVE_SYSTEM_REVIEW.md)** - Detailed system review
+- **[SYSTEM_OVERVIEW_COMPACT.md](projects/cthulu/review/SYSTEM_OVERVIEW_COMPACT.md)** - Compact overview
+- **[REVIEW_SUMMARY_TABLE.md](projects/cthulu/review/REVIEW_SUMMARY_TABLE.md)** - Summary table
+- **[REVIEW_DOCS_README.md](projects/cthulu/review/REVIEW_DOCS_README.md)** - Review documentation index
 
 ---
 
@@ -25,7 +25,7 @@ Complete system review documentation:
 ### GCP VM Instance
 - **Type**: n2-standard-2 Spot instance
 - **OS**: Ubuntu 22.04 host + Windows 11 container
-- **External IP**: 34.171.231.16 (see [working_dir/cthulu_node_AC.md](../../working_dir/cthulu_node_AC.md) for current status)
+- **External IP**: 34.171.231.16 (see [working_dir/cthulu_node_AC.md](cthulu_node_AC.md) for current status)
 
 ### Access Points
 | Service | Port | Notes |
@@ -46,9 +46,9 @@ The system is deployed on GCP with:
 
 ### Setup Documentation
 See the following for deployment and setup:
-- [Virtual Machine Access](../../dev_docs/virtual_machine/vm_access.md)
-- [SSH Setup Guide](../../dev_docs/virtual_machine/ssh_setup_guide.md)
-- [Working Directory Status](../../working_dir/cthulu_node_AC.md)
+- [Virtual Machine Access](vm_access.md)
+- [SSH Setup Guide](ssh_setup_guide.md)
+- [Working Directory Status](cthulu_node_AC.md)
 
 ---
 
@@ -69,11 +69,11 @@ See the following for deployment and setup:
 ## 📚 Related Documentation
 
 ### MQL5 Development
-- [MQL5 Handbook](../../dev_docs/mql5_handbook/README.md) - Comprehensive MQL5 strategy documentation
-- [MQL5 Manifest](../../dev_docs/mql5_handbook/manifest.md) - Strategy catalog
+- [MQL5 Handbook](obsidian_sync/dev_docs/mql5_handbook/README.md) - Comprehensive MQL5 strategy documentation
+- [MQL5 Manifest](obsidian_sync/dev_docs/mql5_handbook/manifest.md) - Strategy catalog
 
 ### Infrastructure
-- [Architectural Mandate](../../dev_docs/docs/architectural_mandate.md) - System architecture
+- [Architectural Mandate](architectural_mandate.md) - System architecture
 - [GCP Startup Scripts](../../dev_docs/scripts/) - Deployment automation
 
 ---
@@ -102,7 +102,7 @@ Relevant scripts for Cthulu operations:
 - **Private Repository**: Access controlled
 - **GCP Access**: Restricted to authorized users
 - **VM Access**: SSH key authentication required
-- See [DEV_SECRETS.md](../../dev_docs/virtual_machine/DEV_SECRETS.md) for credentials (private)
+- See [DEV_SECRETS.md](DEV_SECRETS.md) for credentials (private)
 
 ---
 

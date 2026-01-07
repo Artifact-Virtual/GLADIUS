@@ -88,7 +88,7 @@ research/
 
 ## Supporting Materials
 
-### 3. [Research Survey](papers/research_survey.md)
+### 3. [Research Survey](research_survey.md)
 
 **State-of-the-art survey covering 50+ papers from 1954-2026**
 
@@ -119,7 +119,7 @@ research/
 
 ---
 
-### 4. [Annotated Bibliography](references/annotated_bibliography.md)
+### 4. [Annotated Bibliography](annotated_bibliography.md)
 
 **Detailed annotations of 18 key papers**
 
@@ -151,7 +151,7 @@ research/
 
 ---
 
-### 5. [Complete Citations](references/paper_citations.md)
+### 5. [Complete Citations](paper_citations.md)
 
 **Full bibliographic information for 30 papers**
 
@@ -189,55 +189,55 @@ research/
 
 **Learning Fundamentals**:
 1. Start: [Vector Space Theory](vector_space_theory.md) §1-2
-2. Then: [Research Survey](papers/research_survey.md) §1-2
-3. Deep dive: [Annotated Bibliography](references/annotated_bibliography.md)
+2. Then: [Research Survey](research_survey.md) §1-2
+3. Deep dive: [Annotated Bibliography](annotated_bibliography.md)
 
 **Understanding HNSW**:
 1. Start: [HNSW Algorithm](hnsw_algorithm.md) §1-3
-2. Theory: [Research Survey](papers/research_survey.md) §3.4
-3. Papers: [Kleinberg 2000, Malkov 2018](references/paper_citations.md)
+2. Theory: [Research Survey](research_survey.md) §3.4
+3. Papers: [Kleinberg 2000, Malkov 2018](paper_citations.md)
 
 **Implementing Systems**:
 1. Algorithm: [HNSW Algorithm](hnsw_algorithm.md) §6-7
 2. Optimizations: [Vector Space Theory](vector_space_theory.md) §7
-3. Production: [Research Survey](papers/research_survey.md) §7
+3. Production: [Research Survey](research_survey.md) §7
 
 **Choosing Methods**:
-1. Overview: [Research Survey](papers/research_survey.md) §3
+1. Overview: [Research Survey](research_survey.md) §3
 2. Theory: [Vector Space Theory](vector_space_theory.md) §4-5
-3. Empirics: [Research Survey](papers/research_survey.md) §8
+3. Empirics: [Research Survey](research_survey.md) §8
 
 ### By Topic
 
 **Embeddings**:
 - Theory: [Vector Space Theory](vector_space_theory.md) §6
-- Methods: [Research Survey](papers/research_survey.md) §2
-- Papers: [Annotated Bibliography](references/annotated_bibliography.md) §1-6
+- Methods: [Research Survey](research_survey.md) §2
+- Papers: [Annotated Bibliography](annotated_bibliography.md) §1-6
 
 **Distance Metrics**:
 - Mathematics: [Vector Space Theory](vector_space_theory.md) §4
 - Analysis: [Vector Space Theory](vector_space_theory.md) §8.4
-- Applications: [Research Survey](papers/research_survey.md) §6
+- Applications: [Research Survey](research_survey.md) §6
 
 **High Dimensions**:
 - Theory: [Vector Space Theory](vector_space_theory.md) §3, §5
-- Problems: [Research Survey](papers/research_survey.md) §4
+- Problems: [Research Survey](research_survey.md) §4
 - Papers: Beyer 1999, Johnson-Lindenstrauss 1984
 
 **Graph Search**:
 - Algorithm: [HNSW Algorithm](hnsw_algorithm.md) §3-5
 - Theory: [HNSW Algorithm](hnsw_algorithm.md) §2, §5
-- Comparison: [Research Survey](papers/research_survey.md) §3.4
+- Comparison: [Research Survey](research_survey.md) §3.4
 
 **Optimization**:
 - SIMD: [Vector Space Theory](vector_space_theory.md) Appendix B
 - Quantization: [Vector Space Theory](vector_space_theory.md) §7.3
-- Systems: [Research Survey](papers/research_survey.md) §5
+- Systems: [Research Survey](research_survey.md) §5
 
 **Production**:
-- Case studies: [Research Survey](papers/research_survey.md) §7.1
-- Best practices: [Research Survey](papers/research_survey.md) §7.2
-- Benchmarks: [Research Survey](papers/research_survey.md) §8
+- Case studies: [Research Survey](research_survey.md) §7.1
+- Best practices: [Research Survey](research_survey.md) §7.2
+- Benchmarks: [Research Survey](research_survey.md) §8
 
 ---
 
@@ -319,7 +319,7 @@ $$k = O(\epsilon^{-2} \log n)$$
 
 ### Citing Original Papers
 
-See [Complete Citations](references/paper_citations.md) for properly formatted citations of all 30+ referenced papers.
+See [Complete Citations](paper_citations.md) for properly formatted citations of all 30+ referenced papers.
 
 ---
 

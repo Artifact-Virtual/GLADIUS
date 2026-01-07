@@ -139,11 +139,11 @@ Each article follows a consistent structure:
 ### Research Materials
 - [Research Papers](../research/papers/) - Academic papers and references
 - [Research Notes](../notes/) - System reports and completion notes
-- [Vector Space Theory](../research/vector_space_theory.md)
-- [HNSW Algorithm](../research/hnsw_algorithm.md)
+- [Vector Space Theory](vector_space_theory.md)
+- [HNSW Algorithm](hnsw_algorithm.md)
 
 ### Practical Guides
-- [MQL5 Handbook](../mql5_handbook/README.md) - Trading strategy implementation
+- [MQL5 Handbook](obsidian_sync/dev_docs/mql5_handbook/README.md) - Trading strategy implementation
 - [Virtual Machine Setup](../virtual_machine/) - Infrastructure documentation
 - [Scripts & Utilities](../scripts/) - Automation tools
 
@@ -176,7 +176,7 @@ For questions or discussions about the articles, contact [`amuzetnoM`](https://g
 
 ## 📄 License
 
-All articles are proprietary and covered under the repository license. See [LICENSE.md](../../docs/LICENSE.md) for details.
+All articles are proprietary and covered under the repository license. See [LICENSE.md](LICENSE.md) for details.
 
 ---
 

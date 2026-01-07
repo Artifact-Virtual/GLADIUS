@@ -734,4 +734,4 @@ Key Insight
 
 ---
 
-![[file_00000000f2b8722f87a62462c03291a3.png]]
+![[obsidian_sync/file_00000000f2b8722f87a62462c03291a3.png]]

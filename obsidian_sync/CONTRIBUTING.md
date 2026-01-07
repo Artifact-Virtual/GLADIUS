@@ -226,8 +226,8 @@ This repository works with AI agents and accepts AI-generated content under thes
 
 ### Getting Started
 - [Quick Start Guide](QUICKSTART.md)
-- [Documentation Index](dev_docs/SUMMARY.md)
-- [Repository Structure](README.md#-repository-structure)
+- [Documentation Index](INDEX.md)
+- [Repository Structure](obsidian_sync/README.md#-repository-structure)
 
 ### Style and Format
 - [Article Examples](dev_docs/articles/)
@@ -235,7 +235,7 @@ This repository works with AI agents and accepts AI-generated content under thes
 - [Research Paper Format](dev_docs/research/)
 
 ### Technical References
-- [Architecture Documentation](dev_docs/docs/architectural_mandate.md)
+- [Architecture Documentation](architectural_mandate.md)
 - [VM Infrastructure](dev_docs/virtual_machine/)
 - [Scripts and Utilities](dev_docs/scripts/)
 
@@ -289,7 +289,7 @@ Looking for ways to contribute? Here are some ideas:
 
 ## 📄 License
 
-By contributing to Gladius, you agree that your contributions will be covered by the repository's proprietary license. See [LICENSE.md](docs/LICENSE.md) for details.
+By contributing to Gladius, you agree that your contributions will be covered by the repository's proprietary license. See [LICENSE.md](LICENSE.md) for details.
 
 ### Copyright
 All contributions become part of the Gladius repository and are subject to its license terms. Contributors retain moral rights but grant usage rights to the repository owner.
