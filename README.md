@@ -1,4 +1,4 @@
-# Documentation Index
+# Index
 
 > Complete table of contents for Gladius research and documentation
 
