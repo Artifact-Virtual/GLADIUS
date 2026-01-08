@@ -1,11 +1,13 @@
-# Discord Bot - Implementation Summary
+# Arty Framework - Implementation Summary
 
 ## 🎉 What Was Created
 
-A comprehensive, autonomous Discord server management bot has been successfully implemented in this repository at:
+A comprehensive, extensible bot framework has been successfully implemented in this repository at:
 ```
-/home/runner/work/gladius/gladius/discord-bot/
+/home/runner/work/gladius/gladius/arty/
 ```
+
+The framework currently includes a fully-featured Discord bot with modular architecture ready for expansion to other platforms.
 
 ## 📊 By The Numbers
 
@@ -17,6 +19,28 @@ A comprehensive, autonomous Discord server management bot has been successfully 
 - **4 Documentation Files**
 - **Full Database Schema**
 - **Comprehensive Logging System**
+- **Modular Architecture** ready for multiple platforms
+
+## 🏗️ Architecture
+
+### Root Level (arty/)
+- **README.md** - Framework overview and extensibility guide
+- **package.json** - Workspace configuration for all platforms
+- **IMPLEMENTATION_SUMMARY.md** - This document
+
+### Discord Module (arty/discord/)
+Complete Discord bot implementation with all features
+- Token-based authentication
+- Webhook integration support
+- Full command system (slash + prefix)
+- Event handling system
+- Database persistence
+- Logging and monitoring
+
+### Future Modules
+- **telegram/** - Telegram bot (planned)
+- **slack/** - Slack bot (planned)
+- **shared/** - Common utilities (planned)
 
 ## 🚀 What The Bot Can Do
 
@@ -59,7 +83,7 @@ A comprehensive, autonomous Discord server management bot has been successfully 
 
 ### Step 1: Copy and Edit .env
 ```bash
-cd /home/runner/work/gladius/gladius/discord-bot
+cd /home/runner/work/gladius/gladius/arty/discord
 cp .env.example .env
 nano .env
 ```
@@ -106,11 +130,11 @@ npm start
 ## 🔧 Where To Edit Settings
 
 **Environment Variables (Secrets):**
-- File: `/home/runner/work/gladius/gladius/discord-bot/.env`
+- File: `/home/runner/work/gladius/gladius/arty/discord/.env`
 - Contains: Bot token, API keys, secrets
 
 **Bot Configuration:**
-- File: `/home/runner/work/gladius/gladius/discord-bot/config.json`
+- File: `/home/runner/work/gladius/gladius/arty/discord/config.json`
 - Contains: Feature toggles, welcome messages, logging channels, economy settings
 
 **You should NOT edit:**
@@ -118,6 +142,12 @@ npm start
 - `package.json` (unless adding dependencies)
 
 ## 💡 Key Features
+
+### Modular Architecture
+✅ Platform-specific code isolated in subdirectories
+✅ Easy to add new platforms (Telegram, Slack, etc.)
+✅ Shared utilities can be abstracted to root level
+✅ Workspace configuration for unified management
 
 ### Both App (Token) and Webhook
 ✅ Primary: Token-based bot application
@@ -170,24 +200,31 @@ npm start
 ## 🗂️ Project Structure
 
 ```
-discord-bot/
-├── src/
-│   ├── commands/
-│   │   ├── admin/        → Server administration
-│   │   ├── moderation/   → Moderation tools
-│   │   ├── utility/      → Helpful utilities
-│   │   ├── economy/      → Currency system
-│   │   ├── fun/          → Entertainment
-│   │   └── music/        → Ready for music commands
-│   ├── events/           → Discord event handlers
-│   ├── handlers/         → Command/event loaders
-│   ├── services/         → Background services
-│   ├── utils/            → Utilities (logger, database)
-│   ├── index.js          → Main bot entry point
-│   └── deploy-commands.js → Slash command deployer
-├── .env.example          → Template for secrets
-├── config.example.json   → Template for config
-├── package.json          → Dependencies
+arty/                          → Root framework directory
+├── discord/                   → Discord bot module
+│   ├── src/
+│   │   ├── commands/
+│   │   │   ├── admin/        → Server administration
+│   │   │   ├── moderation/   → Moderation tools
+│   │   │   ├── utility/      → Helpful utilities
+│   │   │   ├── economy/      → Currency system
+│   │   │   ├── fun/          → Entertainment
+│   │   │   └── music/        → Ready for music commands
+│   │   ├── events/           → Discord event handlers
+│   │   ├── handlers/         → Command/event loaders
+│   │   ├── services/         → Background services
+│   │   ├── utils/            → Utilities (logger, database)
+│   │   ├── index.js          → Main bot entry point
+│   │   └── deploy-commands.js → Slash command deployer
+│   ├── .env.example          → Template for secrets
+│   ├── config.example.json   → Template for config
+│   ├── package.json          → Discord bot dependencies
+│   └── README.md             → Discord bot documentation
+├── telegram/                  → Future: Telegram bot module
+├── shared/                    → Future: Shared utilities
+├── README.md                  → Framework overview
+├── package.json               → Workspace configuration
+└── IMPLEMENTATION_SUMMARY.md  → This file
 └── [Documentation files] → Guides and references
 ```
 
