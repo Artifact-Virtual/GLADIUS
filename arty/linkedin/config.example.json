@@ -1,0 +1,189 @@
+{
+  "linkedin": {
+    "name": "Arty LinkedIn Manager",
+    "description": "Automated LinkedIn post management and scheduling",
+    "version": "1.0.0"
+  },
+  "authentication": {
+    "method": "OAuth2",
+    "scopes": [
+      "w_member_social",
+      "w_organization_social",
+      "r_organization_social",
+      "rw_organization_admin"
+    ],
+    "tokenRefresh": {
+      "enabled": true,
+      "beforeExpiry": 86400000
+    }
+  },
+  "posting": {
+    "defaultVisibility": "PUBLIC",
+    "supportedVisibilities": ["PUBLIC", "CONNECTIONS"],
+    "contentTypes": {
+      "text": {
+        "enabled": true,
+        "maxLength": 3000
+      },
+      "image": {
+        "enabled": true,
+        "maxSize": 5242880,
+        "supportedFormats": ["jpg", "jpeg", "png", "gif"],
+        "maxCount": 9
+      },
+      "video": {
+        "enabled": true,
+        "maxSize": 209715200,
+        "supportedFormats": ["mp4", "mov", "avi"],
+        "maxDuration": 600
+      },
+      "document": {
+        "enabled": true,
+        "maxSize": 104857600,
+        "supportedFormats": ["pdf", "doc", "docx", "ppt", "pptx"]
+      },
+      "article": {
+        "enabled": true,
+        "maxTitleLength": 150,
+        "maxDescriptionLength": 256
+      }
+    },
+    "hashtags": {
+      "enabled": true,
+      "maxCount": 5,
+      "autoGenerate": false
+    },
+    "mentions": {
+      "enabled": true,
+      "maxCount": 10
+    }
+  },
+  "scheduling": {
+    "enabled": true,
+    "timezone": "America/New_York",
+    "checkInterval": 60000,
+    "allowPastDates": false,
+    "minScheduleAheadTime": 300000,
+    "maxScheduleAheadDays": 90,
+    "optimalPostTimes": [
+      {
+        "day": "weekday",
+        "times": ["09:00", "12:00", "17:00"]
+      },
+      {
+        "day": "weekend",
+        "times": ["10:00", "14:00"]
+      }
+    ]
+  },
+  "rateLimiting": {
+    "enabled": true,
+    "limits": {
+      "postsPerHour": 25,
+      "postsPerDay": 100,
+      "requestsPerMinute": 60
+    },
+    "backoff": {
+      "enabled": true,
+      "strategy": "exponential",
+      "maxRetries": 3,
+      "initialDelay": 5000
+    }
+  },
+  "media": {
+    "storagePath": "./media",
+    "tempPath": "./media/temp",
+    "uploadChunkSize": 4194304,
+    "supportedFormats": {
+      "image": ["jpg", "jpeg", "png", "gif"],
+      "video": ["mp4", "mov", "avi"],
+      "document": ["pdf", "doc", "docx", "ppt", "pptx"]
+    },
+    "autoCleanup": {
+      "enabled": true,
+      "afterPost": true,
+      "oldMediaDays": 30
+    }
+  },
+  "analytics": {
+    "enabled": true,
+    "trackMetrics": true,
+    "metricsToTrack": [
+      "impressions",
+      "clicks",
+      "likes",
+      "comments",
+      "shares",
+      "engagement_rate"
+    ],
+    "reportInterval": 86400000
+  },
+  "notifications": {
+    "enabled": true,
+    "events": {
+      "postSuccess": true,
+      "postFailure": true,
+      "scheduleConflict": true,
+      "rateLimitReached": true,
+      "tokenExpiry": true
+    },
+    "channels": {
+      "console": true,
+      "log": true,
+      "webhook": false
+    }
+  },
+  "cleanup": {
+    "enabled": true,
+    "schedule": "0 2 * * *",
+    "targets": {
+      "oldMedia": {
+        "enabled": true,
+        "olderThanDays": 30
+      },
+      "oldLogs": {
+        "enabled": true,
+        "olderThanDays": 30
+      },
+      "failedUploads": {
+        "enabled": true,
+        "olderThanDays": 7
+      },
+      "tempFiles": {
+        "enabled": true,
+        "olderThanHours": 24
+      }
+    }
+  },
+  "database": {
+    "path": "./data/linkedin.db",
+    "tables": {
+      "posts": true,
+      "scheduled_posts": true,
+      "media": true,
+      "analytics": true,
+      "rate_limits": true
+    },
+    "autoBackup": {
+      "enabled": true,
+      "interval": 86400000,
+      "maxBackups": 7
+    }
+  },
+  "logging": {
+    "level": "info",
+    "directory": "./logs",
+    "rotation": {
+      "enabled": true,
+      "maxFiles": "14d",
+      "maxSize": "20m"
+    },
+    "logTypes": {
+      "api": true,
+      "posts": true,
+      "scheduling": true,
+      "errors": true,
+      "cleanup": true
+    }
+  }
+}

@@ -1,10 +1,11 @@
 {
   "name": "arty",
   "version": "1.0.0",
-  "description": "Extensible bot framework for managing and automating multiple platforms",
+  "description": "Extensible automation framework for managing multiple platforms (Discord, LinkedIn, and more)",
   "private": true,
   "workspaces": [
     "discord",
+    "linkedin",
     "telegram",
     "shared"
   ],
@@ -12,15 +13,22 @@
     "discord:install": "cd discord && npm install",
     "discord:deploy": "cd discord && npm run deploy-commands",
     "discord:start": "cd discord && npm start",
-    "discord:dev": "cd discord && npm run dev"
+    "discord:dev": "cd discord && npm run dev",
+    "linkedin:install": "cd linkedin && npm install",
+    "linkedin:start": "cd linkedin && npm start",
+    "linkedin:post": "cd linkedin && npm run post",
+    "linkedin:schedule": "cd linkedin && npm run schedule",
+    "linkedin:cleanup": "cd linkedin && npm run cleanup"
   },
   "keywords": [
     "bot",
     "framework",
     "discord",
+    "linkedin",
     "telegram",
     "automation",
-    "modular"
+    "modular",
+    "social-media"
   ],
   "author": "Gladius",
   "license": "MIT",

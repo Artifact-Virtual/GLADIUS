@@ -1,11 +1,11 @@
 # Arty - Extensible Bot Framework
 
-Arty is a modular, extensible bot framework designed for managing and automating various platforms. Currently supports Discord with a comprehensive feature set, with architecture ready for future platform integrations.
+Arty is a modular, extensible automation framework designed for managing and automating various platforms. Currently supports Discord bot management and LinkedIn automation, with architecture ready for future platform integrations.
 
 ## 🎯 Philosophy
 
-Arty provides a unified, abstracted approach to bot management across multiple platforms:
-- **Modular Architecture**: Each platform (Discord, Telegram, etc.) is isolated in its own module
+Arty provides a unified, abstracted approach to bot and automation management across multiple platforms:
+- **Modular Architecture**: Each platform (Discord, LinkedIn, Telegram, etc.) is isolated in its own module
 - **Shared Utilities**: Common functionality (logging, database, configuration) is abstracted at the root level
 - **Extensible Design**: Easy to add new platforms or features without affecting existing functionality
 - **Production-Ready**: Robust error handling, logging, and monitoring built-in
@@ -20,6 +20,12 @@ arty/
 │   ├── config.example.json  # Discord bot configuration template
 │   ├── package.json     # Discord bot dependencies
 │   └── README.md        # Discord bot documentation
+├── linkedin/            # LinkedIn automation module
+│   ├── src/             # LinkedIn API integration
+│   ├── .env.example     # LinkedIn credentials template
+│   ├── config.example.json  # LinkedIn configuration template
+│   ├── package.json     # LinkedIn module dependencies
+│   └── README.md        # LinkedIn module documentation
 ├── telegram/            # Future: Telegram bot
 ├── slack/               # Future: Slack bot
 ├── shared/              # Future: Shared utilities across platforms
@@ -40,6 +46,17 @@ A comprehensive, autonomous Discord server management bot with:
 
 [See Discord Bot Documentation →](discord/README.md)
 
+### LinkedIn Automation
+Professional LinkedIn automation using official API:
+- **Post Management**: Create text, image, video, and document posts
+- **Scheduling**: Schedule posts with precise timing and timezone support
+- **Analytics**: Track post performance and engagement metrics
+- **Rate Limiting**: Automatic API quota management and backoff
+- **Media Handling**: Upload and manage images, videos, documents
+- **Cleanup**: Automatic cleanup of old media and logs
+
+[See LinkedIn Module Documentation →](linkedin/README.md)
+
 ## 📋 Quick Start
 
 ### Discord Bot Setup
@@ -56,6 +73,38 @@ cp .env.example .env
 # Edit .env with your bot token and settings
 
 # Deploy slash commands
+npm run deploy-commands
+
+# Start the bot
+npm start
+```
+
+For detailed setup instructions, see [Discord Setup Guide](discord/SETUP.md).
+
+### LinkedIn Automation Setup
+
+```bash
+# Navigate to LinkedIn module
+cd arty/linkedin
+
+# Install dependencies
+npm install
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your LinkedIn API credentials
+
+# Copy configuration
+cp config.example.json config.json
+
+# Test with a simple post
+npm run post -- "Hello from Arty!"
+
+# Or start the scheduler service
+npm start
+```
+
+For detailed setup instructions, see [LinkedIn Module Documentation](linkedin/README.md).
 npm run deploy-commands
 
 # Start the bot
