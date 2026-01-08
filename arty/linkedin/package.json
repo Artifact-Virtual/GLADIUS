@@ -8,7 +8,8 @@
     "start": "node src/index.js",
     "schedule": "node src/scripts/scheduler.js",
     "post": "node src/scripts/post.js",
-    "cleanup": "node src/scripts/cleanup.js"
+    "cleanup": "node src/scripts/cleanup.js",
+    "test": "node test-linkedin.js"
   },
   "keywords": [
     "linkedin",

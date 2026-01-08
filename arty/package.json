@@ -14,11 +14,15 @@
     "discord:deploy": "cd discord && npm run deploy-commands",
     "discord:start": "cd discord && npm start",
     "discord:dev": "cd discord && npm run dev",
+    "discord:test": "cd discord && npm test",
     "linkedin:install": "cd linkedin && npm install",
     "linkedin:start": "cd linkedin && npm start",
     "linkedin:post": "cd linkedin && npm run post",
     "linkedin:schedule": "cd linkedin && npm run schedule",
-    "linkedin:cleanup": "cd linkedin && npm run cleanup"
+    "linkedin:cleanup": "cd linkedin && npm run cleanup",
+    "linkedin:test": "cd linkedin && npm test",
+    "test": "npm run discord:test && npm run linkedin:test",
+    "test:summary": "cat TEST_RESULTS.md"
   },
   "keywords": [
     "bot",
