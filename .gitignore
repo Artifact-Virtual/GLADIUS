@@ -2,3 +2,18 @@
 secrets.env
 venv/
 _dev/_build/*
+
+# Arty bot framework
+arty/.env
+arty/config.json
+arty/node_modules/
+arty/package-lock.json
+
+# Discord bot
+arty/discord/.env
+arty/discord/config.json
+arty/discord/node_modules/
+arty/discord/data/
+arty/discord/logs/
+arty/discord/backups/
+arty/discord/package-lock.json

@@ -1,0 +1,47 @@
+{
+  "name": "gladius-discord-bot",
+  "version": "1.0.0",
+  "description": "Comprehensive autonomous Discord server management bot with full feature support",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "deploy-commands": "node src/deploy-commands.js",
+    "test": "node test-bot.js"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "discord.js",
+    "server-management",
+    "moderation",
+    "automation"
+  ],
+  "author": "Gladius",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "@discordjs/voice": "^0.16.1",
+    "@discordjs/rest": "^2.2.0",
+    "discord-api-types": "^0.37.70",
+    "dotenv": "^16.3.1",
+    "node-cron": "^3.0.3",
+    "axios": "^1.6.5",
+    "ytdl-core": "^4.11.5",
+    "play-dl": "^1.9.7",
+    "sodium-native": "^4.0.10",
+    "opusscript": "^0.1.1",
+    "ffmpeg-static": "^5.2.0",
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^4.7.1",
+    "better-sqlite3": "^9.2.2",
+    "ms": "^2.1.3"
+  },
+  "devDependencies": {
+    "eslint": "^8.56.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
