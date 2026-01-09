@@ -1,9 +1,14 @@
 #!/usr/bin/env node
 import { config } from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import LinkedInManager from '../index.js';
 import logger from '../utils/logger.js';
 
-config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+config({ path: path.join(__dirname, '../../../.env') });
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -32,10 +37,10 @@ async function main() {
     let mediaPaths = null;
     let visibility = 'PUBLIC';
     let authorUrn = null;
-    
+
     for (let i = 0; i < args.length; i++) {
       const arg = args[i];
-      
+
       if (arg === '--media' && args[i + 1]) {
         mediaPaths = args[i + 1].split(',').map(p => p.trim());
         i++;
@@ -49,26 +54,26 @@ async function main() {
         content = arg;
       }
     }
-    
+
     if (!content) {
       throw new Error('Post content is required');
     }
-    
+
     // Initialize manager
     logger.info('Initializing LinkedIn Manager...');
     const manager = new LinkedInManager();
     await manager.initialize();
-    
+
     // Post immediately
     logger.info('Creating post...');
     let result;
-    
+
     if (mediaPaths && mediaPaths.length > 0) {
       result = await manager.postWithMedia(content, mediaPaths, authorUrn, visibility);
     } else {
       result = await manager.postNow(content, authorUrn, visibility);
     }
-    
+
     if (result.success) {
       console.log('\n✅ Post published successfully!');
       console.log(`Post ID: ${result.postId}`);
@@ -77,7 +82,7 @@ async function main() {
         console.log(`Media: ${mediaPaths.length} file(s)`);
       }
     }
-    
+
     await manager.shutdown();
     process.exit(0);
   } catch (error) {
