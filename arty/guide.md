@@ -1,4 +1,4 @@
-# Arty Integration Setup Guide 🚀
+# Arty Integration Setup Guide 
 
 This guide will help you set up the **Discord** and **LinkedIn** integrations for Arty in just a few minutes.
 
