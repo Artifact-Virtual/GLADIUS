@@ -1,0 +1,19 @@
+{
+    "name": "arty-notion",
+    "version": "1.0.0",
+    "description": "Notion integration for Arty",
+    "main": "src/index.js",
+    "scripts": {
+        "start": "node src/index.js",
+        "dev": "nodemon src/index.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "@notionhq/client": "^2.2.14",
+        "dotenv": "^16.3.1",
+        "winston": "^3.11.0"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.1"
+    }
+}
