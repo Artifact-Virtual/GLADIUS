@@ -12,7 +12,7 @@ class LinkedInService {
     this.config = config;
     this.baseURL = process.env.LINKEDIN_API_BASE_URL || 'https://api.linkedin.com/v2';
     this.apiVersion = process.env.LINKEDIN_API_VERSION || '202501';
-    
+
     this.client = axios.create({
       baseURL: this.baseURL,
       headers: {
@@ -23,7 +23,7 @@ class LinkedInService {
       },
       timeout: 30000
     });
-    
+
     // Add request interceptor for logging
     this.client.interceptors.request.use(
       (config) => {
@@ -35,7 +35,7 @@ class LinkedInService {
         return Promise.reject(error);
       }
     );
-    
+
     // Add response interceptor for logging and rate limiting
     this.client.interceptors.response.use(
       (response) => {
@@ -53,33 +53,31 @@ class LinkedInService {
       }
     );
   }
-  
+
   /**
-   * Create a text post on LinkedIn
+   * Create a text post on LinkedIn using the new Posts API
    */
   async createTextPost(content, authorUrn, visibility = 'PUBLIC') {
     try {
+      // Use the new Posts API format
       const postData = {
         author: authorUrn,
-        lifecycleState: 'PUBLISHED',
-        specificContent: {
-          'com.linkedin.ugc.ShareContent': {
-            shareCommentary: {
-              text: content
-            },
-            shareMediaCategory: 'NONE'
-          }
+        commentary: content,
+        visibility: visibility,
+        distribution: {
+          feedDistribution: 'MAIN_FEED',
+          targetEntities: [],
+          thirdPartyDistributionChannels: []
         },
-        visibility: {
-          'com.linkedin.ugc.MemberNetworkVisibility': visibility
-        }
+        lifecycleState: 'PUBLISHED',
+        isReshareDisabledByAuthor: false
       };
-      
-      const response = await this.client.post('/ugcPosts', postData);
-      const postId = response.data.id;
-      
+
+      const response = await this.client.post('/posts', postData);
+      const postId = response.headers['x-restli-id'] || response.data.id;
+
       logger.post('CREATE_TEXT', postId, { content: content.substring(0, 100), visibility });
-      
+
       return {
         success: true,
         postId,
@@ -90,7 +88,7 @@ class LinkedInService {
       throw error;
     }
   }
-  
+
   /**
    * Upload media to LinkedIn
    */
@@ -99,7 +97,7 @@ class LinkedInService {
       const stats = statSync(filePath);
       const mimeType = mime.lookup(filePath) || 'application/octet-stream';
       const mediaCategory = this.getMediaCategory(mimeType);
-      
+
       // Step 1: Register upload
       const registerData = {
         registerUploadRequest: {
@@ -111,13 +109,13 @@ class LinkedInService {
           }]
         }
       };
-      
+
       const registerResponse = await this.client.post('/assets?action=registerUpload', registerData);
       const uploadUrl = registerResponse.data.value.uploadMechanism['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'].uploadUrl;
       const asset = registerResponse.data.value.asset;
-      
+
       logger.info(`Media upload registered: ${asset}`);
-      
+
       // Step 2: Upload file
       const fileBuffer = await readFile(filePath);
       await axios.put(uploadUrl, fileBuffer, {
@@ -125,9 +123,9 @@ class LinkedInService {
           'Content-Type': mimeType
         }
       });
-      
+
       logger.info(`Media uploaded successfully: ${filePath}`);
-      
+
       return {
         success: true,
         asset,
@@ -138,7 +136,7 @@ class LinkedInService {
       throw error;
     }
   }
-  
+
   /**
    * Create a post with media (image/video/document)
    */
@@ -154,7 +152,7 @@ class LinkedInService {
           text: ''
         }
       }));
-      
+
       const postData = {
         author: authorUrn,
         lifecycleState: 'PUBLISHED',
@@ -171,12 +169,12 @@ class LinkedInService {
           'com.linkedin.ugc.MemberNetworkVisibility': visibility
         }
       };
-      
+
       const response = await this.client.post('/ugcPosts', postData);
       const postId = response.data.id;
-      
+
       logger.post('CREATE_MEDIA', postId, { content: content.substring(0, 100), mediaCount: mediaAssets.length });
-      
+
       return {
         success: true,
         postId,
@@ -187,22 +185,22 @@ class LinkedInService {
       throw error;
     }
   }
-  
+
   /**
    * Get post analytics/statistics
    */
   async getPostAnalytics(postUrn) {
     try {
       const response = await this.client.get(`/socialActions/${encodeURIComponent(postUrn)}`);
-      
+
       const analytics = {
         likes: response.data.likesSummary?.totalLikes || 0,
         comments: response.data.commentsSummary?.totalComments || 0,
         shares: response.data.sharesSummary?.totalShares || 0
       };
-      
+
       logger.info(`Fetched analytics for post: ${postUrn}`);
-      
+
       return {
         success: true,
         analytics
@@ -212,16 +210,16 @@ class LinkedInService {
       throw error;
     }
   }
-  
+
   /**
    * Delete a post
    */
   async deletePost(postUrn) {
     try {
       await this.client.delete(`/ugcPosts/${encodeURIComponent(postUrn)}`);
-      
+
       logger.post('DELETE', postUrn, {});
-      
+
       return {
         success: true,
         message: 'Post deleted successfully'
@@ -231,16 +229,16 @@ class LinkedInService {
       throw error;
     }
   }
-  
+
   /**
    * Get user profile information
    */
   async getUserProfile() {
     try {
       const response = await this.client.get('/me');
-      
+
       logger.info('Fetched user profile');
-      
+
       return {
         success: true,
         profile: response.data
@@ -250,16 +248,16 @@ class LinkedInService {
       throw error;
     }
   }
-  
+
   /**
    * Get organization/company page information
    */
   async getOrganization(organizationId) {
     try {
       const response = await this.client.get(`/organizations/${organizationId}`);
-      
+
       logger.info(`Fetched organization: ${organizationId}`);
-      
+
       return {
         success: true,
         organization: response.data
@@ -269,7 +267,7 @@ class LinkedInService {
       throw error;
     }
   }
-  
+
   /**
    * Helper: Determine media category from MIME type
    */
@@ -279,17 +277,17 @@ class LinkedInService {
     if (mimeType.includes('pdf') || mimeType.includes('document')) return 'document';
     return 'image';
   }
-  
+
   /**
    * Check API rate limits
    */
   checkRateLimit(endpoint) {
     const hourlyLimit = this.config.rateLimiting?.limits?.postsPerHour || 25;
     const dailyLimit = this.config.rateLimiting?.limits?.postsPerDay || 100;
-    
+
     const hourlyOk = queries.checkRateLimit(endpoint, hourlyLimit, 3600000);
     const dailyOk = queries.checkRateLimit(endpoint, dailyLimit, 86400000);
-    
+
     return hourlyOk && dailyOk;
   }
 }

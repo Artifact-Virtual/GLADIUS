@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "C:\\workspace\\_gladius\\arty\\linkedin\\logs\\.7c33f744df561a57c36f91b462de85b27c34794f-audit.json",
+    "files": [
+        {
+            "date": 1767959941997,
+            "name": "C:\\workspace\\_gladius\\arty\\linkedin\\logs\\combined-2026-01-09.log",
+            "hash": "6cef0f733abbf475d51fdaf4e06a2ab9796dbc61193ec0ac528fcfda17d88137"
+        }
+    ],
+    "hashType": "sha256"
+}
