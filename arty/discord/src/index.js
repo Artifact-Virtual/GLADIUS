@@ -13,17 +13,21 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load environment variables
-config();
+config({ path: path.join(path.dirname(path.dirname(__dirname)), '.env') });
 
 // Load configuration
 let botConfig;
 try {
-  const configPath = path.join(path.dirname(__dirname), 'config.json');
-  botConfig = JSON.parse(readFileSync(configPath, 'utf-8'));
+  const configPath = path.join(path.dirname(path.dirname(__dirname)), 'config.json');
+  const rootConfig = JSON.parse(readFileSync(configPath, 'utf-8'));
+  botConfig = rootConfig.discord;
+
+  if (!botConfig) {
+    throw new Error('Discord configuration not found in root config.json');
+  }
 } catch (error) {
-  const examplePath = path.join(path.dirname(__dirname), 'config.example.json');
-  botConfig = JSON.parse(readFileSync(examplePath, 'utf-8'));
-  logger.warn('config.json not found, using config.example.json. Please create config.json from config.example.json');
+  logger.error('Failed to load configuration:', error);
+  process.exit(1);
 }
 
 // Create Discord client with all necessary intents
@@ -105,23 +109,23 @@ async function initializeBot() {
     // Initialize database
     logger.info('Initializing database...');
     await initializeDatabase();
-    
+
     // Load commands
     logger.info('Loading commands...');
     await loadCommands(client);
-    
+
     // Load events
     logger.info('Loading events...');
     await loadEvents(client);
-    
+
     // Start cron jobs
     logger.info('Starting cron jobs...');
     await startCronJobs(client);
-    
+
     // Login to Discord
     logger.info('Logging in to Discord...');
     await client.login(process.env.DISCORD_TOKEN);
-    
+
   } catch (error) {
     logger.error('Failed to initialize bot:', error);
     process.exit(1);

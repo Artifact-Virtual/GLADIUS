@@ -1,5 +1,6 @@
 const { Telegraf } = require('telegraf');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 const winston = require('winston');
 
 const logger = winston.createLogger({

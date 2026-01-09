@@ -1,81 +1,79 @@
-# Arty Integration Setup Guide 
+# Arty Integration Setup Guide 🚀
 
-This guide will help you set up the **Discord** and **LinkedIn** integrations for Arty in just a few minutes.
+This guide will help you configure the **Centralized Environment** for all Arty integrations (Discord, LinkedIn, Telegram, Notion).
 
----
-
-## 🟢 Part 1: Discord Bot Setup
-
-### 1. Create the Config Files
-Open a terminal in `C:\workspace\_gladius\arty\discord` and run:
-
-```powershell
-# Windows PowerShell
-copy .env.example .env
-copy config.example.json config.json
-```
-
-### 2. Get Your Credentials
-Go to the **[Discord Developer Portal](https://discord.com/developers/applications)**.
-1. Click **New Application** > Name it (e.g., "Arty").
-2. Go to the **Bot** tab on the left > Click **Reset Token** > **Copy Token**.
-3. Go to the **OAuth2** tab > Copy **Client ID**.
-
-### 3. Edit `.env`
-Open `.env` and paste your credentials:
-
-```ini
-DISCORD_TOKEN=paste_your_token_here
-CLIENT_ID=paste_your_client_id_here
-```
-
-### 4. Install & Start
-```powershell
-npm install
-npm run deploy-commands
-npm start
-```
+**Source of Truth:**
+*   **Environment Variables:** `C:\workspace\_gladius\arty\.env`
+*   **Configuration:** `C:\workspace\_gladius\arty\config.json`
 
 ---
 
-## 🔵 Part 2: LinkedIn Automation Setup
+## 🟢 Part 1: Centralized Setup
 
-### 1. Create the Config Files
-Open a terminal in `C:\workspace\_gladius\arty\linkedin` and run:
+### 1. Edit the Master `.env`
+Open `C:\workspace\_gladius\arty\.env` and fill in your credentials for all services.
 
-```powershell
-# Windows PowerShell
-copy .env.example .env
-copy config.example.json config.json
-```
-
-### 2. Get Your Credentials
-Go to the **[LinkedIn Developers Portal](https://www.linkedin.com/developers/apps)**.
-1. Click **Create App** > Fill in details > Link your Company Page.
-2. Go to the **Auth** tab > Copy **Client ID** and **Client Secret**.
-3. Under **OAuth 2.0 scopes**, ensure you request `w_member_social` (for personal) or `w_organization_social` (for company).
-
-### 3. Edit `.env`
-Open `.env` and paste your credentials:
-
+**Discord:**
 ```ini
-LINKEDIN_CLIENT_ID=paste_your_client_id
-LINKEDIN_CLIENT_SECRET=paste_your_client_secret
-LINKEDIN_REDIRECT_URI=http://localhost:3000/callback
+DISCORD_TOKEN=your_token
+CLIENT_ID=your_id
+GUILD_ID=your_guild_id
 ```
-*(Note: You'll need to generate an Access Token using these credentials. Use a tool like Postman or a simple auth script to perform the OAuth 2.0 handshake to get your `LINKEDIN_ACCESS_TOKEN`)*.
 
-### 4. Install & Start
+**LinkedIn:**
+```ini
+LINKEDIN_CLIENT_ID=your_id
+LINKEDIN_CLIENT_SECRET=your_secret
+LINKEDIN_ACCESS_TOKEN=your_oauth_token
+```
+
+**Telegram:**
+```ini
+TELEGRAM_BOT_TOKEN=your_botfather_token
+```
+
+**Notion:**
+```ini
+NOTION_API_KEY=your_integration_token
+NOTION_DATABASE_ID=your_db_id
+```
+
+### 2. Edit the Master `config.json`
+Open `C:\workspace\_gladius\arty\config.json`. This file controls behavior for all bots.
+*   **Discord settings** are under `"discord": { ... }`
+*   **LinkedIn settings** are under `"linkedin": { ... }`
+
+---
+
+## 🔵 Part 2: Running the Services
+
+You can run any service from the `arty` root directory:
+
+**Discord:**
 ```powershell
-npm install
-npm start
+npm run discord:start
+```
+
+**LinkedIn:**
+```powershell
+npm run linkedin:start
+```
+
+**Telegram:**
+```powershell
+npm run telegram:start
+```
+
+**Notion:**
+```powershell
+npm run notion:start
 ```
 
 ---
 
 ## ✅ Verification
 
-Run the full test suite to make sure everything is connected:
+Run the test suite to ensure the centralized config is working:
 
 ```powershell
 cd C:\workspace\_gladius\arty
