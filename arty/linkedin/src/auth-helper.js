@@ -25,16 +25,16 @@ if (fs.existsSync(envPath)) {
 const CLIENT_ID = envVars.LINKEDIN_CLIENT_ID;
 const CLIENT_SECRET = envVars.LINKEDIN_CLIENT_SECRET;
 const REDIRECT_URI = envVars.LINKEDIN_REDIRECT_URI || 'https://www.linkedin.com/developers/tools/oauth/redirect';
-const SCOPE = 'w_member_social';
+const SCOPE = 'w_member_social';  // Just posting scope
 
 const authCode = process.argv[2];
 
 if (!authCode) {
     const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPE)}`;
-    console.log('\n🔵 LinkedIn OAuth - w_member_social only\n');
+    console.log('\n🔵 LinkedIn OAuth - w_member_social\n');
     console.log('Open this URL:\n');
     console.log(authUrl);
-    console.log('\nThen run: node auth-helper.js YOUR_CODE\n');
+    console.log('\nPaste the code you get here.\n');
     process.exit(0);
 }
 
@@ -57,23 +57,69 @@ if (!authCode) {
 
         const accessToken = response.data.access_token;
         console.log('✅ Access Token obtained!\n');
-        console.log(`Token: ${accessToken}\n`);
 
-        // Save to .env
+        // Save token
         let envContent = fs.readFileSync(envPath, 'utf-8');
         envContent = envContent.replace(/LINKEDIN_ACCESS_TOKEN=.*/, `LINKEDIN_ACCESS_TOKEN=${accessToken}`);
         fs.writeFileSync(envPath, envContent);
-
         console.log('✅ Token saved to .env\n');
-        console.log('='.repeat(60));
-        console.log('\n⚠️  IMPORTANT: You need to set your Person URN manually.\n');
-        console.log('To find it:');
-        console.log('1. Go to https://www.linkedin.com/in/YOUR-PROFILE/');
-        console.log('2. Open browser DevTools (F12) → Console');
-        console.log('3. Run: document.body.innerHTML.match(/urn:li:fsd_profile:([^"]+)/)[1]');
-        console.log('4. Copy that ID and add to .env:');
-        console.log('   LINKEDIN_PERSON_URN=urn:li:person:YOUR_ID\n');
-        console.log('='.repeat(60) + '\n');
+
+        // Try to get member info using /v2/me
+        console.log('🔄 Attempting to get member info...\n');
+
+        try {
+            const meResponse = await axios.get('https://api.linkedin.com/v2/me', {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'X-Restli-Protocol-Version': '2.0.0'
+                }
+            });
+
+            const memberId = meResponse.data.id;
+            const personUrn = `urn:li:person:${memberId}`;
+
+            console.log('✅ Got member info!');
+            console.log(`   Member ID: ${memberId}`);
+            console.log(`   Person URN: ${personUrn}\n`);
+
+            // Save person URN
+            envContent = fs.readFileSync(envPath, 'utf-8');
+            envContent = envContent.replace(/LINKEDIN_PERSON_URN=.*/, `LINKEDIN_PERSON_URN=${personUrn}`);
+            fs.writeFileSync(envPath, envContent);
+            console.log('✅ Person URN saved to .env\n');
+            console.log('🎉 Setup complete! Run: npm run linkedin:start\n');
+
+        } catch (meError) {
+            console.log('⚠️  Could not get member info (expected without profile scope)\n');
+            console.log('Trying to introspect token...\n');
+
+            // Try token introspection
+            try {
+                const introResponse = await axios.post(
+                    'https://www.linkedin.com/oauth/v2/introspectToken',
+                    new URLSearchParams({
+                        'token': accessToken,
+                        'client_id': CLIENT_ID,
+                        'client_secret': CLIENT_SECRET
+                    }),
+                    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+                );
+                console.log('Token info:', introResponse.data);
+                if (introResponse.data.authorized_member) {
+                    const memberId = introResponse.data.authorized_member;
+                    envContent = fs.readFileSync(envPath, 'utf-8');
+                    envContent = envContent.replace(/LINKEDIN_PERSON_URN=.*/, `LINKEDIN_PERSON_URN=urn:li:member:${memberId}`);
+                    fs.writeFileSync(envPath, envContent);
+                    console.log(`✅ Member ID found and saved: urn:li:member:${memberId}\n`);
+                }
+            } catch (intErr) {
+                console.log('Token introspection also failed:', intErr.response?.data || intErr.message);
+            }
+
+            console.log('\n⚠️  Manual setup required:');
+            console.log('You need to find your LinkedIn member ID manually.');
+            console.log('One way: Go to LinkedIn, view page source, search for your numeric member ID.\n');
+        }
 
     } catch (error) {
         console.error('❌ Error:', error.response?.data || error.message);
