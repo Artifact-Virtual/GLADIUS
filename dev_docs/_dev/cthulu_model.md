@@ -299,7 +299,7 @@ The `RiskManager` and `ExecutionEngine` remain as hard-coded safety layers.
 
 ---
 
-## Next Steps (When In Scope)
+## Next Steps
 
 - [ ] Design tokenizer for market data + indicators
 - [ ] Collect and format training dataset from Cthulu history
@@ -318,5 +318,3 @@ The `RiskManager` and `ExecutionEngine` remain as hard-coded safety layers.
 - Reinforcement Learning for Trading (various)
 
 ---
-
-*This document is a thought experiment. Implementation is NOT in current scope.*
