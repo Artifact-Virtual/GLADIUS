@@ -168,7 +168,7 @@ Phase 4: Trading Edge (2 months)
 ### In This Repository
 - [CONTEXT.md](CONTEXT.md) - Original system documentation (960 lines)
 - [docs/](docs/) - User guides, tutorials, deployment (12+ files)
-- [SYSTEM_REPORT.md](system_report.md) - Recent battle test results
+- [SYSTEM_REPORT.md](dev_docs/_dev/SYSTEM_REPORT.md) - Recent battle test results
 
 ### External Links
 - [GitHub Issues](https://github.com/amuzetnoM/cthulu/issues) - Report bugs, request features
