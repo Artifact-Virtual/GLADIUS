@@ -89,7 +89,7 @@
 
 ## 🗒️ Research Notes
 
-- [System Report](system_report.md)
+- [System Report](dev_docs/_dev/SYSTEM_REPORT.md)
 - [Completion Report](completion_report.md)
 - [Note 1](note_1.md)
 - [Note 2](note_2.md)
@@ -127,7 +127,7 @@
 ## 📐 Architecture & Technical Documentation
 
 - [Architectural Mandate](architectural_mandate.md)
-- [RPC Documentation](rpc.md)
+- [RPC Documentation](dev_docs/_dev/rpc.md)
 - [Windows Access](ACCESS_WINDOWS.md)
 - [Windows Sudo Access](ACCESS_WINDOWS_SUDO.md)
 
