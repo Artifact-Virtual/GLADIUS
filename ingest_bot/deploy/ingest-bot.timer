@@ -1,0 +1,10 @@
+[Unit]
+Description=Run ingest-bot timer every hour
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+Unit=ingest-bot@prices.service
+
+[Install]
+WantedBy=timers.target

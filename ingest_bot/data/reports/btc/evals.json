@@ -1,0 +1,7 @@
+{
+  "in_sample_linear": {
+    "mse": 66908308.76810603,
+    "directional_accuracy": 0.4444444444444444,
+    "strategy_return": 0.020409549802136606
+  }
+}

@@ -1,0 +1,13 @@
+[Unit]
+Description=Ingest Bot service (instance=%i)
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/adam/worxpace/ingest_bot
+ExecStart=/home/adam/worxpace/ingest_bot/deploy/run_ingest.sh %i
+User=adam
+Group=adam
+
+[Install]
+WantedBy=multi-user.target

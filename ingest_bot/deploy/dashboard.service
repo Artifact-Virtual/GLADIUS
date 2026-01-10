@@ -1,0 +1,14 @@
+[Unit]
+Description=Ingest Bot Dashboard
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/adam/worxpace/ingest_bot
+ExecStart=/home/adam/worxpace/ingest_bot/.venv/bin/python -m ingest_bot.dashboard --host 0.0.0.0 --port 8050
+User=adam
+Group=adam
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

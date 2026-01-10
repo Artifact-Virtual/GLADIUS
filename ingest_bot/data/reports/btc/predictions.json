@@ -1,0 +1,10 @@
+{
+  "linear": {
+    "predicted_close": 88310.30467480097,
+    "expected_pct_change": 0.008335387107251997
+  },
+  "arima": {
+    "predicted_close": 87577.69588766282,
+    "expected_pct_change": -2.9609114846947396e-05
+  }
+}

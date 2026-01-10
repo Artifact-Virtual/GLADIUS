@@ -1,0 +1,10 @@
+[Unit]
+Description=Run ingest-bot backtest daily
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+Unit=backtest@btc.service
+
+[Install]
+WantedBy=timers.target
