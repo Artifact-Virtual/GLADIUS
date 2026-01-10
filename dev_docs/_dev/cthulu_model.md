@@ -1,6 +1,6 @@
 # Cthulu Model Architecture Proposal
 
-**Status:** 🔮 FUTURE VISION - NOT IN SCOPE  
+**Status:** 🔮 VISION
 **Created:** 2026-01-10  
 **Classification:** Design Speculation / Research Notes
 
