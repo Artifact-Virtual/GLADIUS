@@ -76,7 +76,56 @@ gcloud compute connect-to-serial-port INSTANCE_NAME --zone ZONE
 
 ### RDP quick connect
 - Use **Remote Desktop (mstsc)** on Windows or Microsoft Remote Desktop on macOS.
-- Connect to the external IP (e.g. `34.38.5.70`) or use an internal IP via VPN/IAP.
+
+**Options:**
+
+- **Direct (external IP)** — connect to the external IP (e.g. `34.38.5.70`) only if your firewall rules restrict RDP to known IPs (less secure).
+
+- **Recommended: IAP RDP (secure, no open RDP port)** — tunnel RDP over Identity-Aware Proxy so you do NOT open port 3389 to the internet.
+
+  1. On your workstation, authenticate and (optionally) set project:
+
+  ```bash
+  gcloud auth login
+  gcloud config set project PROJECT_ID
+  gcloud compute start-iap-tunnel artifact-virtual 3389 --zone europe-west1-b --local-host-port=3389
+  ```
+
+  2. Open your RDP client and connect to:
+
+  ```text
+  localhost:3389  (e.g. mstsc /v:localhost:3389)
+  ```
+
+  3. When finished, stop the tunnel with Ctrl+C in the terminal running `start-iap-tunnel`.
+
+  Notes:
+  - Replace `PROJECT_ID` and `europe-west1-b` with your values if needed. If `gcloud` already has the correct project/zone, you can omit the `config set` step.
+  - If you prefer, use `gcloud compute start-iap-tunnel INSTANCE PORT` with `--local-host-port` to choose a different local port.
+
+  
+  
+**Install VS Code on the VM (recommended workflow)**
+
+- Copy the script `dev_docs/virtual_machine/scripts/install-vscode-windows.ps1` to the VM (via RDP or upload) and run it as Administrator.
+
+  ```powershell
+  # Run inside an elevated PowerShell session on the VM
+  Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+  .\install-vscode-windows.ps1 -EnableOpenSSH   # if you want SSH for Remote-SSH
+  ```
+
+- If you'd like I can add that script as a `windows-startup-script-ps1` metadata entry to run on next reboot for `artifact-virtual` (I'll only do that with your confirmation).
+
+**Quick RDP example**
+
+```text
+# Start tunnel locally (replace PROJECT_ID if needed)
+gcloud auth login
+gcloud config set project PROJECT_ID
+gcloud compute start-iap-tunnel artifact-virtual 3389 --zone europe-west1-b --local-host-port=3389
+# Open RDP client -> connect to localhost:3389
+```
 
 Example (Windows run-box):
 
