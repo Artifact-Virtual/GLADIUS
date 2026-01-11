@@ -248,6 +248,18 @@ def process_task(task: dict, cfg: Config) -> None:
                 push_task_metadata(task_id=task_id, status=status, doc_path=doc_path)
             except Exception:
                 LOG.exception("Failed to notify Automata about task %s", task_id)
+
+            # Post-process document (generate charts, metadata); best-effort
+            try:
+                from scripts.postprocessor import process_document
+
+                try:
+                    proc_meta = process_document(doc_path)
+                    LOG.info("Post-processed %s -> charts=%s", doc_path, len(proc_meta.get("charts", [])))
+                except Exception as e:
+                    LOG.exception("Postprocessing failed for %s: %s", doc_path, e)
+            except Exception:
+                LOG.debug("Postprocessor not available; skipping chart generation")
         elif task_type == "insights":
             # Perform insights extraction and save action insights
             try:

@@ -54,6 +54,81 @@ def fit_trendline(x: List[int], y: List[float]) -> Line:
     return Line(x=(x0, x1), y=(a * x0 + b, a * x1 + b))
 
 
+def _point_line_distance(x0: float, y0: float, a: float, b: float) -> float:
+    """Distance from point (x0,y0) to line y = a*x + b"""
+    # For line ax - y + b = 0, distance = |a*x0 - 1*y0 + b| / sqrt(a^2 + 1)
+    return abs(a * x0 - y0 + b) / np.sqrt(a * a + 1)
+
+
+def detect_trendlines_ransac(x: List[int], y: List[float], max_lines: int = 2, threshold: float = 0.5, min_support: int = 3, iterations: int = 200) -> List[Tuple[Line, List[int]]]:
+    """Detect multiple trendlines using a simple RANSAC-like approach.
+
+    Args:
+        x, y: lists of point coordinates (x indices and y values)
+        max_lines: maximum number of lines to return
+        threshold: distance threshold (in price units) to consider an inlier
+        min_support: minimal number of inliers to accept a line
+        iterations: number of random samples per line
+
+    Returns:
+        List of tuples: (Line, inlier_indices)
+    """
+    pts = list(zip(list(x), list(y)))
+    remaining = pts.copy()
+    results: List[Tuple[Line, List[int]]] = []
+
+    # Work on index-space remapped to original indices
+    original_indices = list(x)
+
+    while remaining and len(results) < max_lines and len(remaining) >= min_support:
+        best_inliers: List[int] = []
+        best_line: Line = None
+
+        for _ in range(iterations):
+            # pick two distinct points
+            if len(remaining) < 2:
+                break
+            i1, i2 = np.random.choice(len(remaining), size=2, replace=False)
+            (x1, y1), (x2, y2) = remaining[i1], remaining[i2]
+            if x2 == x1:
+                continue
+            # slope and intercept
+            a = (y2 - y1) / (x2 - x1)
+            b = y1 - a * x1
+            # find inliers
+            inliers = []
+            for idx, (xx, yy) in enumerate(remaining):
+                d = _point_line_distance(xx, yy, a, b)
+                if d <= threshold:
+                    inliers.append(idx)
+            if len(inliers) > len(best_inliers):
+                best_inliers = inliers
+                best_line = Line(x=(min([remaining[i][0] for i in inliers]), max([remaining[i][0] for i in inliers])), y=(a * min([remaining[i][0] for i in inliers]) + b, a * max([remaining[i][0] for i in inliers]) + b))
+
+        if best_line is None or len(best_inliers) < min_support:
+            break
+
+        # Map inliers back to original indices
+        inlier_points = [remaining[i] for i in best_inliers]
+        inlier_idxs = [original_indices.index(p[0]) for p in inlier_points]
+        results.append((best_line, inlier_idxs))
+
+        # Remove inliers from remaining
+        new_remaining = [p for i, p in enumerate(remaining) if i not in best_inliers]
+        remaining = new_remaining
+
+    return results
+
+
+def angle_degrees(line: Line) -> float:
+    """Return angle in degrees of the trendline (positive = upward)"""
+    dx = line.x[1] - line.x[0]
+    dy = line.y[1] - line.y[0]
+    if dx == 0:
+        return 90.0
+    return float(np.degrees(np.arctan2(dy, dx)))
+
+
 def generate_annotated_chart(
     dates: pd.Series,
     prices: pd.Series,
@@ -92,10 +167,30 @@ def generate_annotated_chart(
             ax.scatter(dates.iloc[highs_idx], prices.iloc[highs_idx], color="red", marker="^", label="swing high")
 
     if show_trendlines:
-        if low_line is not None and len(lows_idx) >= 2:
-            ax.plot([dates.iloc[int(low_line.x[0])], dates.iloc[int(low_line.x[1])]], [low_line.y[0], low_line.y[1]], color="green", linestyle="--", linewidth=1.0, label="support")
-        if high_line is not None and len(highs_idx) >= 2:
-            ax.plot([dates.iloc[int(high_line.x[0])], dates.iloc[int(high_line.x[1])]], [high_line.y[0], high_line.y[1]], color="red", linestyle="--", linewidth=1.0, label="resistance")
+        # Use RANSAC to detect multiple trendlines for highs and lows
+        try:
+            low_trendlines = detect_trendlines_ransac(lows_idx, prices.iloc[lows_idx].tolist(), max_lines=2, threshold=0.5, min_support=2)
+        except Exception:
+            low_trendlines = []
+        try:
+            high_trendlines = detect_trendlines_ransac(highs_idx, prices.iloc[highs_idx].tolist(), max_lines=2, threshold=0.5, min_support=2)
+        except Exception:
+            high_trendlines = []
+
+        # Plot RANSAC trendlines and annotate with angle and price
+        for idx, (ln, inliers) in enumerate(low_trendlines):
+            x_pts = [dates.iloc[int(ln.x[0])], dates.iloc[int(ln.x[1])]]
+            y_pts = [ln.y[0], ln.y[1]]
+            ax.plot(x_pts, y_pts, color="green", linestyle="--", linewidth=1.0, label=f"support_{idx+1}")
+            ang = angle_degrees(ln)
+            ax.text(x_pts[-1], y_pts[-1], f"S{idx+1}: {y_pts[-1]:.2f} ({ang:.1f}°)", color="green", fontsize=8, ha="right", va="bottom")
+
+        for idx, (ln, inliers) in enumerate(high_trendlines):
+            x_pts = [dates.iloc[int(ln.x[0])], dates.iloc[int(ln.x[1])]]
+            y_pts = [ln.y[0], ln.y[1]]
+            ax.plot(x_pts, y_pts, color="red", linestyle="--", linewidth=1.0, label=f"resistance_{idx+1}")
+            ang = angle_degrees(ln)
+            ax.text(x_pts[-1], y_pts[-1], f"R{idx+1}: {y_pts[-1]:.2f} ({ang:.1f}°)", color="red", fontsize=8, ha="right", va="top")
 
     ax.set_title("Price with annotations")
     ax.set_xlabel("Date")

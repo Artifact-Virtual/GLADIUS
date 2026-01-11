@@ -21,6 +21,10 @@ llm_cost_total = Counter("syndicate_llm_cost_total", "Total LLM cost (USD)", ['p
 # DB metrics
 db_busy_total = Gauge("syndicate_db_busy_total", "SQLite busy count (indicative)")
 
+# Reports & charts
+charts_generated_total = Counter("syndicate_charts_generated_total", "Total charts generated")
+reports_generated_total = Counter("syndicate_reports_generated_total", "Total reports processed for charting")
+
 
 def expose_metrics():
     return generate_latest()
