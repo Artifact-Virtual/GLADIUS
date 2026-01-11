@@ -8,6 +8,7 @@ arty/.env
 arty/config.json
 arty/node_modules/
 arty/package-lock.json
+.env
 
 # Discord bot
 arty/discord/.env
