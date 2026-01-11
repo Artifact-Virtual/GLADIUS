@@ -40,6 +40,7 @@ This document defines the operational mandate for the Artifact Virtual system in
 - Persist portfolios & positions to SQLite (next PR planned).
 - Add API authentication and health endpoints.
 - Add CI integration tests for the end-to-end ingest → infra → portfolio flow.
+- Import and operationalize research: `syndicate-legacy` has been imported to `Artifact/syndicate` (2026-01-11). The Syndicate engine now supports an Ollama-first configuration via `PREFER_OLLAMA=1` to prefer local Ollama models (Ollama → Gemini → Local). Update deployment configs to select provider ordering according to capacity.
 
 ---
 *Last updated: 2026-01-11*

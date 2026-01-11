@@ -187,6 +187,7 @@
   - [x] `ingest_bot` dashboard: runs locally and shows reports in `data/reports/`.
   - [ ] Add API endpoints to surface portfolio metrics for dashboards and alerts.
   - [ ] Add service unit templates for infra API, ingest workers and Automata for production flows.
+- [ ] Operationalize `Artifact/syndicate` as a first-class research pipeline: add deploy units (systemd/docker) from `Artifact/syndicate/deploy` and prefer Ollama-first operation where appropriate (`PREFER_OLLAMA=1`).
 
 - CI, Tests & Documentation
   - [ ] Add CI jobs for full end-to-end integration tests and a smoke test that seeds, ingests, and verifies portfolio calculations.

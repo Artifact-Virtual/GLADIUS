@@ -48,6 +48,7 @@ This document captures the current context for the Artifact workspace and the ke
 - Persist portfolios & positions to SQLite and migrate test data.
 - Add API authentication (JWT or API-keys) and minimal audit logging for trading actions.
 - Add CI job to run the seed + ingest flow and assert expected P&L calculations.
+- Operationalize `Artifact/syndicate` as a first-class research pipeline: update deployment configs to consider `PREFER_OLLAMA=1` for Ollama-first operation and add systemd/unit templates from `Artifact/syndicate/deploy` to our deployment manifests.
 
 ## Contact & owner notes
 - See `Artifact/deployment/README.md` and `arty/docs/DEPLOYMENT.md` for module owners and operational contacts.
