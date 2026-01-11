@@ -1,0 +1,20 @@
+{
+  "generated_at": "2026-01-11T20:55:31.265806Z",
+  "files": [
+    {
+      "path": "executor.log",
+      "size": 1153,
+      "mtime": 1768162917.4375992
+    },
+    {
+      "path": "file_index.json",
+      "size": 260,
+      "mtime": 1768164930.2606187
+    },
+    {
+      "path": "syndicate.log",
+      "size": 0,
+      "mtime": 1768160358.6975803
+    }
+  ]
+}

@@ -10,6 +10,14 @@ from typing import Optional, Dict, Any
 LOG = logging.getLogger(__name__)
 
 AUTOMATA_API_URL = os.environ.get("AUTOMATA_API_URL", "http://127.0.0.1:5000/api")
+AUTOMATA_API_TOKEN = os.environ.get("AUTOMATA_API_TOKEN")
+
+
+def _build_headers():
+    headers = {"Content-Type": "application/json"}
+    if AUTOMATA_API_TOKEN:
+        headers["Authorization"] = f"Bearer {AUTOMATA_API_TOKEN}"
+    return headers
 
 
 def push_context_entry(title: str, body: str, meta: Optional[Dict[str, Any]] = None) -> bool:
@@ -24,7 +32,7 @@ def push_context_entry(title: str, body: str, meta: Optional[Dict[str, Any]] = N
         "meta": meta or {},
     }
     try:
-        resp = requests.post(url, json=payload, timeout=5)
+        resp = requests.post(url, json=payload, headers=_build_headers(), timeout=5)
         resp.raise_for_status()
         return True
     except Exception as e:
@@ -45,7 +53,7 @@ def push_task_metadata(task_id: int, status: str, doc_path: Optional[str] = None
         "extra": extra or {},
     }
     try:
-        resp = requests.post(url, json=payload, timeout=5)
+        resp = requests.post(url, json=payload, headers=_build_headers(), timeout=5)
         resp.raise_for_status()
         return True
     except Exception as e:

@@ -194,6 +194,8 @@ def process_task(task: dict, cfg: Config) -> None:
                     )
                     # add a flag in frontmatter
                     final_content = final_content.replace("\n---\n", "\n---\nsanitizer_flagged: true\n", 1)
+                    # Ensure parent directory exists to avoid FileNotFoundError
+                    os.makedirs(os.path.dirname(doc_path), exist_ok=True)
                     with open(doc_path, "w", encoding="utf-8") as f:
                         f.write(final_content)
                     db.update_llm_task_result(
@@ -210,10 +212,17 @@ def process_task(task: dict, cfg: Config) -> None:
                 final_content = add_frontmatter(
                     sanitized_text, os.path.basename(doc_path), doc_type=doc_type, ai_processed=True
                 )
-                with open(doc_path, "w", encoding="utf-8") as f:
-                    f.write(final_content)
+                try:
+                    # Ensure parent directory exists to avoid FileNotFoundError
+                    os.makedirs(os.path.dirname(doc_path), exist_ok=True)
+                    with open(doc_path, "w", encoding="utf-8") as f:
+                        f.write(final_content)
+                except Exception as e:
+                    LOG.exception("Failed to write generated content to %s: %s", doc_path, e)
+                    db.update_llm_task_result(task_id, "failed", response=None, error=str(e), attempts=attempts)
+                    return
             except Exception as e:
-                LOG.exception("Failed to write generated content to %s: %s", doc_path, e)
+                LOG.exception("Failed to generate final content for %s: %s", doc_path, e)
                 db.update_llm_task_result(task_id, "failed", response=None, error=str(e), attempts=attempts)
                 return
 
@@ -231,6 +240,8 @@ def process_task(task: dict, cfg: Config) -> None:
             try:
                 from integrations.automata_client import push_context_entry, push_task_metadata
 
+                # Use explicit status value to avoid referencing undefined variables
+                status = "completed"
                 title = f"LLM Task {task_id} - {status}"
                 body = sanitized_text[:4000]  # truncated to avoid huge payloads
                 push_context_entry(title=title, body=body, meta={"source": "syndicate", "task_id": task_id, "status": status})

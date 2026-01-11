@@ -492,6 +492,24 @@ def list_context_entries():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/context/llm_task', methods=['POST'])
+@jwt_required()
+def receive_llm_task_metadata():
+    """Accept LLM task metadata for observability and tracking.
+
+    For MVP this simply logs the payload and returns success. Future
+    implementations should persist to DB and integrate with analytics.
+    """
+    try:
+        payload = request.get_json() or {}
+        logger.info("Received LLM task metadata: %s", payload)
+        # TODO: persist or forward to analytics pipeline
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        logger.exception('Error receiving LLM task metadata')
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/reflections/recent', methods=['GET'])
 @jwt_required()
 def list_recent_reflections():

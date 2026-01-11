@@ -542,6 +542,7 @@ class FallbackLLMProvider(LLMProvider):
                 self.name = f"{next_provider.name} (fallback)"
                 self._switched = True
                 self.logger.warning(f"[LLM] ⚡ Switching to {next_provider.name}: {reason[:60]}")
+                return True
 
     def prefer_provider(self, provider_key: str) -> bool:
         """Prefer a provider for the current task without making it strict.
@@ -559,10 +560,6 @@ class FallbackLLMProvider(LLMProvider):
                 self._current = p
                 self.logger.info(f"[LLM] Preferring provider for this task: {p.name}")
                 return True
-        return False
-                self.logger.info(f"[LLM] ✓ {next_provider.name} activated - continuing without interruption")
-                return True
-        self.logger.error("[LLM] ✗ No more fallback providers available")
         return False
 
     def generate_content(self, prompt: str) -> Any:
