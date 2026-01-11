@@ -392,7 +392,7 @@ do_start() {
     echo -e "   ${GREEN}Infra API Docs${NC}:  http://localhost:7000/docs (FastAPI)"
     echo -e "   ${GREEN}Dashboard API${NC}:   http://localhost:5000      (Flask)"
     if check_port 3001; then
-        echo -e "   ${GREEN}Grafana${NC}:         http://localhost:3001      (admin/admin)"
+        echo -e "   ${GREEN}Grafana${NC}:         http://localhost:3001      (admin/gladius)"
     fi
     if check_port 9090; then
         echo -e "   ${GREEN}Prometheus${NC}:      http://localhost:9090"

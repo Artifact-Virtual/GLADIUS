@@ -135,7 +135,7 @@ npm run build    # Production build
 # Login and get JWT token
 TOKEN=$(curl -s -X POST http://127.0.0.1:5000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username": "admin", "password": "admin123"}' | jq -r '.access_token')
+  -d '{"username": "admin", "password": "gladius"}' | jq -r '.access_token')
 
 echo $TOKEN
 
@@ -336,7 +336,7 @@ cd Artifact/syndicate/docker
 docker-compose up -d grafana prometheus
 
 # Access at http://localhost:3000
-# Default: admin/admin
+# Default: admin/gladius
 ```
 
 ### Available Dashboards

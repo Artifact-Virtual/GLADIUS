@@ -67,9 +67,9 @@ def login():
     password = data.get('password')
     
     # TODO: Implement proper authentication
-    # For MVP, using simple check
-    admin_username = config.get('dashboard.admin_username', 'admin')
-    admin_password = config.get('dashboard.admin_password', 'admin123')
+    # For MVP, using simple check - fallback to admin/admin if not configured
+    admin_username = config.get('dashboard.admin_username', 'admin') or 'admin'
+    admin_password = config.get('dashboard.admin_password', 'admin') or 'admin'
     
     if username == admin_username and password == admin_password:
         access_token = create_access_token(identity=username)
