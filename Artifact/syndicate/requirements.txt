@@ -11,6 +11,8 @@
 # -----------------------------------------------------------------------------
 yfinance>=0.2.66              # Yahoo Finance market data API
 pandas>=2.0.0                 # Data manipulation and analysis
+numpy>=1.25.0                 # Numerical computations
+matplotlib>=3.7.0             # Plotting and charting
            # Technical analysis indicators (requires numba)
 mplfinance>=0.12.10b0         # Financial charting library
 
