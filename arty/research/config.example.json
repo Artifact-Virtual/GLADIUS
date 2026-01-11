@@ -1,0 +1,46 @@
+{
+  "research": {
+    "broadField": "artificial intelligence",
+    "targetedField": "machine learning",
+    "enabled": true,
+    "cycleFrequency": "daily",
+    "iterations": 3,
+    "keywordsPerIteration": 10,
+    "maxResultsPerSearch": 20,
+    "contentGeneration": {
+      "enabled": true,
+      "postsPerCycle": 5,
+      "platforms": ["linkedin", "discord"]
+    }
+  },
+  "search": {
+    "defaultAPI": "brave",
+    "timeout": 30000,
+    "retries": 3
+  },
+  "analysis": {
+    "keywordExtraction": {
+      "method": "tfidf",
+      "maxKeywords": 10,
+      "minRelevance": 0.5
+    },
+    "entityRecognition": true,
+    "sentimentAnalysis": false
+  },
+  "storage": {
+    "cleanup": {
+      "oldArticles": "30d",
+      "oldDrafts": "7d",
+      "oldSearchResults": "14d"
+    },
+    "cache": {
+      "analysisResults": true,
+      "ttl": "24h"
+    }
+  },
+  "logging": {
+    "level": "info",
+    "rotation": "daily",
+    "maxFiles": 14
+  }
+}

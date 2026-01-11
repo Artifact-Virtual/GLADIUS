@@ -1,0 +1,17 @@
+# Database files (keep init script, not generated databases)
+*.db
+*.db-journal
+
+# Node modules
+node_modules/
+
+# Backups
+backups/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

@@ -1,0 +1,23 @@
+# Environment files
+.env
+
+# Logs
+*.log
+logs/
+
+# Node modules
+node_modules/
+
+# Database files (keep schema, not data)
+*.db
+*.db-journal
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
