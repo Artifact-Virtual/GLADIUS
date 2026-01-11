@@ -1,0 +1,11 @@
+[Unit]
+Description=Syndicate healthcheck service
+After=network.target
+
+[Service]
+Type=oneshot
+User=ali
+ExecStart=/opt/syndicate_health_check.sh
+
+[Install]
+WantedBy=multi-user.target
