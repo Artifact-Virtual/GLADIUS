@@ -57,6 +57,9 @@ ASCII data flow:
 
 Syndicate uses a **FallbackLLMProvider** pattern for resilient AI-powered analysis with three provider tiers:
 
+Provider hints: tasks can include `provider_hint` to influence which provider is used for a task. Use `provider_hint="<provider>"` to prefer a provider for that task (e.g., `"gemini"`, `"ollama"`), or `provider_hint="strict:<provider>"` to force strict provider-only behavior when necessary. Legacy `*_only` hints are still accepted and treated as non-strict preferences (e.g., `gemini_only` is treated as `gemini`).
+
+
 **New (2026-01-11)**: You can prefer Ollama as the primary provider by setting the environment variable `PREFER_OLLAMA=1`. This will set the fallback order to: Ollama → Gemini → Local. This is useful for local-first operations or to avoid Gemini quota constraints.
 
 
