@@ -33,6 +33,26 @@ This document supplements `arty/docs/DEPLOYMENT.md` with Artifact-specific steps
 
 - The timer triggers `ingest-bot@prices.service` hourly and runs `run_ingest.sh prices` which respects the `ARTY_STORE_DIR` env if set in the environment of the service.
 
+- New: `deep-reflect@.service` and `deep-reflect.timer` added for nightly deep reflection and export. To enable:
+
+```bash
+# copy service and timer to user systemd
+cp Artifact/arty/ingest_bot/deploy/deep-reflect@.service ~/.config/systemd/user/
+cp Artifact/arty/ingest_bot/deploy/deep-reflect.timer ~/.config/systemd/user/
+# enable and start
+systemctl --user daemon-reload
+systemctl --user enable --now deep-reflect.timer
+```
+
+The timer runs a user-level script that calls `Artifact/tools/run_deep_reflect_and_export.py` to run ingest, feed the ARTY store, trigger reflections (with optional parameter sweep) and export reflections to `Artifact/research_outputs/`.
+
+- Embeddings & similarity: ContextEngine now prefers a Hektor (`pyvdb`) vector database for similarity search and stores vectors there when available. If Hektor is not installed or available, ContextEngine falls back to SQLite-based embeddings (`context_embeddings` table) and performs brute-force cosine similarity. If you have GEMINI/OpenAI keys available the provider will generate embeddings; otherwise embeddings fall back to a zero-vector (no effect). Database schema will be updated automatically on next run.
+
+Hektor (optional, recommended for production):
+- Clone and build Hektor Python bindings and install `pyvdb` in the runtime venv following `gladius/vendor/hektor/docs/22_PYTHON_BINDINGS.md` (see `create_database` / `create_gold_standard_db`).
+- Configure `vector_db_path` in Automata config to point to the Hektor DB directory, e.g. `~/.automata/hektor_db`.
+- When `pyvdb` is available, ContextEngine will automatically use it for indexing and sub-millisecond searches.
+
 4) Dashboard & discovery
 
 - Dashboard endpoint `/api/arty/dbs` lists discovered database files and writes `ingest_links.json` on ingest activity. Point the dashboard at the running flask server to view ingest sources and storage stats.

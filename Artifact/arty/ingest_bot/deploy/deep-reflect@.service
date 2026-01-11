@@ -1,0 +1,12 @@
+[Unit]
+Description=Deep Reflect job (%i)
+After=network.target
+
+[Service]
+Type=oneshot
+# Run as the user; use repo python
+WorkingDirectory=%h/worxpace/gladius
+ExecStart=/usr/bin/env bash -lc 'set -euo pipefail; . "%h/worxpace/.venv/bin/activate" 2>/dev/null || true; python3 "%h/worxpace/gladius/Artifact/tools/run_deep_reflect_and_export.py" --run-ingest --server http://127.0.0.1:5000 --username admin --password "$DASHBOARD_DEV_PASSWORD"'
+
+[Install]
+WantedBy=default.target

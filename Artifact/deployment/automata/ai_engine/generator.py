@@ -66,21 +66,37 @@ class ContentGenerator:
             self.ai_provider,
             self.context_engine
         )
+
+        # Content store (track drafts / final items) stored in same context DB
+        try:
+            from .content_store import ContentStore
+            self.content_store = ContentStore(self.context_engine.db_path)
+        except Exception:
+            self.content_store = None
         
+        # Remember whether reflection should be enabled (start will run it in the event loop)
+        self._reflection_enabled = reflection_config['enable_reflection']
+
         # Initialize tool registry
         self.tool_registry = ToolRegistry()
         self.tool_executor = ToolExecutor(self.tool_registry, self.ai_provider)
-        
-        # Start reflection engine
-        if reflection_config['enable_reflection']:
-            asyncio.create_task(self.reflection_engine.start())
-        
+
         # Statistics
         self.generation_count = 0
         self.generation_count_today = 0
         self.last_reset = datetime.now(timezone.utc).date()
-        
+
         self.logger.info(f"Content generator initialized with {ai_config['provider']} ({ai_config['model']})")
+
+    async def start(self):
+        """Start any async subsystems (to be run inside an event loop)."""
+        if self._reflection_enabled:
+            await self.reflection_engine.start()
+
+    async def stop(self):
+        """Stop async subsystems cleanly."""
+        if self._reflection_enabled:
+            await self.reflection_engine.stop()
     
     async def generate(
         self,
@@ -177,6 +193,19 @@ Create engaging, on-brand content optimized for {platform}.
                 }
             )
             
+            # Persist draft to content_store when available
+            try:
+                if self.content_store is not None:
+                    import uuid
+                    item_id = f"content_{uuid.uuid4().hex}"
+                    self.content_store.create(item_id=item_id, platform=platform, topic=topic, content={
+                        'text': parsed_content.get('text'),
+                        'model': result.get('model'),
+                        'tokens': result.get('usage', {}).get('total_tokens', 0)
+                    }, status='draft')
+            except Exception as e:
+                self.logger.warning(f"Failed to save draft in content_store: {e}")
+
             self.generation_count += 1
             self.generation_count_today += 1
             
@@ -317,9 +346,9 @@ Generate the content:"""
             'reflection_history': self.reflection_engine.get_reflection_history(days=7)
         }
     
-    async def trigger_reflection(self) -> Dict[str, Any]:
-        """Manually trigger a reflection session."""
-        reflection = await self.reflection_engine.reflect()
+    async def trigger_reflection(self, max_tokens: Optional[int] = None, temperature: Optional[float] = None, context_max_tokens: Optional[int] = None, model: Optional[str] = None) -> Dict[str, Any]:
+        """Manually trigger a reflection session with optional overrides."""
+        reflection = await self.reflection_engine.reflect(max_tokens=max_tokens, temperature=temperature, context_max_tokens=context_max_tokens, model=model)
         return {
             'id': reflection.id,
             'timestamp': reflection.timestamp.isoformat(),

@@ -1,0 +1,14 @@
+[Unit]
+Description=Automata Editorial Worker
+After=network.target
+
+[Service]
+Type=simple
+User=automata
+WorkingDirectory=/home/adam/worxpace/gladius/Artifact/deployment/automata
+ExecStart=/home/adam/worxpace/gladius/Artifact/deployment/automata/.venv/bin/python /home/adam/worxpace/gladius/Artifact/deployment/automata/scripts/run_workers.py --editorial
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

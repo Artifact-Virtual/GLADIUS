@@ -48,6 +48,16 @@ class EnterpriseManager:
             self.content_generator
         )
         
+        # Initialize workers (not started until start())
+        try:
+            from ..ai_engine.editorial_worker import EditorialWorker
+            from ..ai_engine.publish_worker import PublishWorker
+            self.editorial_worker = EditorialWorker(self.content_generator.content_store, content_generator=self.content_generator)
+            self.publish_worker = PublishWorker(self.content_generator.content_store, orchestrator=self.orchestrator)
+        except Exception:
+            self.editorial_worker = None
+            self.publish_worker = None
+
         self.is_running = False
         self._tasks = []
     
@@ -62,7 +72,22 @@ class EnterpriseManager:
             raise ValueError(f"Configuration validation failed: {errors}")
         
         self.is_running = True
-        
+
+        # Start content generator async subsystems (reflection, etc.)
+        try:
+            await self.content_generator.start()
+        except Exception as e:
+            self.logger.error(f"Failed to start content generator subsystems: {e}")
+
+        # Start editorial & publish workers if available
+        try:
+            if getattr(self, 'editorial_worker', None):
+                self.editorial_worker.start()
+            if getattr(self, 'publish_worker', None):
+                self.publish_worker.start()
+        except Exception as e:
+            self.logger.error(f"Failed to start workers: {e}")
+
         # Start ERP synchronization
         if self.config.get_enabled_erp_systems():
             self.logger.info("Starting ERP synchronization...")
@@ -83,6 +108,15 @@ class EnterpriseManager:
         
         self.is_running = False
         
+        # Stop workers
+        try:
+            if getattr(self, 'editorial_worker', None):
+                self.editorial_worker.stop()
+            if getattr(self, 'publish_worker', None):
+                self.publish_worker.stop()
+        except Exception as e:
+            self.logger.error(f"Error stopping workers: {e}")
+
         # Stop all tasks
         for task in self._tasks:
             task.cancel()
@@ -114,7 +148,7 @@ class EnterpriseManager:
             "ai_engine": {
                 "provider": self.config.get("ai_engine.provider"),
                 "model": self.config.get("ai_engine.model"),
-                "generated_today": self.content_generator.get_generated_count_today()
+                "generated_today": (self.content_generator.get_generated_count_today() if hasattr(self.content_generator, 'get_generated_count_today') else 0)
             }
         }
     

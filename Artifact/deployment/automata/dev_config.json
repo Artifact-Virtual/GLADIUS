@@ -1,0 +1,10 @@
+{
+  "business": {
+    "name": "Gladius Test Co"
+  },
+  "dashboard": {
+    "admin_username": "admin",
+    "admin_password": "admin123",
+    "enable_auth": true
+  }
+}

@@ -51,10 +51,19 @@ class ERPManager:
             "NetSuite": NetSuiteConnector,
             "Odoo": OdooConnector,
             "Microsoft Dynamics": DynamicsConnector,
-            "Oracle ERP Cloud": OracleERPConnector,
-            "Workday": WorkdayConnector,
+            "Salesforce": SalesforceConnector,
             # Add more as needed
         }
+        # Add optional connectors if they are available (avoid NameError on import)
+        try:
+            connector_map["Oracle ERP Cloud"] = OracleERPConnector
+        except NameError:
+            self.logger.debug("OracleERPConnector not available; skipping")
+
+        try:
+            connector_map["Workday"] = WorkdayConnector
+        except NameError:
+            self.logger.debug("WorkdayConnector not available; skipping")
         
         for system_name, system_config in erp_config.items():
             if system_config.get("enabled", False):

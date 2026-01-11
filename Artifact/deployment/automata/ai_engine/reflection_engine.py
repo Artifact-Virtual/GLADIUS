@@ -88,21 +88,27 @@ class ReflectionEngine:
             except Exception as e:
                 self.logger.error(f"Reflection error: {e}")
     
-    async def reflect(self) -> Reflection:
+    async def reflect(self, max_tokens: Optional[int] = None, temperature: Optional[float] = None, context_max_tokens: Optional[int] = None, model: Optional[str] = None) -> Reflection:
         """
         Perform a reflection session.
+
+        Args:
+            max_tokens: Optional override for reflection generation tokens
+            temperature: Optional override for generation temperature
+            context_max_tokens: Optional limit for how many context tokens to include
+            model: Optional model override for this reflection run
         
         Returns:
             Reflection object with insights and improvements
         """
         self.logger.info("Starting reflection session...")
-        
-        # Get recent context
-        context_snapshot = self.context_engine.get_context_for_prompt(max_tokens=5000)
-        
+
+        # Get recent context (allow overriding token budget)
+        context_snapshot = self.context_engine.get_context_for_prompt(max_tokens=context_max_tokens or 5000)
+
         # Get performance metrics
         metrics = await self._gather_performance_metrics()
-        
+
         # Create reflection prompt
         reflection_prompt = f"""You are reflecting on your recent actions and performance as an AI assistant managing enterprise automation.
 
@@ -120,17 +126,25 @@ Reflect on the following:
 5. What should be remembered for future interactions?
 
 Provide a thoughtful reflection and actionable improvements:"""
-        
+
+        # Optionally temporarily override provider model
+        original_model = getattr(self.ai_provider, 'model', None)
+        if model:
+            try:
+                setattr(self.ai_provider, 'model', model)
+            except Exception:
+                self.logger.warning('Unable to set provider model attribute')
+
         try:
             result = await self.ai_provider.generate(
                 prompt=reflection_prompt,
                 system_message="""You are an AI system capable of self-reflection and improvement. 
 Analyze your performance honestly and identify concrete improvements.
 Focus on actionable insights that will make you more effective.""",
-                temperature=0.7,
-                max_tokens=2000
+                temperature=temperature if temperature is not None else 0.7,
+                max_tokens=max_tokens if max_tokens is not None else 2000
             )
-            
+
             reflection_text = result['content']
             
             # Extract improvements and action items using AI
@@ -191,12 +205,19 @@ Respond in JSON format:
             
             self.last_reflection = reflection
             self.logger.info(f"Reflection complete. {len(improvements)} improvements identified.")
-            
+
             return reflection
-            
+
         except Exception as e:
             self.logger.error(f"Reflection failed: {e}")
             raise
+        finally:
+            # Restore provider model if overridden
+            try:
+                if model is not None and original_model is not None:
+                    setattr(self.ai_provider, 'model', original_model)
+            except Exception:
+                self.logger.warning('Failed to restore original provider model')
     
     def _save_reflection(self, reflection: Reflection):
         """Save reflection to database."""

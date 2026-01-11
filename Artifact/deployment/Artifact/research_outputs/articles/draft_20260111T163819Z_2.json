@@ -1,0 +1,17 @@
+{
+  "content": {
+    "hashtags": [],
+    "length": 514,
+    "mentions": [],
+    "text": "DEV_SUMMARY: Create article for LinkedIn.\n\nTopic: Recent market insights\n\nBrand Voice: thought leadership\nStyle: professional and insightful\nMax Length: 3000 characters\n\nPlatform Features:\nStart with a hook, use line breaks for readability, 3-5 hashtags\n\nRequirements:\n- On-brand and aligned with our voice\n- Engaging and likely to drive interaction\n- Optimized for LinkedIn's algorithm and audience\n- Include appropriate hashtags and emojis (if applicable)\n- Call-to-action when appropriate\n\nGenerate the content:",
+    "urls": []
+  },
+  "metadata": {
+    "model": "gpt-4",
+    "timestamp": "2026-01-11T16:38:19.025229+00:00",
+    "tokens_used": 0,
+    "tool_calls_made": 0
+  },
+  "platform": "LinkedIn",
+  "topic": "Recent market insights"
+}

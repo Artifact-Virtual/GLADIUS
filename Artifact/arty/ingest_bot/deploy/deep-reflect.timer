@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily Deep Reflect and Export
+
+[Timer]
+OnCalendar=*-*-* 03:00:00
+Persistent=true
+Unit=deep-reflect@daily.service
+
+[Install]
+WantedBy=timers.target

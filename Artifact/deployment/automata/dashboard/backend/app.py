@@ -17,6 +17,8 @@ from datetime import datetime, timezone, timedelta
 import logging
 import os
 import sys
+import json
+from pathlib import Path
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
@@ -77,6 +79,20 @@ def login():
             'username': username
         }), 200
     
+    # Development helper: allow a one-shot dev login when DASHBOARD_ALLOW_DEV_LOGIN=true
+    # Use with caution; this endpoint is disabled by default in production.
+    # POST /api/auth/_dev_login with JSON {"password": "<dev-password>"}
+    dev_allowed = os.getenv('DASHBOARD_ALLOW_DEV_LOGIN', 'false').lower() == 'true'
+    if dev_allowed:
+        try:
+            data = request.get_json() or {}
+            dev_pw = os.getenv('DASHBOARD_DEV_PASSWORD', 'devpass')
+            if data.get('password') == dev_pw:
+                access_token = create_access_token(identity=admin_username)
+                return jsonify({'success': True, 'access_token': access_token, 'username': admin_username}), 200
+        except Exception:
+            pass
+
     return jsonify({'success': False, 'error': 'Invalid credentials'}), 401
 
 
@@ -122,7 +138,7 @@ def get_system_status():
         
         return jsonify(status), 200
     except Exception as e:
-        logger.error(f"Error getting status: {e}")
+        logger.exception("Error getting status")
         return jsonify({'error': str(e)}), 500
 
 
@@ -134,10 +150,11 @@ def start_system():
     try:
         if not manager:
             manager = EnterpriseManager(config)
-        
-        # Start system (would be async in production)
-        # await manager.start()
-        
+
+        # Run the async startup synchronously for the Flask route
+        import asyncio
+        asyncio.run(manager.start())
+
         return jsonify({
             'success': True,
             'message': 'System started successfully'
@@ -154,9 +171,9 @@ def stop_system():
     global manager
     try:
         if manager:
-            # await manager.stop()
-            pass
-        
+            import asyncio
+            asyncio.run(manager.stop())
+
         return jsonify({
             'success': True,
             'message': 'System stopped successfully'
@@ -399,6 +416,399 @@ def trigger_erp_sync():
     except Exception as e:
         logger.error(f"Error triggering ERP sync: {e}")
         return jsonify({'error': str(e)}), 500
+
+
+# ============================================================================
+# Context & AI Integration Endpoints
+# ============================================================================
+
+@app.route('/api/context/entries', methods=['POST'])
+@jwt_required()
+def add_context_entries():
+    """Add one or more context entries to the ContextEngine.
+
+    Accepts either a single entry or a list of entries with the following format:
+    {
+        "role": "system|user|assistant|tool",
+        "content": "...",
+        "metadata": { ... }
+    }
+
+    Returns a list of created entry ids.
+    """
+    global manager
+    data = request.get_json() or {}
+    entries = data if isinstance(data, list) else [data]
+
+    try:
+        if not manager:
+            # Lazily initialize manager (does not start async subsystems)
+            manager = EnterpriseManager(config)
+
+        async def _add_all():
+            tasks = []
+            for e in entries:
+                role = e.get('role', 'tool')
+                content = e.get('content', '')
+                metadata = e.get('metadata', {})
+                tasks.append(manager.content_generator.context_engine.add_entry(role, content, metadata))
+            ids = await _asyncio.gather(*tasks)
+            return ids
+
+        import asyncio as _asyncio
+        ids = _asyncio.run(_add_all())
+
+        return jsonify({'success': True, 'ids': ids}), 200
+    except Exception as e:
+        logger.exception("Error adding context entries")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/context/entries', methods=['GET'])
+@jwt_required()
+def list_context_entries():
+    """Return recent context entries (from in-memory cache)."""
+    global manager
+    try:
+        if not manager:
+            manager = EnterpriseManager(config)
+        engine = manager.content_generator.context_engine
+        # Build simple serializable view
+        limit = int(request.args.get('limit', 50))
+        entries = engine.current_context[-limit:]
+        out = [
+            {
+                'id': e.id,
+                'timestamp': e.timestamp.isoformat(),
+                'role': e.role,
+                'content': e.content,
+                'metadata': e.metadata
+            }
+            for e in entries
+        ]
+        return jsonify(out), 200
+    except Exception as e:
+        logger.exception('Error listing context entries')
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/reflections/recent', methods=['GET'])
+@jwt_required()
+def list_recent_reflections():
+    """Return recent reflections from DB (most recent 20)."""
+    try:
+        import sqlite3
+        db = os.path.expanduser(config.get('context_db_path', '~/.automata/context.db'))
+        conn = sqlite3.connect(db)
+        cur = conn.cursor()
+        cur.execute("SELECT id,timestamp,reflection,improvements,action_items FROM reflections ORDER BY timestamp DESC LIMIT 20")
+        rows = cur.fetchall()
+        conn.close()
+        out = []
+        for r in rows:
+            out.append({'id': r[0], 'timestamp': r[1], 'reflection': r[2], 'improvements': json.loads(r[3]) if r[3] else [], 'action_items': json.loads(r[4]) if r[4] else []})
+        return jsonify(out), 200
+    except Exception as e:
+        logger.exception('Error listing reflections')
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/ui/context')
+def ui_context():
+    return render_template('context_ui.html')
+
+
+@app.route('/api/context/stats', methods=['GET'])
+@jwt_required()
+def get_context_stats():
+    """Return basic context engine statistics."""
+    global manager
+    try:
+        if not manager:
+            manager = EnterpriseManager(config)
+        stats = manager.content_generator.get_context_stats()
+        return jsonify({'success': True, 'stats': stats}), 200
+    except Exception as e:
+        logger.exception("Error getting context stats")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/context/reflect', methods=['POST'])
+@jwt_required()
+def trigger_reflection():
+    """Trigger a manual reflection run and return the result. Accepts optional JSON body with overrides:
+    {
+      "max_tokens": 8000,
+      "temperature": 0.3,
+      "context_max_tokens": 20000,
+      "model": "gemini-pro"
+    }
+    """
+    global manager
+    try:
+        if not manager:
+            manager = EnterpriseManager(config)
+
+        payload = request.get_json() or {}
+        max_tokens = payload.get('max_tokens')
+        temperature = payload.get('temperature')
+        context_max_tokens = payload.get('context_max_tokens')
+        model = payload.get('model')
+
+        # Cast types if provided
+        if max_tokens is not None:
+            max_tokens = int(max_tokens)
+        if temperature is not None:
+            temperature = float(temperature)
+        if context_max_tokens is not None:
+            context_max_tokens = int(context_max_tokens)
+
+        import asyncio as _asyncio
+        result = _asyncio.run(manager.content_generator.trigger_reflection(max_tokens=max_tokens, temperature=temperature, context_max_tokens=context_max_tokens, model=model))
+        return jsonify({'success': True, 'reflection': result}), 200
+    except Exception as e:
+        logger.exception("Error triggering reflection")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/content/generate', methods=['POST'])
+@jwt_required()
+def generate_content():
+    """Generate content using the ContentGenerator.
+
+    Request JSON:
+      {
+        "platform": "LinkedIn",
+        "topic": "Quarterly report",
+        "content_type": "article",
+        "style": "thought leadership",
+        "use_tools": false,
+        "count": 1
+      }
+
+    Returns generated content objects and saves them into context.
+    """
+    global manager
+    try:
+        if not manager:
+            manager = EnterpriseManager(config)
+
+        payload = request.get_json() or {}
+        platform = payload.get('platform', 'LinkedIn')
+        topic = payload.get('topic')
+        content_type = payload.get('content_type', 'article')
+        style = payload.get('style')
+        use_tools = payload.get('use_tools', False)
+        count = int(payload.get('count', 1))
+
+        results = []
+        for i in range(count):
+            # Use asyncio.run to execute the async generator calls
+            import asyncio as _asyncio
+            result = _asyncio.run(manager.content_generator.generate(platform=platform, topic=topic, content_type=content_type, style=style, use_tools=use_tools))
+            results.append(result)
+
+        return jsonify({'success': True, 'generated': results}), 200
+    except Exception as e:
+        logger.exception('Error generating content')
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/content/editorial', methods=['POST'])
+@jwt_required()
+def editorial_pipeline():
+    """Run editorial pipeline: generate drafts, improve via AI, export final markdown files."""
+    global manager
+    try:
+        if not manager:
+            manager = EnterpriseManager(config)
+
+        payload = request.get_json() or {}
+        platform = payload.get('platform', 'LinkedIn')
+        topic = payload.get('topic')
+        content_type = payload.get('content_type', 'article')
+        style = payload.get('style')
+        count = int(payload.get('count', 1))
+
+        import asyncio as _asyncio
+
+        drafts = [_asyncio.run(manager.content_generator.generate(platform=platform, topic=topic, content_type=content_type, style=style)) for _ in range(count)]
+
+        ai = manager.content_generator.ai_provider
+        improved = [_improve_draft((d.get('content') or {}).get('text') if isinstance(d.get('content'), dict) else d.get('content'), topic, ai) for d in drafts]
+
+        out_dir = Path(__file__).parent.parent.parent.parent / 'research_outputs' / 'articles'
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        saved_files = []
+        for idx, item in enumerate(improved):
+            title = item.get('title') or f"final_{idx}"
+            filename = f"final_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}_{idx}.md"
+            md = f"# {title}\n\n" + (item.get('article') or '') + '\n\n' + f"**Summary:** {item.get('summary','')}\n\n" + f"**Tags:** {', '.join(item.get('tags',[]))}\n"
+            fpath = out_dir / filename
+            fpath.write_text(md, encoding='utf-8')
+            saved_files.append(str(fpath))
+
+        batch_summary = out_dir / f"summary_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.md"
+        lines = [f"# Batch Editorial Summary ({datetime.now(timezone.utc).isoformat()})\n"]
+        for i, it in enumerate(improved):
+            lines.append(f"## Article {i+1}: {it.get('title')}\n")
+            lines.append(f"- Summary: {it.get('summary','')}\n")
+            lines.append(f"- Tags: {', '.join(it.get('tags',[]))}\n")
+            lines.append('\n')
+        batch_summary.write_text('\n'.join(lines), encoding='utf-8')
+
+        # update most recent drafts to final if content_store exists
+        try:
+            store = getattr(manager.content_generator, 'content_store', None)
+            if store:
+                drafts_list = store.list(status='draft')
+                for idx2, fpath in enumerate(saved_files):
+                    if idx2 < len(drafts_list):
+                        store.update_status(drafts_list[idx2]['id'], 'final', export_path=fpath)
+        except Exception:
+            pass
+
+        return jsonify({'success': True, 'files': saved_files, 'summary': str(batch_summary)}), 200
+    except Exception as e:
+        logger.exception('Error running editorial pipeline')
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+def _improve_draft(draft_text: str, topic: str, ai) -> dict:
+    import asyncio as _asyncio
+    prompt = f"""You are an expert editor. Improve the following article draft into a polished, publication-ready article. Return a JSON object with keys: title, article (markdown), summary (short paragraph), tags (list of strings), author (optional).
+
+Draft:
+{draft_text}
+
+Respond only in JSON."""
+    try:
+        res = _asyncio.run(ai.generate(prompt=prompt, system_message="You are an assistant that edits and formats articles.", temperature=0.2, max_tokens=1500))
+        content = res.get('content', '')
+        try:
+            parsed = json.loads(content)
+        except Exception:
+            parsed = {'title': topic or 'Article', 'article': content, 'summary': content[:300], 'tags': []}
+    except Exception:
+        parsed = {'title': topic or 'Article', 'article': draft_text or '', 'summary': (draft_text or '')[:300], 'tags': []}
+    return parsed
+
+# New endpoints: list drafts, create draft, finalize single draft
+@app.route('/api/content/drafts', methods=['GET'])
+@jwt_required()
+def list_drafts():
+    global manager
+    try:
+        if not manager:
+            manager = EnterpriseManager(config)
+        if not hasattr(manager.content_generator, 'content_store') or manager.content_generator.content_store is None:
+            return jsonify({'success': False, 'error': 'content_store not configured'}), 500
+        status = request.args.get('status')
+        items = manager.content_generator.content_store.list(status=status)
+        return jsonify({'success': True, 'items': items}), 200
+    except Exception as e:
+        logger.exception('Error listing drafts')
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/content/drafts', methods=['POST'])
+@jwt_required()
+def create_draft():
+    global manager
+    try:
+        if not manager:
+            manager = EnterpriseManager(config)
+        payload = request.get_json() or {}
+        platform = payload.get('platform', 'LinkedIn')
+        topic = payload.get('topic')
+        content = payload.get('content') or {}
+        import uuid
+        item_id = f"content_{uuid.uuid4().hex}"
+        manager.content_generator.content_store.create(item_id=item_id, platform=platform, topic=topic, content=content, status='draft')
+        return jsonify({'success': True, 'id': item_id}), 200
+    except Exception as e:
+        logger.exception('Error creating draft')
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/content/drafts/<item_id>/finalize', methods=['POST'])
+@jwt_required()
+def finalize_draft(item_id):
+    global manager
+    try:
+        if not manager:
+            manager = EnterpriseManager(config)
+        store = manager.content_generator.content_store
+        if store is None:
+            return jsonify({'success': False, 'error': 'content_store not configured'}), 500
+        item = store.get(item_id)
+        if not item:
+            return jsonify({'success': False, 'error': 'item not found'}), 404
+        # Run editorial improvement on item.content
+        content_obj = item.get('content') if item.get('content') else {}
+        draft_text = content_obj.get('text') if isinstance(content_obj, dict) else ''
+        ai = manager.content_generator.ai_provider
+        parsed = _improve_draft(draft_text, item.get('topic') or '', ai)
+        # Save final markdown
+        out_dir = Path(__file__).parent.parent.parent.parent / 'research_outputs' / 'articles'
+        out_dir.mkdir(parents=True, exist_ok=True)
+        filename = f"final_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}_{item_id}.md"
+        md = f"# {parsed.get('title')}\n\n" + (parsed.get('article') or '') + '\n\n' + f"**Summary:** {parsed.get('summary','')}\n\n" + f"**Tags:** {', '.join(parsed.get('tags',[]))}\n"
+        fpath = out_dir / filename
+        fpath.write_text(md, encoding='utf-8')
+        # Update store
+        store.update_status(item_id, 'final', export_path=str(fpath), title=parsed.get('title'), text=(parsed.get('article') or ''))
+        return jsonify({'success': True, 'file': str(fpath)}), 200
+    except Exception as e:
+        logger.exception('Finalize draft failed')
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/content/publish', methods=['POST'])
+@jwt_required()
+def publish_content():
+    global manager
+    try:
+        if not manager:
+            manager = EnterpriseManager(config)
+        payload = request.get_json() or {}
+        item_id = payload.get('id')
+        platform = payload.get('platform')
+        if not item_id:
+            return jsonify({'success': False, 'error': 'id required'}), 400
+        store = manager.content_generator.content_store
+        if store is None:
+            return jsonify({'success': False, 'error': 'content_store not configured'}), 500
+        item = store.get(item_id)
+        if not item:
+            return jsonify({'success': False, 'error': 'item not found'}), 404
+        if item.get('status') != 'final':
+            return jsonify({'success': False, 'error': 'item not final'}), 409
+        # Schedule publish via orchestrator if available
+        published_url = None
+        try:
+            if manager.orchestrator:
+                import asyncio
+                post_id = asyncio.run(manager.orchestrator.schedule_post(platform=platform or item.get('platform','LinkedIn'), content={'text': item.get('text') or item.get('content',{}), 'title': item.get('title')}))
+                published_url = f"scheduled://{post_id}"
+            else:
+                published_url = f"scheduled://{item_id}"
+        except Exception as e:
+            manager.content_generator.content_store.update_status(item_id, 'failed', publish_error=str(e))
+            return jsonify({'success': False, 'error': str(e)}), 500
+
+        # Mark as published (scheduled)
+        store.update_status(item_id, 'published', published_url=published_url, published_at=datetime.now(timezone.utc).isoformat())
+        # Add context entry for analytics
+        try:
+            import asyncio
+            asyncio.run(manager.content_generator.context_engine.add_entry(role='system', content=f"Published content {item_id} to {platform or item.get('platform','LinkedIn')}", metadata={'type':'publish','item_id':item_id,'published_url':published_url}))
+        except Exception:
+            pass
+
+        return jsonify({'success': True, 'published_url': published_url}), 200
+    except Exception as e:
+        logger.exception('Publish failed')
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 # ============================================================================

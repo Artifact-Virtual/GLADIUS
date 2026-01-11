@@ -1,0 +1,12 @@
+[Unit]
+Description=Export reflections (instance=%i)
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/adam/worxpace/gladius
+ExecStart=/usr/bin/env python3 Artifact/tools/export_reflections.py --out-dir Artifact/research_outputs --keep-days 30
+User=adam
+
+[Install]
+WantedBy=multi-user.target

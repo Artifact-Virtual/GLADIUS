@@ -1,10 +1,7 @@
 # Business Infrastructure for Market and Asset Management
 
-A comprehensive, production-grade business layer for managing market data, assets, portfolios, and trading operations in the Gold Standard system.
+A comprehensive business layer for managing market data, assets, portfolios, and trading operations in the ARTIFACT VIRTUAL system.
 
-## Features
-
-### Core Domain Models
 - **Market**: Represents trading venues (NYSE, NASDAQ, etc.)
 - **Asset**: Represents financial instruments (stocks, bonds, cryptocurrencies, etc.)
 - **Portfolio**: Manages collections of positions with performance tracking

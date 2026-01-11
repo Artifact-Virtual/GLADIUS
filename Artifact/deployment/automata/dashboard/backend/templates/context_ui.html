@@ -1,0 +1,208 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Context & Reflections</title>
+  <style>body{font-family:Arial,Helvetica,sans-serif;padding:20px}pre{background:#f6f6f6;padding:10px;border-radius:4px}</style>
+</head>
+<body>
+  <h1>Context & Reflections</h1>
+  <div>
+    <button id="btn-refresh">Refresh</button>
+    <button id="btn-reflect">Trigger Reflection</button>
+    <div style="margin-top:10px">
+      <label>Model: <input id="inp-model" value="gemini-pro" /></label>
+      <label style="margin-left:10px">Max Tokens: <input id="inp-max" value="8000" /></label>
+      <label style="margin-left:10px">Temperature: <input id="inp-temp" value="0.3" /></label>
+      <label style="margin-left:10px">Context Tokens: <input id="inp-ctx-max" value="20000" /></label>
+      <button id="btn-deep-reflect" style="margin-left:10px">Deep Reflect</button>
+      <span id="deep-status" style="margin-left:10px;color:#333"></span>
+    </div>
+  </div>
+  <h2>Stats</h2>
+  <pre id="stats">Loading...</pre>
+  <h2>Generate Articles</h2>
+  <div>
+    <label>Topic: <input id="gen-topic" value="Recent market insights" style="width:400px" /></label>
+    <label style="margin-left:10px">Count: <input id="gen-count" value="3" style="width:60px" /></label>
+    <label style="margin-left:10px">Finalize: <input id="gen-finalize" type="checkbox" checked /></label>
+    <button id="btn-gen" style="margin-left:10px">Generate Articles</button>
+    <span id="gen-status" style="margin-left:10px;color:#333"></span>
+  </div>
+  <h3>Generated Articles</h3>
+  <pre id="generated">Loading...</pre>
+  <h2>Drafts</h2>
+  <div><button id="btn-load-drafts">Load Drafts</button> <span id="drafts-status" style="margin-left:10px;color:#333"></span></div>
+  <div id="drafts-list" style="margin-top:10px">No drafts loaded.</div>
+  <h2>Recent Entries</h2>
+  <pre id="entries">Loading...</pre>
+  <h2>Recent Reflections</h2>
+  <pre id="reflections">Loading...</pre>
+
+<script>
+async function token(){
+  // assume dev login available (do not store creds)
+  const pw = prompt('Enter dev password (devpass by default)')
+  const r = await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:'x',password:pw})})
+  const j = await r.json();
+  return j.access_token
+}
+
+async function refresh(){
+  const t = await token();
+  const headers = {'Authorization': 'Bearer ' + t}
+  const s = await (await fetch('/api/context/stats',{headers})).json();
+  document.getElementById('stats').innerText = JSON.stringify(s, null, 2)
+  const e = await (await fetch('/api/context/entries?limit=50',{headers})).json();
+  document.getElementById('entries').innerText = JSON.stringify(e, null, 2)
+  const r = await (await fetch('/api/reflections/recent',{headers})).json();
+  document.getElementById('reflections').innerText = JSON.stringify(r, null, 2)
+}
+
+document.getElementById('btn-refresh').addEventListener('click',refresh)
+document.getElementById('btn-reflect').addEventListener('click',async ()=>{
+  const t = await token();
+  const headers = {'Authorization': 'Bearer ' + t, 'Content-Type': 'application/json'}
+  const r = await (await fetch('/api/context/reflect',{method:'POST',headers})).json();
+  alert('Reflection started: ' + JSON.stringify(r))
+  refresh()
+})
+
+document.getElementById('btn-deep-reflect').addEventListener('click',async ()=>{
+  const btn = document.getElementById('btn-deep-reflect')
+  const status = document.getElementById('deep-status')
+  btn.disabled = true
+  status.innerText = 'Running deep reflection...'
+  try{
+    const t = await token();
+    const headers = {'Authorization': 'Bearer ' + t, 'Content-Type': 'application/json'}
+    const payload = {
+      model: document.getElementById('inp-model').value,
+      max_tokens: parseInt(document.getElementById('inp-max').value, 10),
+      temperature: parseFloat(document.getElementById('inp-temp').value),
+      context_max_tokens: parseInt(document.getElementById('inp-ctx-max').value, 10)
+    }
+    const resp = await (await fetch('/api/context/reflect',{method:'POST',headers, body: JSON.stringify(payload)}))
+    const r = await resp.json()
+    if(r.success){
+      status.innerText = 'Reflection completed.'
+      // show a concise popup with improvements/action items
+      const ref = r.reflection
+      const summary = `Reflection ${ref.id}\nImprovements: ${(JSON.stringify(ref.improvements)).slice(0,200)}\nAction Items: ${JSON.stringify(ref.action_items).slice(0,200)}`
+      alert(summary)
+    } else {
+      status.innerText = 'Reflection failed: ' + (r.error || 'unknown')
+    }
+  }catch(e){
+    status.innerText = 'Error: ' + e
+  }finally{
+    btn.disabled = false
+    setTimeout(()=>status.innerText='', 5000)
+    refresh()
+  }
+})
+
+// Generate articles
+document.getElementById('btn-gen').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btn-gen')
+  const status = document.getElementById('gen-status')
+  const out = document.getElementById('generated')
+  btn.disabled = true
+  status.innerText = 'Generating...'
+  try{
+    const t = await token();
+    const headers = {'Authorization': 'Bearer ' + t, 'Content-Type': 'application/json'}
+    const payload = {
+      topic: document.getElementById('gen-topic').value,
+      count: parseInt(document.getElementById('gen-count').value, 10),
+      content_type: 'article',
+      style: 'thought leadership'
+    }
+    const finalize = document.getElementById('gen-finalize').checked
+    if(finalize){
+      const resp = await (await fetch('/api/content/editorial',{method:'POST',headers, body: JSON.stringify(payload)}))
+      const r = await resp.json()
+      if(r.success){
+        status.innerText = 'Editorial pipeline complete.'
+        out.innerText = JSON.stringify(r, null, 2)
+      } else {
+        status.innerText = 'Editorial failed: ' + (r.error || 'unknown')
+      }
+    } else {
+      const resp = await (await fetch('/api/content/generate',{method:'POST',headers, body: JSON.stringify({...payload, count: payload.count})}))
+      const r = await resp.json()
+      if(r.success){
+        status.innerText = 'Generated drafts.'
+        out.innerText = JSON.stringify(r.generated, null, 2)
+      } else {
+        status.innerText = 'Generation failed: ' + (r.error || 'unknown')
+      }
+    }
+  }catch(e){
+    status.innerText = 'Error: ' + e
+  }finally{
+    btn.disabled = false
+    setTimeout(()=>status.innerText='', 8000)
+    refresh()
+  }
+})
+
+
+// Drafts functions
+async function loadDrafts(){
+  const t = await token();
+  const headers = {'Authorization': 'Bearer ' + t}
+  document.getElementById('drafts-status').innerText = 'Loading...'
+  const r = await (await fetch('/api/content/drafts',{headers})).json()
+  if(!r.success){
+    document.getElementById('drafts-status').innerText = 'Failed to load'
+    return
+  }
+  const list = r.items || []
+  if(list.length === 0){
+    document.getElementById('drafts-list').innerText = 'No drafts.'
+    document.getElementById('drafts-status').innerText = ''
+    return
+  }
+  const html = list.map(it => {
+    const id = it.id
+    const title = it.title || it.topic || ''
+    const excerpt = (it.text || (it.content && it.content.text) || '').slice(0,300)
+    return `<div style="border:1px solid #ddd;padding:8px;margin:6px 0"><b>${title}</b><div style="font-size:12px;color:#666">${id}</div><p>${excerpt.replace(/\n/g,'<br/>')}</p><button onclick="finalizeDraft('${id}')">Finalize</button> <button onclick="publishDraft('${id}')">Publish</button></div>`
+  }).join('\n')
+  document.getElementById('drafts-list').innerHTML = html
+  document.getElementById('drafts-status').innerText = ''
+}
+
+async function finalizeDraft(id){
+  if(!confirm('Finalize draft '+id+'?')) return
+  const t = await token();
+  const headers = {'Authorization': 'Bearer ' + t, 'Content-Type': 'application/json'}
+  const r = await (await fetch('/api/content/drafts/'+id+'/finalize',{method:'POST',headers})).json()
+  if(r.success){
+    alert('Finalized: '+r.file)
+    loadDrafts()
+  } else {
+    alert('Finalize failed: '+(r.error||'unknown'))
+  }
+}
+
+async function publishDraft(id){
+  if(!confirm('Publish draft '+id+'?')) return
+  const t = await token();
+  const headers = {'Authorization': 'Bearer ' + t, 'Content-Type': 'application/json'}
+  const r = await (await fetch('/api/content/publish',{method:'POST',headers, body: JSON.stringify({id})})).json()
+  if(r.success){
+    alert('Publish scheduled: '+r.published_url)
+    loadDrafts()
+  } else {
+    alert('Publish failed: '+(r.error||'unknown'))
+  }
+}
+
+document.getElementById('btn-load-drafts').addEventListener('click', loadDrafts)
+
+refresh()
+</script>
+</body>
+</html>

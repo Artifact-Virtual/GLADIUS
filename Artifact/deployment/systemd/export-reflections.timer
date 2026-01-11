@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily export of reflections to research outputs
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+Unit=export-reflections@daily.service
+
+[Install]
+WantedBy=timers.target

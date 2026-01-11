@@ -83,7 +83,17 @@ class ContextEngine:
         # In-memory cache
         self.current_context: List[ContextEntry] = []
         self.current_token_count = 0
-        
+
+        # Vector store (Hektor preferred, SQLite fallback)
+        try:
+            from .vector_store import get_vector_store
+            vdb_path = config.get('vector_db_path')
+            self.vector_store = get_vector_store(self.db_path, vdb_path)
+            self._hektor_available = getattr(self.vector_store, 'available', lambda: False)()
+        except Exception:
+            self.vector_store = None
+            self._hektor_available = False
+
         # Load existing context
         self._load_context()
     
@@ -156,6 +166,15 @@ class ContextEngine:
                 reflection TEXT NOT NULL,
                 improvements TEXT,
                 action_items TEXT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # Embeddings table: store embedding vector as JSON string for each entry
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS context_embeddings (
+                entry_id TEXT PRIMARY KEY,
+                embedding TEXT NOT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
         ''')
@@ -239,13 +258,22 @@ class ContextEngine:
         # Save to database
         self._save_entry(entry)
         
-        # Check if truncation needed
-        if self.current_token_count > self.max_tokens:
-            await self._truncate_context()
-        
-        # Update analytics
-        await self._update_analytics()
-        
+        # Use vector store when available, otherwise compute and store embedding asynchronously (best-effort)
+        try:
+            if self._hektor_available and self.vector_store is not None:
+                # Let Hektor index the text directly (it will encode internally). Store mapping inside vector_store.
+                self.vector_store.add(entry.id, entry.content, metadata=entry.metadata)
+            else:
+                emb = await self.ai_provider.embed(entry.content)
+                # persist embedding as JSON string
+                conn = sqlite3.connect(self.db_path)
+                cur = conn.cursor()
+                cur.execute('REPLACE INTO context_embeddings (entry_id, embedding) VALUES (?, ?)', (entry.id, json.dumps(emb)))
+                conn.commit()
+                conn.close()
+        except Exception as e:
+            self.logger.warning(f"Failed to compute/store embedding for entry {entry.id}: {e}")
+
         return entry.id
     
     def _save_entry(self, entry: ContextEntry):
@@ -402,30 +430,154 @@ Provide a detailed but concise summary:"""
         conn.commit()
         conn.close()
     
-    def get_context_for_prompt(self, max_tokens: Optional[int] = None) -> str:
+    def get_context_for_prompt(self, max_tokens: Optional[int] = None, use_similarity: bool = True, similarity_k: int = 20, similarity_query: Optional[str] = None) -> str:
         """
         Get context formatted for AI prompt.
-        
+
         Args:
             max_tokens: Maximum tokens to include
-            
+            use_similarity: Whether to include similar entries based on embeddings
+            similarity_k: Number of similar entries to include
+            similarity_query: Optional query string to compute similarity embeddings from (if not provided, use a short recent context)
+
         Returns:
             Formatted context string
         """
         token_limit = max_tokens or self.max_tokens
-        
-        # Build context from most recent entries
+
+        # Start with recent entries (most recent first)
         context_parts = []
         tokens_used = 0
-        
+
+        # Optionally add top-K similar entries first to bias context
+        if use_similarity:
+            try:
+                # Build a query for similarity embedding
+                if similarity_query:
+                    q = similarity_query
+                else:
+                    # Compose a short recent summary to use as query
+                    q = " ".join(e.content for e in self.current_context[-5:]) if len(self.current_context) > 0 else ''
+
+                if q:
+                    # If Hektor is available, pass raw query text to its search (it will encode)
+                    if self._hektor_available and self.vector_store is not None:
+                        srows = self.vector_store.search(q, k=similarity_k)
+                        for r in srows:
+                            eid = r.get('entry_id')
+                            if not eid:
+                                continue
+                            # fetch entry
+                            conn = sqlite3.connect(self.db_path)
+                            cur = conn.cursor()
+                            cur.execute('SELECT id,timestamp,role,content,token_count,metadata FROM context_entries WHERE id = ?', (eid,))
+                            rrow = cur.fetchone()
+                            conn.close()
+                            if not rrow:
+                                continue
+                            entry_obj = ContextEntry(id=rrow[0], timestamp=datetime.fromisoformat(rrow[1]), role=rrow[2], content=rrow[3], token_count=rrow[4], metadata=json.loads(rrow[5]) if rrow[5] else {})
+                            if tokens_used + entry_obj.token_count <= token_limit:
+                                context_parts.append(f"[{entry_obj.role}] {entry_obj.content}")
+                                tokens_used += entry_obj.token_count
+                            else:
+                                break
+                    else:
+                        # Fall back to previous method: compute embedding and lookup similar entries via cosine
+                        similar = self.get_similar_entries(q, top_k=similarity_k)
+                        for e in similar:
+                            if tokens_used + e.token_count <= token_limit:
+                                context_parts.append(f"[{e.role}] {e.content}")
+                                tokens_used += e.token_count
+                            else:
+                                break
+            except Exception as ex:
+                self.logger.warning(f"Similarity lookup failed: {ex}")
+
+        # Fill the remaining budget with most recent entries
         for entry in reversed(self.current_context):
             if tokens_used + entry.token_count <= token_limit:
                 context_parts.append(f"[{entry.role}] {entry.content}")
                 tokens_used += entry.token_count
             else:
                 break
-        
-        return "\n\n".join(reversed(context_parts))
+
+        # Deduplicate while preserving order
+        seen = set()
+        ordered = []
+        for p in context_parts:
+            if p in seen:
+                continue
+            seen.add(p)
+            ordered.append(p)
+
+        return "\n\n".join(reversed(ordered))
+
+    def get_similar_entries(self, query: str, top_k: int = 10) -> List[ContextEntry]:
+        """Return top-k similar ContextEntry objects to the query string using cosine similarity."""
+        try:
+            import math
+            q_emb = None
+            # Run embedding in a separate thread to avoid event-loop conflicts
+            try:
+                import concurrent.futures
+                def _sync_embed(q):
+                    import asyncio
+                    return asyncio.run(self.ai_provider.embed(q))
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+                    fut = ex.submit(_sync_embed, query)
+                    q_emb = fut.result(timeout=30)
+            except Exception:
+                q_emb = None
+
+            if not q_emb:
+                return []
+
+            conn = sqlite3.connect(self.db_path)
+            cur = conn.cursor()
+            cur.execute('SELECT entry_id, embedding FROM context_embeddings')
+            rows = cur.fetchall()
+            conn.close()
+
+            def cos(a, b):
+                import math
+                da = sum(x*x for x in a)
+                db = sum(x*x for x in b)
+                if da == 0 or db == 0:
+                    return 0.0
+                dot = sum(x*y for x, y in zip(a, b))
+                return dot / (math.sqrt(da) * math.sqrt(db))
+
+            scores = []
+            for entry_id, emb_json in rows:
+                try:
+                    emb = json.loads(emb_json)
+                    if not isinstance(emb, list):
+                        continue
+                    s = cos(q_emb, emb)
+                    scores.append((s, entry_id))
+                except Exception:
+                    continue
+
+            # pick top_k
+            scores.sort(reverse=True)
+            top = scores[:top_k]
+
+            # Fetch entries for top ids
+            entries = []
+            conn = sqlite3.connect(self.db_path)
+            cur = conn.cursor()
+            for s, eid in top:
+                cur.execute('SELECT id, timestamp, role, content, token_count, metadata FROM context_entries WHERE id = ?', (eid,))
+                r = cur.fetchone()
+                if r:
+                    entries.append(ContextEntry(id=r[0], timestamp=datetime.fromisoformat(r[1]), role=r[2], content=r[3], token_count=r[4], metadata=json.loads(r[5]) if r[5] else {}))
+            conn.close()
+
+            return entries
+
+        except Exception as e:
+            self.logger.warning(f"Failed to compute similar entries: {e}")
+            return []
     
     def get_statistics(self) -> Dict[str, Any]:
         """Get context statistics."""
