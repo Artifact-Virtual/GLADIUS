@@ -227,7 +227,16 @@ def process_task(task: dict, cfg: Config) -> None:
 
             db.update_llm_task_result(task_id, "completed", response=sanitized_text, error=None, attempts=attempts)
             LOG.info("Task %s completed (generate) - corrections=%s", task_id, corrections)
+            # Push context & task metadata to Automata so the cognition engine stays in sync
+            try:
+                from integrations.automata_client import push_context_entry, push_task_metadata
 
+                title = f"LLM Task {task_id} - {status}"
+                body = sanitized_text[:4000]  # truncated to avoid huge payloads
+                push_context_entry(title=title, body=body, meta={"source": "syndicate", "task_id": task_id, "status": status})
+                push_task_metadata(task_id=task_id, status=status, doc_path=doc_path)
+            except Exception:
+                LOG.exception("Failed to notify Automata about task %s", task_id)
         elif task_type == "insights":
             # Perform insights extraction and save action insights
             try:
