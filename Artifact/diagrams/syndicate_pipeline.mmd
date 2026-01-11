@@ -1,0 +1,18 @@
+%% Syndicate pipeline: detail
+flowchart TD
+  Input[Market Data / Feeds] --> Ingest[Ingest & Preprocess]
+  Ingest --> Enqueue[Create llm_tasks in DB]
+  Enqueue --> Worker[LLM Worker (scripts/llm_worker.py)]
+  Worker -->|generate| Sanitize[Sanitizer & Audit]
+  Sanitize --> Publish[Write Report & Publish (Notion/Discord)]
+  Publish --> Archive[Artifact Research Store]
+  Worker --> Metrics[Metrics & Health]
+  subgraph LLM Providers
+    G[Gemini]
+    O[Ollama]
+    L[Local]
+  end
+  Worker -. fallback .-> G
+  Worker -. fallback .-> O
+  Worker -. fallback .-> L
+  note right of Worker: Supports provider_hint (prefer vs strict)

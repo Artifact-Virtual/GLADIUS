@@ -542,6 +542,24 @@ class FallbackLLMProvider(LLMProvider):
                 self.name = f"{next_provider.name} (fallback)"
                 self._switched = True
                 self.logger.warning(f"[LLM] ⚡ Switching to {next_provider.name}: {reason[:60]}")
+
+    def prefer_provider(self, provider_key: str) -> bool:
+        """Prefer a provider for the current task without making it strict.
+
+        provider_key: short name like 'gemini', 'ollama', or 'local'. If the
+        provider is available in the chain, promote it to current for this
+        task. Returns True if preference was applied.
+        """
+        if not provider_key:
+            return False
+        key = provider_key.lower().strip()
+        for p in self._providers:
+            if p and getattr(p, "name", "").lower().startswith(key) and p.is_available:
+                # Promote for this task
+                self._current = p
+                self.logger.info(f"[LLM] Preferring provider for this task: {p.name}")
+                return True
+        return False
                 self.logger.info(f"[LLM] ✓ {next_provider.name} activated - continuing without interruption")
                 return True
         self.logger.error("[LLM] ✗ No more fallback providers available")

@@ -53,9 +53,42 @@ def process_task(task: dict, cfg: Config) -> None:
             # In 'gemini_only' mode, we still use create_llm_provider but
             # we can pass the hint if we really want to restrict it,
             # but here we prefer the robust global fallback.
-            provider = create_llm_provider(cfg, LOG)
-            if not provider:
-                raise RuntimeError("No LLM provider available")
+            provider_hint = (task.get('provider_hint') or "").strip()
+
+            # Handle provider_hint values:
+            # - 'strict:gemini' -> enforce Gemini only (strict)
+            # - 'gemini_only' or 'gemini' -> prefer Gemini for this task but allow fallback
+            # - similar for 'ollama' / 'local'
+            provider = None
+
+            if provider_hint:
+                ph = provider_hint.lower()
+                if ph.startswith('strict:'):
+                    forced = ph.split(':', 1)[1]
+                    old = os.environ.get('LLM_PROVIDER')
+                    try:
+                        os.environ['LLM_PROVIDER'] = forced
+                        provider = create_llm_provider(cfg, LOG)
+                        if not provider:
+                            raise RuntimeError(f"No LLM provider available for strict hint: {forced}")
+                    finally:
+                        # restore
+                        if old is None:
+                            os.environ.pop('LLM_PROVIDER', None)
+                        else:
+                            os.environ['LLM_PROVIDER'] = old
+                else:
+                    # non-strict hint -> prefer provider but allow fallback
+                    provider = create_llm_provider(cfg, LOG)
+                    if not provider:
+                        raise RuntimeError("No LLM provider available")
+                    # normalize keys like 'gemini_only' -> 'gemini'
+                    key = ph.replace('_only', '').split(':')[-1]
+                    provider.prefer_provider(key)
+            else:
+                provider = create_llm_provider(cfg, LOG)
+                if not provider:
+                    raise RuntimeError("No LLM provider available")
 
             resp = provider.generate_content(prompt)
             text = getattr(resp, "text", str(resp))
