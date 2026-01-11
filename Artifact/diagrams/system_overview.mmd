@@ -7,9 +7,9 @@ flowchart LR
     D --> E[Social Manager]
   end
   subgraph Syndicate
-    S1[LLM Worker] --> S2[Task Queue (llm_tasks)]
-    S2 --> S3[Reports / Output Files]
-    S1 --> S4[Metrics & Health]
+    S1["LLM Worker"] --> S2["Task Queue (llm_tasks)"]
+    S2 --> S3["Reports / Output Files"]
+    S1 --> S4["Metrics & Health"]
   end
   A --> S2
   C --> S3
