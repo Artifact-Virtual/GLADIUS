@@ -359,6 +359,63 @@ def get_analytics():
         return jsonify({'error': str(e)}), 500
 
 
+# ----------------------------------------------------------------------------
+# Convenience Overview Endpoint
+# ----------------------------------------------------------------------------
+@app.route('/api/overview', methods=['GET'])
+@jwt_required()
+def get_overview():
+    """Return an aggregated overview for a single-pane dashboard."""
+    global manager
+    try:
+        if not manager:
+            manager = EnterpriseManager(config)
+
+        overview = {
+            'status': manager.get_status() if manager else {},
+            'analytics': manager.get_analytics() if manager else {},
+            'content': {
+                'drafts_count': 0,
+                'drafts': []
+            },
+            'context_stats': {}
+        }
+
+        # Content drafts (if available)
+        try:
+            store = getattr(manager.content_generator, 'content_store', None)
+            if store:
+                drafts = store.list(status=None)
+                overview['content']['drafts_count'] = len(drafts)
+                overview['content']['drafts'] = drafts[:20]
+        except Exception:
+            pass
+
+        # Context engine stats
+        try:
+            overview['context_stats'] = manager.content_generator.get_context_stats()
+        except Exception:
+            overview['context_stats'] = {}
+
+        # Reflections count
+        try:
+            import sqlite3
+            db = os.path.expanduser(config.get('context_db_path', '~/.automata/context.db'))
+            conn = sqlite3.connect(db)
+            cur = conn.cursor()
+            cur.execute("SELECT COUNT(*) FROM reflections")
+            count = cur.fetchone()[0]
+            conn.close()
+            overview['reflections_count'] = count
+        except Exception:
+            overview['reflections_count'] = None
+
+        return jsonify({'success': True, 'overview': overview}), 200
+    except Exception as e:
+        logger.exception('Error getting overview')
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/analytics/social/<platform>', methods=['GET'])
 @jwt_required()
 def get_platform_analytics(platform):

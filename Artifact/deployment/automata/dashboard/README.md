@@ -110,6 +110,9 @@ Development server will start on `http://localhost:3000`
 - `GET /api/analytics` - Get system analytics
 - `GET /api/analytics/social/<platform>` - Platform-specific analytics
 
+### Overview
+- `GET /api/overview` - Aggregated overview for the dashboard (status, analytics, content, context, reflections)
+
 ### ERP
 - `POST /api/erp/sync` - Trigger ERP synchronization
 
@@ -214,9 +217,9 @@ services:
 - [x] Backend API structure
 - [x] Authentication system
 - [x] Basic REST endpoints
-- [ ] Frontend app structure
-- [ ] Login page
-- [ ] Dashboard layout
+- [x] Frontend app structure
+- [x] Login page
+- [x] Dashboard layout
 
 ### Phase 2
 - [ ] Overview dashboard
