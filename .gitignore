@@ -16,4 +16,31 @@ arty/discord/node_modules/
 arty/discord/data/
 arty/discord/logs/
 arty/discord/backups/
-arty/discord/package-lock.json
+arty/discord/package-lock.json# Artifact deployment specifics and local dev artifacts
+Artifact/deployment/.git.nested_backup/
+Artifact/deployment/**/.env
+Artifact/deployment/**/.env.*
+Artifact/deployment/**/node_modules/
+Artifact/deployment/**/logs/
+Artifact/deployment/**/dist/
+Artifact/deployment/**/build/
+Artifact/deployment/**/.venv/
+Artifact/deployment/**/__pycache__/
+Artifact/deployment/**/*.pyc
+Artifact/deployment/**/.DS_Store
+
+# General
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+node_modules/
+package-lock.json
+npm-debug.log
+*.db
+*.sqlite
+*.sqlite3
+*.tar.gz
+*.log
