@@ -1,0 +1,17 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# Grafana Dashboard Provisioning - Syndicate
+# ══════════════════════════════════════════════════════════════════════════════
+
+apiVersion: 1
+
+providers:
+  - name: 'Syndicate Dashboards'
+    orgId: 1
+    folder: 'Syndicate'
+    folderUid: 'syndicate'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards

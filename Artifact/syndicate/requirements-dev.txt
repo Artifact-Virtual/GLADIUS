@@ -1,0 +1,35 @@
+# =============================================================================
+# Syndicate - Development Dependencies
+# =============================================================================
+# Install: pip install -r requirements-dev.txt
+# Note: Install requirements.txt first for full development setup
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Include Production Dependencies
+# -----------------------------------------------------------------------------
+-r requirements.txt
+
+# -----------------------------------------------------------------------------
+# Linting & Formatting
+# -----------------------------------------------------------------------------
+ruff>=0.8.0                   # Fast Python linter and formatter
+mypy>=1.13.0                  # Static type checking
+black>=24.0.0                 # Code formatter (for pre-commit)
+
+# -----------------------------------------------------------------------------
+# Security Scanning
+# -----------------------------------------------------------------------------
+bandit>=1.8.0                 # Security vulnerability scanner
+pip-audit>=2.7.0              # Dependency vulnerability scanner
+
+# -----------------------------------------------------------------------------
+# Code Quality & Hooks
+# -----------------------------------------------------------------------------
+pre-commit>=4.0.0             # Git hooks for code quality checks
+detect-secrets>=1.5.0         # Prevent secrets from being committed
+
+# -----------------------------------------------------------------------------
+# Testing & Coverage
+# -----------------------------------------------------------------------------
+pytest-cov>=6.0               # Test coverage reporting for pytest
