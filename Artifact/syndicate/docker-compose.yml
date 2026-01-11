@@ -47,6 +47,8 @@ services:
       - NOTION_API_KEY=${NOTION_API_KEY:-}
       - NOTION_DATABASE_ID=${NOTION_DATABASE_ID:-}
       - IMGBB_API_KEY=${IMGBB_API_KEY:-}
+      # Prefer Ollama as primary provider by default (set to 0 to disable)
+      - PREFER_OLLAMA=${PREFER_OLLAMA:-1}
       # Prometheus metrics
       - PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus
       # Matplotlib cache (avoids permission errors)
@@ -100,6 +102,8 @@ services:
       - NOTION_API_KEY=${NOTION_API_KEY:-}
       - NOTION_DATABASE_ID=${NOTION_DATABASE_ID:-}
       - IMGBB_API_KEY=${IMGBB_API_KEY:-}
+      # Prefer Ollama by default for executor
+      - PREFER_OLLAMA=${PREFER_OLLAMA:-1}
       # Matplotlib cache
       - MPLCONFIGDIR=/tmp/matplotlib
     volumes:
@@ -300,6 +304,7 @@ services:
       - NOTION_API_KEY=${NOTION_API_KEY:-}
       - NOTION_DATABASE_ID=${NOTION_DATABASE_ID:-}
       - IMGBB_API_KEY=${IMGBB_API_KEY:-}
+      - PREFER_OLLAMA=${PREFER_OLLAMA:-1}
       - MPLCONFIGDIR=/tmp/matplotlib
     volumes:
       - .:/app

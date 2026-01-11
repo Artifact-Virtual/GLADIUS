@@ -8,6 +8,9 @@ User=adam
 WorkingDirectory=/home/adam/worxpace/syndicate
 EnvironmentFile=/home/adam/worxpace/syndicate/.env
 Environment=PYTHONPATH=/home/adam/worxpace/syndicate/src
+# Preferred provider option (set in .env or override here)
+Environment="PREFER_OLLAMA=${PREFER_OLLAMA:-1}"
+
 ExecStart=/home/adam/worxpace/.venv/bin/python -m digest_bot.daily_report
 
 [Install]

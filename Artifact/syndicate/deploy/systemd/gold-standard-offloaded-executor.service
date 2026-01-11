@@ -6,6 +6,8 @@ After=network.target
 Type=simple
 ExecStart=/home/adam/worxpace/.venv/bin/python /home/adam/worxpace/syndicate/scripts/offloaded_executor.py
 WorkingDirectory=/home/adam/worxpace/syndicate
+EnvironmentFile=/home/adam/worxpace/syndicate/.env
+Environment="PREFER_OLLAMA=1"
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal

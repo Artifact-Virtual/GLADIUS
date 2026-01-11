@@ -8,6 +8,9 @@ User=adam
 Group=adam
 WorkingDirectory=/home/adam/worxpace/syndicate
 ExecStart=/opt/run_syndicate_llm_worker.sh
+# Load runtime env from .env and include PREFER_OLLAMA recommendation
+EnvironmentFile=/home/adam/worxpace/syndicate/.env
+Environment="PREFER_OLLAMA=1"
 Restart=always
 RestartSec=5
 StandardOutput=journal
