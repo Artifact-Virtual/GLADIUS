@@ -12,9 +12,9 @@ flowchart TD
     O[Ollama]
     L[Local]
   end
-  Worker -. fallback .-> G
-  Worker -. fallback .-> O
-  Worker -. fallback .-> L
+  Worker -.-> G
+  Worker -.-> O
+  Worker -.-> L
 
   note right of Worker
     "Supports provider_hint (prefer vs strict)"
