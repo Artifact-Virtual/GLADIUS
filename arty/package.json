@@ -4,6 +4,8 @@
   "description": "Extensible automation framework for managing multiple platforms (Discord, LinkedIn, and more)",
   "private": true,
   "workspaces": [
+    "store",
+    "research",
     "discord",
     "linkedin",
     "telegram",
@@ -11,6 +13,10 @@
     "shared"
   ],
   "scripts": {
+    "store:init": "cd store && npm install && npm run init",
+    "research:install": "cd research && npm install",
+    "research:cycle": "cd research && npm run cycle",
+    "research:start": "cd research && npm start",
     "discord:install": "cd discord && npm install",
     "discord:deploy": "cd discord && npm run deploy-commands",
     "discord:start": "cd discord && npm start",

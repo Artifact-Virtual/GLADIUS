@@ -1,0 +1,15 @@
+{
+  "name": "arty-store",
+  "version": "1.0.0",
+  "description": "Central storage layer for Arty research system",
+  "main": "init-databases.js",
+  "scripts": {
+    "init": "node init-databases.js"
+  },
+  "dependencies": {
+    "sqlite3": "^5.1.7"
+  },
+  "keywords": ["arty", "storage", "sqlite", "database"],
+  "author": "Gladius",
+  "license": "MIT"
+}
