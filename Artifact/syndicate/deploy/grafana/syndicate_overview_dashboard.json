@@ -1,0 +1,60 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": null,
+    "title": "Syndicate - System Overview",
+    "timezone": "browser",
+    "panels": [
+      {
+        "type": "stat",
+        "title": "Reports Processed",
+        "targets": [
+          {"expr": "syndicate_reports_generated_total"}
+        ],
+        "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4}
+      },
+      {
+        "type": "stat",
+        "title": "Charts Generated",
+        "targets": [
+          {"expr": "syndicate_charts_generated_total"}
+        ],
+        "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4}
+      },
+      {
+        "type": "stat",
+        "title": "LLM Queue Length",
+        "targets": [
+          {"expr": "gost_llm_queue_length"}
+        ],
+        "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4}
+      },
+      {
+        "type": "stat",
+        "title": "Executor Tasks (failed)",
+        "targets": [
+          {"expr": "syndicate_executor_tasks_failed"}
+        ],
+        "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4}
+      },
+      {
+        "type": "graph",
+        "title": "Charts Generated Over Time",
+        "targets": [
+          {"expr": "increase(syndicate_charts_generated_total[1d])"}
+        ],
+        "gridPos": {"x": 0, "y": 4, "w": 12, "h": 6}
+      },
+      {
+        "type": "graph",
+        "title": "Reports Processed Over Time",
+        "targets": [
+          {"expr": "increase(syndicate_reports_generated_total[1d])"}
+        ],
+        "gridPos": {"x": 12, "y": 4, "w": 12, "h": 6}
+      }
+    ],
+    "schemaVersion": 30
+  },
+  "overwrite": true
+}
