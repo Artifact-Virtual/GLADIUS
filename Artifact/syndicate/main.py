@@ -2049,14 +2049,13 @@ class Strategist:
         prompt = self._build_prompt(gsr, vix_price, data_dump)
 
         try:
-            # Enforce Gemini-only for journal generation (strict policy)
-            try:
-                gem = GeminiProvider(self.config.GEMINI_MODEL)
-                response = gem.generate_content(prompt)
-                response_text = response.text
-            except Exception as ge:
-                self.logger.error(f"Gemini generation failed for Journal (strict): {ge}", exc_info=True)
-                return f"Error generating journal with Gemini: {ge}", "NEUTRAL"
+            # Use the configured LLM provider (respects PREFER_OLLAMA, fallback chain, etc.)
+            provider = create_llm_provider(self.config, self.logger)
+            if provider is None:
+                return "Error: No LLM provider available", "NEUTRAL"
+            
+            response = provider.generate_content(prompt)
+            response_text = response.text if hasattr(response, 'text') else str(response)
 
             bias = self._extract_bias(response_text)
             self.logger.info(f"AI analysis complete. Bias: {bias}")

@@ -1,14 +1,65 @@
-# Index
+# Gladius
 
-> Complete table of contents for Gladius research and documentation
+> Private AI Research & Trading Systems Repository
+
+A comprehensive research workspace for autonomous agent development, trading systems, and algorithmic strategies. This repository combines 60+ research articles, production trading systems, and enterprise automation frameworks.
+
+---
+
+## 🚀 Quick Start (Operators)
+
+```bash
+cd /home/adam/worxpace/gladius
+
+# Start all services (includes automatic health check)
+./gladius.sh start
+
+# Check system status
+./gladius.sh status
+
+# Stop all services (includes regression verification)
+./gladius.sh stop
+
+# Test Infra API specifically
+./gladius.sh infra
+```
+
+**Access Points**:
+- Dashboard: http://localhost:3000
+- API Docs: http://localhost:7000/docs
+- Backend API: http://localhost:5000
 
 ---
 
 ## 📋 Quick Navigation
 
+### Operational Guides
+- **[COMMANDS.md](COMMANDS.md)** - Complete command reference for developers
+- **[DASHBOARD_STRATEGY.md](DASHBOARD_STRATEGY.md)** - Dashboard architecture & roadmap
+- **[Artifact/MANDATE.md](Artifact/MANDATE.md)** - Operational mandate
+- **[Artifact/CONTEXT.md](Artifact/CONTEXT.md)** - Current system context
+
+### Documentation
 - [Main Repository README](obsidian_sync/README.md)
 - [Official Documentation](docs/readme.md)
 - [License](LICENSE.md)
+
+### Scripts
+- [gladius.sh](gladius.sh) - Unified control script (start, stop, health, status)
+
+---
+
+## 🏗️ Core Systems
+
+| System | Description | Status |
+|--------|-------------|--------|
+| **Infra API** (7000) | Market data, portfolios, assets | ✅ Production |
+| **Automata Dashboard** (5000) | Control panel, content management | ✅ Production |
+| **Syndicate** | Market intelligence pipeline | ✅ Production |
+| **Arty** | Autonomous research & social | ✅ Production |
+| **GoldMax** | Market analysis system | ✅ Active |
+| **Herald** | Execution agent | 🚧 Development |
+| **Cthulu** | MQL5/MT5 trading | ✅ Deployed |
 
 ---
 
@@ -176,4 +227,4 @@
 
 ---
 
-*Last updated: 2026-01-06*
+*Last updated: 2026-01-11*
