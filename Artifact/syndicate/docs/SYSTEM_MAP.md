@@ -41,9 +41,13 @@ This document summarizes the runtime components, data flows, and recent robustne
 - Run `scripts/smoke_runner.py --iterations N` to run a quick smoke test across pipeline stages.
 
 ## Next work items
-- Enhance chart generation step with TA annotations (support/resistance, trendlines, annotations) — this requires instrument-level annotation logic and drawing helpers.
-- Add integration tests for Notion/Automata push when services are available (optional test mode with mock endpoints).
+- Enhance chart generation step with TA annotations (support/resistance, trendlines, annotations) — this requires instrument-level annotation logic and drawing helpers. **Done:** RANSAC-based trendline detection and angle annotations were added, and charts are generated automatically for report-like files.
+- Add integration tests for Notion/Automata push when services are available (optional test mode with mock endpoints). **Done:** Tests added to verify Notion and Automata failures are handled gracefully.
 - Expand documentation diagrams (mermaid / dot) to include organizer and executor details.
+
+## New observability and dashboard
+- Prometheus metrics added: `syndicate_reports_generated_total`, `syndicate_charts_generated_total`.
+- Grafana dashboard: `deploy/grafana/syndicate_overview_dashboard.json` provides a single-pane overview with Reports Processed, Charts Generated, LLM Queue Length, Executor failures, and recent trends for charts/reports.
 
 ---
 For any changes you want to be applied to the legacy layout or manifest format (e.g., specific metadata fields), tell me the exact structure and I will update the organizer to match it exactly.
