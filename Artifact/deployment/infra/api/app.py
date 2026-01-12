@@ -8,6 +8,7 @@ Endpoints:
 - POST /prices -> ingest a price update ({symbol, price, timestamp})
 """
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List
 import os
@@ -20,6 +21,15 @@ from ..repositories.portfolio_repository import PortfolioRepository
 from ..models.market import MarketType
 
 app = FastAPI(title="Infra API")
+
+# Enable CORS for dashboard frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Use SQLite-backed repositories by default
 market_repo = MarketSqlRepository()
