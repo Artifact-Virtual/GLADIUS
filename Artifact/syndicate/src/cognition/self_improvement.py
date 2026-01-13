@@ -499,12 +499,18 @@ class SelfImprovementEngine:
         
         backed_up = []
         
-        # Backup files
+        # Backup files (handle both files and directories)
         for file_path in files_to_backup:
             src = Path(file_path)
             if src.exists():
                 dest = snapshot_dir / src.name
-                shutil.copy2(src, dest)
+                if src.is_dir():
+                    # Copy entire directory tree
+                    if dest.exists():
+                        shutil.rmtree(dest)
+                    shutil.copytree(src, dest)
+                else:
+                    shutil.copy2(src, dest)
                 backed_up.append(str(src))
         
         # Backup databases

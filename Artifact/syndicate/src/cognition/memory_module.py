@@ -375,15 +375,24 @@ class MemoryModule:
             db = self.databases[db_name]
             results = db.connection.search(query, k=k)
             
-            data = [
-                {
-                    "id": r.document.id,
-                    "score": r.score,
-                    "content": r.document.content[:500],
-                    "metadata": r.document.metadata
-                }
-                for r in results
-            ]
+            data = []
+            for r in results:
+                # Handle both old format (r.document) and new format (r.id directly)
+                if r.document is not None:
+                    data.append({
+                        "id": r.document.id,
+                        "score": r.score,
+                        "content": r.document.content[:500] if r.document.content else "",
+                        "metadata": r.document.metadata or {}
+                    })
+                else:
+                    # Fallback for results without document objects
+                    data.append({
+                        "id": r.id,
+                        "score": r.score,
+                        "content": "",
+                        "metadata": {}
+                    })
             
             self._record_operation("search", query, f"k={k}", True)
             return ToolResult(success=True, data=data, tool_name="search")
@@ -403,22 +412,29 @@ class MemoryModule:
             if db.db_type == "vector":
                 try:
                     if hasattr(db.connection, 'hybrid_search'):
+                        # HektorVectorStore uses lexical_weight instead of bm25_weight
                         results = db.connection.hybrid_search(
                             query, k=k,
                             vector_weight=vector_weight,
-                            bm25_weight=bm25_weight
+                            lexical_weight=bm25_weight  # Map bm25_weight to lexical_weight
                         )
                     else:
                         results = db.connection.search(query, k=k)
                     
-                    data = [
-                        {
-                            "id": r.document.id,
-                            "score": r.score,
-                            "content": r.document.content[:500]
-                        }
-                        for r in results
-                    ]
+                    data = []
+                    for r in results:
+                        if r.document is not None:
+                            data.append({
+                                "id": r.document.id,
+                                "score": r.score,
+                                "content": r.document.content[:500] if r.document.content else ""
+                            })
+                        else:
+                            data.append({
+                                "id": r.id,
+                                "score": r.score,
+                                "content": ""
+                            })
                     
                     return ToolResult(success=True, data=data, tool_name="hybrid_search")
                     
@@ -590,15 +606,22 @@ class MemoryModule:
                 try:
                     results = db.connection.search(query, k=k, doc_type="memory")
                     
-                    data = [
-                        {
-                            "key": r.document.metadata.get("key", r.document.id),
-                            "content": r.document.content,
-                            "score": r.score,
-                            "remembered_at": r.document.metadata.get("remembered_at")
-                        }
-                        for r in results
-                    ]
+                    data = []
+                    for r in results:
+                        if r.document is not None:
+                            data.append({
+                                "key": r.document.metadata.get("key", r.document.id) if r.document.metadata else r.document.id,
+                                "content": r.document.content or "",
+                                "score": r.score,
+                                "remembered_at": r.document.metadata.get("remembered_at") if r.document.metadata else None
+                            })
+                        else:
+                            data.append({
+                                "key": r.id,
+                                "content": "",
+                                "score": r.score,
+                                "remembered_at": None
+                            })
                     
                     return ToolResult(success=True, data=data, tool_name="recall")
                     
