@@ -2334,6 +2334,9 @@ def execute(
     
     # Get semantic context from cognition engine
     semantic_context = ""
+    learning_feedback = ""
+    pattern_analysis = ""
+    
     if cognition:
         try:
             # Build query from current conditions
@@ -2342,6 +2345,20 @@ def execute(
             query = f"Gold at ${gold_price:.2f} with GSR {gsr} and VIX {vix}"
             semantic_context = cognition.get_context_for_analysis(query, k=3)
             logger.info(f"[COGNITION] Retrieved {len(semantic_context)} chars of historical context")
+            
+            # Get learning feedback for improved predictions
+            learning_feedback = cognition.generate_learning_feedback()
+            logger.info(f"[COGNITION] Generated learning feedback")
+            
+            # Check pattern success rate for current conditions
+            pattern_analysis_data = cognition.get_pattern_success_rate(query)
+            if pattern_analysis_data.get("sample_size", 0) > 0:
+                pattern_analysis = f"\n### Pattern Analysis\n"
+                pattern_analysis += f"Similar patterns: {pattern_analysis_data['sample_size']} found\n"
+                pattern_analysis += f"Success rate: {pattern_analysis_data.get('success_rate', 'N/A')}%\n"
+                pattern_analysis += f"Recommendation: {pattern_analysis_data.get('recommendation', 'N/A')}\n"
+                logger.info(f"[COGNITION] Pattern success rate: {pattern_analysis_data.get('success_rate')}%")
+                
         except Exception as e:
             logger.warning(f"[COGNITION] Context retrieval failed: {e}")
     
@@ -2353,10 +2370,14 @@ def execute(
         report = "[NO AI MODE] - AI analysis skipped by CLI option."
         new_bias = "NEUTRAL"
     else:
-        # Combine memory context with semantic context
+        # Combine memory context with semantic context and learning feedback
         full_context = memory_context
         if semantic_context:
             full_context = f"{memory_context}\n\n{semantic_context}"
+        if learning_feedback:
+            full_context = f"{full_context}\n\n{learning_feedback}"
+        if pattern_analysis:
+            full_context = f"{full_context}\n{pattern_analysis}"
         
         strat = Strategist(config, logger, data, quant.news, full_context, model=model, cortex=cortex)
         report, new_bias = strat.think()
@@ -2365,15 +2386,20 @@ def execute(
     if not dry_run:
         cortex.update_memory(new_bias, gold_price)
         
-        # Record prediction for learning
+        # Record prediction for learning with current market context
         if cognition:
             try:
+                gsr = data.get("RATIOS", {}).get("GSR", "N/A")
+                vix = data.get("VIX", {}).get("price", "N/A")
+                market_context = f"Gold at ${gold_price:.2f}, GSR: {gsr}, VIX: {vix}"
+                
                 cognition.learn_from_prediction(
                     prediction_date=str(datetime.date.today()),
                     predicted_bias=new_bias,
                     actual_outcome="PENDING",  # Will be updated on next cycle
                     gold_price_then=gold_price,
-                    gold_price_now=gold_price
+                    gold_price_now=gold_price,
+                    market_context=market_context
                 )
             except Exception as e:
                 logger.warning(f"[COGNITION] Failed to record prediction: {e}")

@@ -243,6 +243,49 @@ Hektor VDB supports typed document storage for Syndicate outputs:
 | `ThreeMonthReport` | ThreeMonthReport | Quarterly outlook |
 | `OneYearReport` | OneYearReport | Annual predictions |
 | `InstitutionalMatrix` | InstitutionalMatrix | Institutional flow analysis |
+| `Outcome` | Outcome | Prediction outcomes for learning |
+
+---
+
+## Prediction Learning System
+
+The cognition engine learns from predictions through a feedback loop:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                   PREDICTION LEARNING LOOP                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│   ┌──────────────┐     ┌──────────────┐     ┌──────────────┐    │
+│   │   Market     │────▶│   Predict    │────▶│   Record     │    │
+│   │   Analysis   │     │   Bias       │     │   Outcome    │    │
+│   └──────────────┘     └──────────────┘     └──────┬───────┘    │
+│          ▲                                         │            │
+│          │                                         ▼            │
+│   ┌──────┴───────┐                        ┌──────────────┐      │
+│   │   Pattern    │◀───────────────────────│   Grade      │      │
+│   │   Feedback   │                        │   Performance│      │
+│   └──────────────┘                        └──────────────┘      │
+│                                                                  │
+│   Features:                                                      │
+│   • Pattern success rate analysis                                │
+│   • Similar historical outcomes search                           │
+│   • Adaptive recommendations                                     │
+│   • Confidence scoring with streak tracking                      │
+│   • Learning feedback generation for AI context                  │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Learning Methods
+
+| Method | Purpose |
+|--------|---------|
+| `learn_from_prediction()` | Record prediction outcomes with context |
+| `get_similar_historical_outcomes()` | Find similar market conditions |
+| `get_pattern_success_rate()` | Calculate pattern reliability |
+| `generate_learning_feedback()` | Generate AI context from history |
+| `get_prediction_accuracy()` | Comprehensive accuracy statistics |
 
 ---
 
@@ -295,6 +338,67 @@ gladius/
 ├── COMMANDS.md                # Command reference
 └── CONTEXT.md                 # Operational context
 ```
+
+---
+
+## Training & Self-Improvement System
+
+The system now includes autonomous learning capabilities:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                   LEARNING LOOP                                  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│   ┌──────────────┐     ┌──────────────┐     ┌──────────────┐    │
+│   │   Ingest     │────▶│   Generate   │────▶│   Propose    │    │
+│   │   Reports    │     │   Training   │     │   Improve    │    │
+│   └──────────────┘     │   Data       │     └──────┬───────┘    │
+│                        └──────────────┘            │            │
+│                                                    ▼            │
+│   ┌──────────────┐                        ┌──────────────┐      │
+│   │   Snapshot   │◀───────────────────────│   Execute    │      │
+│   │   Benchmark  │                        │   Changes    │      │
+│   └──────────────┘                        └──────────────┘      │
+│                                                                  │
+│   Components:                                                    │
+│   • TrainingDataGenerator - Generate fine-tuning data           │
+│   • SelfImprovementEngine - Proposal lifecycle with audit       │
+│   • CognitionLearningLoop - Autonomous learning cycles          │
+│   • Snapshot management for rollback                            │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Training Data Generation
+
+| Format | Description | Use Case |
+|--------|-------------|----------|
+| Chat | Conversational format | Instruction tuning |
+| Completion | Prompt-completion pairs | Causal LM training |
+| llama.cpp | llama.cpp specific JSON | GGUF fine-tuning |
+| Tool | OpenAI tool-calling format | Function calling |
+
+### Self-Improvement Workflow
+
+1. **Proposal Creation** → Draft with items, rationale, risk
+2. **Review Cycle** → Approve, request changes, or reject
+3. **Implementation Plan** → Checklist, blueprint, execution plan
+4. **Execution** → Pre/post snapshots, task tracking
+5. **Completion** → Audit trail preserved
+
+### Improvement Categories
+
+| Category | Description |
+|----------|-------------|
+| COGNITION | Core reasoning and analysis |
+| MEMORY | Database and storage |
+| TOOLS | Tool calling capabilities |
+| STRUCTURE | File and code organization |
+| AUTOMATION | Workflow automation |
+| PERFORMANCE | Speed and efficiency |
+| ACCURACY | Prediction improvement |
+| DOCUMENTATION | Docs and guides |
 
 ---
 

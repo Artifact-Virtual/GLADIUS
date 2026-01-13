@@ -332,27 +332,336 @@ python reset_db_vm.py      # Reset
 
 **Location**: `Artifact/syndicate/src/cognition/`
 
-### Available Tools (In Development)
+### Python Usage
 
-| Tool | Description |
-|------|-------------|
-| `read_db(name, query)` | Read from any connected database |
-| `write_db(name, data)` | Write to any connected database |
-| `search(query, k)` | Semantic search across all vectors |
-| `get_context(query)` | Retrieve historical context |
-| `read_file(path)` | Read file from workspace |
-| `write_file(path, data)` | Write file to workspace |
-| `list_dir(path)` | List directory contents |
+```python
+from cognition.memory_module import MemoryModule
 
-### Database Connections
+# Initialize
+mm = MemoryModule(
+    base_dir='.',
+    workspace_dir='./output',
+    sandbox_enabled=True
+)
+
+# List databases
+result = mm.list_databases()
+print(result.data)
+
+# Call any tool
+result = mm.call_tool('search', query='gold breakout', k=5)
+if result.success:
+    print(result.data)
+
+# Workspace operations
+result = mm.read_file('output/Journal_2026-01-13.md')
+result = mm.list_dir('output')
+result = mm.file_exists('config.json')
+
+# Memory operations
+mm.remember('gold_pattern', 'Head and shoulders at 2700')
+result = mm.recall('gold patterns', k=3)
+
+# Get operation history
+result = mm.get_history(last_n=20)
+
+mm.close()
+```
+
+### Available Tools
+
+| Tool | Category | Description |
+|------|----------|-------------|
+| `read_db(name, query)` | database | Read from any connected database |
+| `write_db(name, data, table)` | database | Write to any connected database |
+| `query_db(name, query)` | database | Execute raw database query |
+| `list_databases()` | database | List all connected databases |
+| `search(query, k, db_name)` | search | Semantic search across vectors |
+| `hybrid_search(query, k)` | search | Vector + BM25 fusion search |
+| `get_context(query, k)` | search | Retrieve historical context |
+| `read_file(path)` | workspace | Read file from workspace |
+| `write_file(path, content)` | workspace | Write file to workspace |
+| `list_dir(path)` | workspace | List directory contents |
+| `file_exists(path)` | workspace | Check if file exists |
+| `remember(key, value, metadata)` | memory | Store memory for recall |
+| `recall(query, k)` | memory | Recall related memories |
+| `forget(key)` | memory | Remove a memory |
+| `get_tools()` | introspection | List available tools |
+| `get_history(last_n)` | introspection | Get operation history |
+
+### Database Connections (Auto-Discovered)
 
 | Database | Type | Path |
 |----------|------|------|
-| Hektor VDB | Vector | `data/hektor.db` |
+| Hektor VDB | Vector | `data/vectors/` |
 | Syndicate DB | SQLite | `data/syndicate.db` |
-| Arty Store | SQLite | `Artifact/arty/store/arty.db` |
-| Predictions | SQLite | `data/predictions.db` |
-| Configs | JSON | `data/*.json` |
+| Gold Standard | SQLite | `data/gold_standard.db` |
+| Cortex Memory | JSON | `data/cortex_memory.json` |
+
+---
+
+## Prediction Learning System
+
+### Python Usage
+
+```python
+from cognition.syndicate_integration import SyndicateCognition
+
+cognition = SyndicateCognition(data_dir='./data', output_dir='./output')
+
+# Record a prediction
+cognition.learn_from_prediction(
+    prediction_date='2026-01-13',
+    predicted_bias='BULLISH',
+    actual_outcome='PENDING',
+    gold_price_then=2680.0,
+    gold_price_now=2695.0,
+    market_context='Gold testing 2700 resistance',
+    catalysts=['Fed decision', 'CPI data']
+)
+
+# Get accuracy stats
+accuracy = cognition.get_prediction_accuracy(last_n=30)
+print(f"Win rate: {accuracy['win_rate']}%")
+
+# Find similar historical conditions
+similar = cognition.get_similar_historical_outcomes(
+    'gold testing resistance level', k=5
+)
+
+# Get pattern success rate
+pattern = cognition.get_pattern_success_rate(
+    'gold bullish breakout',
+    min_similarity=0.3
+)
+print(f"Success rate: {pattern['success_rate']}%")
+
+# Generate learning feedback for AI
+feedback = cognition.generate_learning_feedback()
+print(feedback)
+
+cognition.close()
+```
+
+### Learning Methods
+
+| Method | Description |
+|--------|-------------|
+| `learn_from_prediction()` | Record prediction with context and catalysts |
+| `get_similar_historical_outcomes()` | Find similar market conditions |
+| `get_pattern_success_rate()` | Calculate pattern reliability |
+| `generate_learning_feedback()` | Generate AI context from history |
+| `get_prediction_accuracy()` | Comprehensive accuracy statistics |
+| `update_pending_predictions()` | Auto-evaluate pending predictions |
+
+---
+
+## Training Data Generation
+
+**Location**: `Artifact/syndicate/src/cognition/training_generator.py`
+
+### Python Usage
+
+```python
+from cognition import TrainingDataGenerator, TrainingDataset
+
+# Initialize generator
+gen = TrainingDataGenerator(output_dir='./data/training')
+
+# Generate from tool history
+from cognition import MemoryModule
+mm = MemoryModule(base_dir='.')
+history_result = mm.get_history(last_n=100)
+dataset = gen.generate_from_history(history_result.data, 'history')
+
+# Generate synthetic examples
+synthetic = gen.generate_synthetic(n_per_category=20, dataset_name='synthetic')
+
+# Generate from tool schemas
+schemas = gen.generate_from_tool_schemas('schemas')
+
+# Combine datasets
+combined = gen.combine_datasets([dataset, synthetic, schemas], 'combined')
+
+# Export in multiple formats
+paths = gen.export_all([combined], formats=['chat', 'completion', 'llama'])
+print(paths)
+
+mm.close()
+```
+
+### Export Formats
+
+| Format | File | Description |
+|--------|------|-------------|
+| `chat` | `.jsonl` | Conversational instruction format |
+| `completion` | `.jsonl` | Prompt-completion pairs |
+| `llama` | `.json` | llama.cpp fine-tuning format |
+| `tool` | `.jsonl` | OpenAI tool-calling format |
+
+### CLI Usage
+
+```bash
+cd Artifact/syndicate
+
+# Test training data generation
+python3 -c "
+import sys; sys.path.insert(0, 'src')
+from cognition import TrainingDataGenerator
+gen = TrainingDataGenerator('./data/training')
+ds = gen.generate_synthetic(n_per_category=5)
+gen.export_all([ds], formats=['llama'])
+print(ds.stats())
+"
+```
+
+---
+
+## Self-Improvement Engine
+
+**Location**: `Artifact/syndicate/src/cognition/self_improvement.py`
+
+### Python Usage
+
+```python
+from cognition import SelfImprovementEngine, ImprovementCategory, ProposalStatus
+
+# Initialize
+engine = SelfImprovementEngine(
+    base_dir='.',
+    proposals_dir='./data/improvements/proposals',
+    snapshots_dir='./data/improvements/snapshots'
+)
+
+# Create a proposal
+proposal = engine.create_proposal(
+    title='Improve prediction accuracy',
+    category=ImprovementCategory.ACCURACY,
+    summary='Win rate below 50%, need improvement',
+    items=[
+        {'description': 'Analyze losing predictions', 'impact': 'high', 'risk': 'low'},
+        {'description': 'Add more context', 'impact': 'medium', 'risk': 'low'}
+    ]
+)
+
+# Submit for review
+engine.submit_for_review(proposal.id)
+
+# Review and approve
+engine.review_proposal(proposal.id, 'cognition', 'approve', 'Good plan')
+
+# Create implementation plan
+engine.create_implementation_plan(
+    proposal.id,
+    plan='Detailed implementation steps...',
+    checklist_items=['Analyze failures', 'Add context', 'Verify improvements']
+)
+
+# Begin implementation (creates pre-snapshot)
+engine.begin_implementation(proposal.id)
+
+# Complete tasks
+engine.complete_task(proposal.id, 'check_0', 'Analysis complete')
+engine.complete_task(proposal.id, 'check_1', 'Context added')
+engine.complete_task(proposal.id, 'check_2', 'Verified')
+
+# Complete implementation (creates post-snapshot)
+engine.complete_implementation(proposal.id)
+
+# Generate report
+print(engine.generate_report())
+
+# Get audit trail
+trail = engine.get_audit_trail(proposal.id)
+for entry in trail:
+    print(f"{entry['timestamp']}: {entry['action']}")
+```
+
+### Proposal Lifecycle
+
+| Status | Description |
+|--------|-------------|
+| `DRAFT` | Initial creation |
+| `PENDING_REVIEW` | Submitted for review |
+| `REVISION_REQUESTED` | Changes requested |
+| `APPROVED` | Ready for implementation |
+| `REJECTED` | Declined |
+| `IMPLEMENTING` | Work in progress |
+| `COMPLETED` | Successfully implemented |
+| `ROLLED_BACK` | Reverted to previous state |
+
+### Snapshot Management
+
+```python
+# Create manual snapshot
+snapshot = engine.create_snapshot(
+    name='pre_major_change',
+    description='Before significant update',
+    files_to_backup=['file1.py', 'file2.py'],
+    database_paths=['data/syndicate.db']
+)
+
+# Restore from snapshot
+engine.restore_snapshot(snapshot.id)
+```
+
+---
+
+## Cognition Learning Loop
+
+**Location**: `Artifact/syndicate/src/cognition/learning_loop.py`
+
+### Python Usage
+
+```python
+from cognition import CognitionLearningLoop, run_learning_cycle, run_benchmark
+
+# Full loop initialization
+with CognitionLearningLoop(
+    base_dir='.',
+    data_dir='./data',
+    output_dir='./output'
+) as loop:
+    # Run single cycle
+    result = loop.run_cycle(current_gold_price=2690.0)
+    print(f"Ingested: {result.reports_ingested} reports")
+    print(f"Training examples: {result.training_examples_generated}")
+    print(f"Success rate: {result.pattern_success_rate}%")
+    
+    # Get learning feedback for AI context
+    feedback = loop.get_learning_feedback()
+    print(feedback)
+    
+    # Get stats
+    print(loop.stats())
+
+# Quick convenience functions
+result = run_learning_cycle('.', current_gold_price=2690.0)
+benchmark = run_benchmark('.', n_cycles=10)
+```
+
+### Benchmark Mode
+
+```python
+# Run 10 cycles with before/after comparison
+benchmark = loop.run_benchmark(n_cycles=10)
+
+print(f"Initial win rate: {benchmark['initial_metrics']['win_rate']}%")
+print(f"Final win rate: {benchmark['final_metrics']['win_rate']}%")
+print(f"Improvement: {benchmark['improvements']['win_rate_delta']}%")
+print(f"Documents added: {benchmark['improvements']['documents_added']}")
+```
+
+### Learning Cycle Steps
+
+| Step | Description |
+|------|-------------|
+| 1. Ingest | Ingest new reports into vector memory |
+| 2. Process | Evaluate pending predictions |
+| 3. Generate | Create training data from tool usage |
+| 4. Analyze | Create improvement proposals |
+| 5. Execute | Implement approved improvements |
+| 6. Benchmark | Track metrics and create snapshots |
 
 ---
 

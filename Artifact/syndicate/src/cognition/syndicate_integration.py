@@ -404,6 +404,146 @@ Key Insight: {self._extract_key_insight(predicted_bias, actual_outcome, pct_chan
         else:
             return "Minor loss - within acceptable variance"
     
+    def get_similar_historical_outcomes(
+        self,
+        market_conditions: str,
+        k: int = 5
+    ) -> List[Dict[str, Any]]:
+        """
+        Find historically similar market conditions and their outcomes.
+        Used for pattern-based decision making.
+        
+        Args:
+            market_conditions: Current market condition description
+            k: Number of similar outcomes to retrieve
+        
+        Returns:
+            List of similar historical outcomes with their results
+        """
+        results = self.search(market_conditions, k=k, doc_type="outcome")
+        
+        similar_outcomes = []
+        for r in results:
+            doc = r.document
+            similar_outcomes.append({
+                "date": doc.metadata.get("prediction_date"),
+                "bias": doc.metadata.get("predicted_bias"),
+                "outcome": doc.metadata.get("actual_outcome"),
+                "pct_change": doc.metadata.get("pct_change", 0),
+                "similarity": r.score,
+                "catalysts": doc.metadata.get("catalysts", [])
+            })
+        
+        return similar_outcomes
+    
+    def get_pattern_success_rate(
+        self,
+        pattern_description: str,
+        min_similarity: float = 0.3
+    ) -> Dict[str, Any]:
+        """
+        Calculate success rate for similar patterns.
+        
+        Args:
+            pattern_description: Description of the pattern to analyze
+            min_similarity: Minimum similarity threshold
+        
+        Returns:
+            Dict with success metrics for similar patterns
+        """
+        similar = self.get_similar_historical_outcomes(pattern_description, k=20)
+        
+        # Filter by minimum similarity
+        relevant = [s for s in similar if s["similarity"] >= min_similarity]
+        
+        if not relevant:
+            return {
+                "pattern": pattern_description,
+                "sample_size": 0,
+                "success_rate": None,
+                "recommendation": "Insufficient data for this pattern"
+            }
+        
+        wins = sum(1 for s in relevant if s["outcome"] == "WIN")
+        losses = sum(1 for s in relevant if s["outcome"] == "LOSS")
+        total = wins + losses
+        
+        success_rate = (wins / total * 100) if total > 0 else 0
+        
+        # Determine recommendation based on historical performance
+        if total < 3:
+            recommendation = "Insufficient data - proceed with caution"
+        elif success_rate >= 70:
+            recommendation = "Strong pattern - consider higher conviction"
+        elif success_rate >= 50:
+            recommendation = "Moderate pattern - standard position sizing"
+        else:
+            recommendation = "Weak pattern - reduce exposure or skip"
+        
+        return {
+            "pattern": pattern_description,
+            "sample_size": len(relevant),
+            "wins": wins,
+            "losses": losses,
+            "success_rate": round(success_rate, 1) if total > 0 else None,
+            "avg_similarity": round(sum(s["similarity"] for s in relevant) / len(relevant), 2),
+            "recommendation": recommendation
+        }
+    
+    def generate_learning_feedback(self) -> str:
+        """
+        Generate a learning feedback summary for the AI.
+        
+        This is used to improve future predictions by providing
+        a summary of what's working and what's not.
+        """
+        accuracy = self.get_prediction_accuracy(last_n=30)
+        
+        if accuracy["total"] == 0:
+            return "No prediction history available for learning feedback."
+        
+        feedback_parts = ["## Learning Feedback Summary\n"]
+        
+        # Overall performance
+        feedback_parts.append(f"**Overall Win Rate**: {accuracy['win_rate']}%")
+        feedback_parts.append(f"**Total Predictions**: {accuracy['total']}")
+        feedback_parts.append(f"**Confidence Score**: {accuracy['confidence_score']}/100\n")
+        
+        # Bias-specific performance
+        bullish = accuracy["by_bias"]["bullish"]
+        bearish = accuracy["by_bias"]["bearish"]
+        
+        feedback_parts.append("### Performance by Bias")
+        if bullish["total"] > 0:
+            feedback_parts.append(f"- BULLISH: {bullish['win_rate']}% ({bullish['wins']}/{bullish['total']})")
+        if bearish["total"] > 0:
+            feedback_parts.append(f"- BEARISH: {bearish['win_rate']}% ({bearish['wins']}/{bearish['total']})")
+        
+        # Streak analysis
+        streak = accuracy["current_streak"]
+        if streak["type"] == "WIN" and streak["length"] >= 3:
+            feedback_parts.append(f"\n**Current State**: On a {streak['length']}-prediction win streak!")
+        elif streak["type"] == "LOSS" and streak["length"] >= 2:
+            feedback_parts.append(f"\n**Warning**: On a {streak['length']}-prediction losing streak. Consider increased caution.")
+        
+        # Adaptive recommendations
+        feedback_parts.append("\n### Adaptive Recommendations")
+        
+        if bullish["total"] >= 3 and bearish["total"] >= 3:
+            if bullish["win_rate"] > bearish["win_rate"] + 15:
+                feedback_parts.append("- Historical data suggests bullish setups are more reliable")
+            elif bearish["win_rate"] > bullish["win_rate"] + 15:
+                feedback_parts.append("- Historical data suggests bearish setups are more reliable")
+        
+        if accuracy["avg_pct_change"] > 0.5:
+            feedback_parts.append("- Average move is positive - bullish bias may be appropriate")
+        elif accuracy["avg_pct_change"] < -0.5:
+            feedback_parts.append("- Average move is negative - bearish bias may be appropriate")
+        else:
+            feedback_parts.append("- Market showing consolidation - consider neutral stance")
+        
+        return "\n".join(feedback_parts)
+    
     def update_pending_predictions(self, current_gold_price: float) -> Dict[str, str]:
         """
         Update all PENDING predictions with actual outcomes.

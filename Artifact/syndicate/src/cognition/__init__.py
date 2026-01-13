@@ -10,6 +10,9 @@ Features:
 - Hybrid search (vector + BM25) with Hektor backend
 - Memory Module: Multi-database access with native tool calling
 - Tool Calling: Native function definitions for cognition learning
+- Training Generator: Generate fine-tuning data from tool usage
+- Self-Improvement: Autonomous improvement proposals with audit trail
+- Learning Loop: Continuous learning cycle with benchmarking
 """
 
 from .vector_store import VectorStore, Document, SearchResult
@@ -45,6 +48,34 @@ except ImportError as e:
     ToolResult = None
     ToolRegistry = None
 
+# Training and Self-Improvement
+try:
+    from .training_generator import (
+        TrainingDataGenerator,
+        TrainingDataset,
+        TrainingExample,
+        FineTuningPipeline
+    )
+    from .self_improvement import (
+        SelfImprovementEngine,
+        ImprovementProposal,
+        ImprovementCategory,
+        ProposalStatus,
+        Snapshot
+    )
+    from .learning_loop import (
+        CognitionLearningLoop,
+        LearningCycleResult,
+        run_learning_cycle,
+        run_benchmark
+    )
+    LEARNING_AVAILABLE = True
+except ImportError as e:
+    LEARNING_AVAILABLE = False
+    TrainingDataGenerator = None
+    SelfImprovementEngine = None
+    CognitionLearningLoop = None
+
 __all__ = [
     # Core
     'VectorStore', 
@@ -70,4 +101,20 @@ __all__ = [
     'get_tool_registry',
     'get_tools_schema',
     'BUILTIN_TOOLS',
+    
+    # Training & Learning
+    'TrainingDataGenerator',
+    'TrainingDataset',
+    'TrainingExample',
+    'FineTuningPipeline',
+    'SelfImprovementEngine',
+    'ImprovementProposal',
+    'ImprovementCategory',
+    'ProposalStatus',
+    'Snapshot',
+    'CognitionLearningLoop',
+    'LearningCycleResult',
+    'run_learning_cycle',
+    'run_benchmark',
+    'LEARNING_AVAILABLE',
 ]

@@ -67,6 +67,79 @@ Location: Artifact/syndicate/src/cognition/
 | LLM Integration | llama.cpp (b7716) |
 | ONNX Runtime | ✅ Enabled |
 | Build Status | ✅ Complete |
+| Training Data | ✅ Generator available |
+| Self-Improvement | ✅ Engine available |
+| Learning Loop | ✅ Autonomous cycles |
+
+---
+
+## Training & Self-Improvement
+
+### Training Data Generation
+The system generates fine-tuning data from tool usage:
+
+```python
+from cognition import TrainingDataGenerator
+
+gen = TrainingDataGenerator(output_dir='./data/training')
+
+# Generate from tool history
+dataset = gen.generate_from_history(memory.history)
+
+# Generate synthetic examples
+synthetic = gen.generate_synthetic(n_per_category=20)
+
+# Export for llama.cpp fine-tuning
+gen.export_all([dataset, synthetic], formats=['llama'])
+```
+
+### Self-Improvement Engine
+Autonomous improvement with full audit trail:
+
+```python
+from cognition import SelfImprovementEngine, ImprovementCategory
+
+engine = SelfImprovementEngine(base_dir='.')
+
+# Create proposal
+proposal = engine.create_proposal(
+    title='Improve prediction accuracy',
+    category=ImprovementCategory.ACCURACY,
+    summary='Need to improve pattern recognition',
+    items=[{'description': 'Analyze failures', 'impact': 'high'}]
+)
+
+# Review and approve
+engine.submit_for_review(proposal.id)
+engine.review_proposal(proposal.id, 'cognition', 'approve', 'Looks good')
+
+# Create implementation plan
+engine.create_implementation_plan(
+    proposal.id,
+    plan='Detailed plan...',
+    checklist_items=['Task 1', 'Task 2', 'Verify']
+)
+
+# Execute with snapshots
+engine.begin_implementation(proposal.id)
+engine.complete_task(proposal.id, 'check_0', 'Done')
+engine.complete_implementation(proposal.id)
+```
+
+### Learning Loop
+Continuous autonomous learning:
+
+```python
+from cognition import CognitionLearningLoop
+
+with CognitionLearningLoop(base_dir='.') as loop:
+    # Single cycle
+    result = loop.run_cycle(current_gold_price=2690.0)
+    
+    # Benchmark with 10 cycles
+    benchmark = loop.run_benchmark(n_cycles=10)
+    print(f"Win rate: {benchmark['initial_metrics']['win_rate']} -> {benchmark['final_metrics']['win_rate']}")
+```
 
 ---
 
@@ -84,18 +157,27 @@ All databases are accessible through a single interface:
 | Arty Store | SQLite | Automation state |
 | Configs | JSON | Runtime configuration |
 
-### Native Tool Calling (In Development)
-The cognition engine will learn to use tools natively, not through third-party LLMs:
+### Native Tool Calling
+The cognition engine learns to use tools natively, not through third-party LLMs:
 
-| Tool | Description |
-|------|-------------|
-| `read_db(name, query)` | Read from any connected database |
-| `write_db(name, data)` | Write to any connected database |
-| `search(query, k)` | Semantic search across all vectors |
-| `get_context(query)` | Retrieve historical context |
-| `read_file(path)` | Read file from workspace |
-| `write_file(path, data)` | Write file to workspace |
-| `list_dir(path)` | List directory contents |
+| Tool | Category | Description |
+|------|----------|-------------|
+| `read_db(name, query)` | database | Read from any connected database |
+| `write_db(name, data)` | database | Write to any connected database |
+| `query_db(name, query)` | database | Execute raw database query |
+| `list_databases()` | database | List all connected databases |
+| `search(query, k)` | search | Semantic search across vectors |
+| `hybrid_search(query, k)` | search | Vector + BM25 fusion search |
+| `get_context(query)` | search | Retrieve historical context |
+| `read_file(path)` | workspace | Read file from workspace |
+| `write_file(path, data)` | workspace | Write file to workspace |
+| `list_dir(path)` | workspace | List directory contents |
+| `file_exists(path)` | workspace | Check if file exists |
+| `remember(key, value)` | memory | Store memory for recall |
+| `recall(query, k)` | memory | Recall related memories |
+| `forget(key)` | memory | Remove a memory |
+| `get_tools()` | introspection | List available tools |
+| `get_history(n)` | introspection | Get operation history |
 
 ### Workspace Access
 The system will have sandboxed access to its own workspace for:
@@ -198,17 +280,22 @@ cmake .. -DVDB_BUILD_PYTHON=ON -DVDB_USE_ONNX_RUNTIME=ON && make -j$(nproc)
 - Cognition engine with hybrid search
 - Dashboard backend/frontend
 - Infra API for market data
+- Memory Module with unified database access
+- Native tool calling (16 tools implemented)
+- Prediction learning with feedback loops
+- Pattern success rate analysis
+- Historical outcome similarity search
+- Adaptive recommendations based on history
 
 ### 🚧 In Progress
-- Native tool/function calling (cognition learns tools)
-- Multi-database memory hooks
 - Workspace access for self-improvement
+- Artifact-specific GGUF/GGM model training
 
 ### 📋 Planned
-- Artifact-specific GGUF/GGM models
+- Full autonomous learning loop
 - Web3 integration per artifact
 - Social/publishing pipeline (Theta)
-- Full autonomous learning loop
+- Blockchain and SBT integration
 
 ---
 

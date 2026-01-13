@@ -79,7 +79,8 @@ cd /home/adam/worxpace/gladius
 | **Automata Dashboard** (5000) | Control panel, content management | ✅ Production |
 | **Syndicate** (Alpha) | Market intelligence pipeline | ✅ Production |
 | **Cthulu** (Beta) | MQL5/MT5 trading execution | ✅ Staging |
-| **Memory Module** | Multi-DB access, native tool calling | 🚧 In Progress |
+| **Memory Module** | Multi-DB access, native tool calling (16 tools) | ✅ Production |
+| **Prediction Learning** | Pattern recognition, feedback loops | ✅ Production |
 
 ---
 
@@ -93,13 +94,50 @@ cd Artifact/hektor
 mkdir -p build && cd build
 cmake .. -DVDB_BUILD_PYTHON=ON -DVDB_USE_LLAMA_CPP=ON -DVDB_USE_ONNX_RUNTIME=ON
 make -j$(nproc)
+```
 
+```python
 # Python usage
 from cognition.hektor_store import get_vector_store
 store = get_vector_store("./vectors", dim=384, prefer_hektor=True)
 store.add_text("doc1", "Gold broke above resistance", {"type": "journal"})
 results = store.hybrid_search("gold breakout", k=5)
 ```
+
+---
+
+## 🧠 Prediction Learning System
+
+The cognition engine learns from predictions through a feedback loop:
+
+```python
+from cognition.syndicate_integration import SyndicateCognition
+
+cognition = SyndicateCognition(data_dir='./data', output_dir='./output')
+
+# Record prediction
+cognition.learn_from_prediction(
+    prediction_date='2026-01-13',
+    predicted_bias='BULLISH',
+    actual_outcome='PENDING',
+    gold_price_then=2680.0,
+    gold_price_now=2695.0,
+    market_context='Gold testing 2700 resistance'
+)
+
+# Get pattern success rate
+pattern = cognition.get_pattern_success_rate('gold bullish breakout')
+print(f"Success rate: {pattern['success_rate']}%")
+
+# Generate learning feedback for AI
+feedback = cognition.generate_learning_feedback()
+```
+
+**Learning Features**:
+- Pattern recognition from historical outcomes
+- Similar market condition search
+- Adaptive recommendations based on win rates
+- Confidence scoring with streak tracking
 
 ---
 
