@@ -3,6 +3,10 @@ Syndicate Cognition Integration - Ingest reports into vector memory.
 
 This module connects Syndicate's output (journals, catalysts, analysis)
 to the cognition engine for semantic retrieval and learning.
+
+Supports:
+- Hektor VDB (native C++ SIMD-optimized) - preferred
+- hnswlib + SQLite (Python fallback) - always available
 """
 
 import os
@@ -12,6 +16,13 @@ import logging
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Any
+
+# Try Hektor first, fallback to hnswlib
+try:
+    from .hektor_store import HektorVectorStore, HEKTOR_AVAILABLE, get_vector_store
+except ImportError:
+    HEKTOR_AVAILABLE = False
+    get_vector_store = None
 
 from .vector_store import VectorStore, Document, SearchResult
 
@@ -23,6 +34,7 @@ class SyndicateCognition:
     Provides:
     - Automatic ingestion of reports into vector store
     - Semantic search across all historical data
+    - Hybrid search (vector + BM25) when using Hektor
     - Context retrieval for AI analysis
     - Learning from past predictions
     """
@@ -44,15 +56,28 @@ class SyndicateCognition:
         self,
         data_dir: str = "./data",
         output_dir: str = "./output",
+        prefer_hektor: bool = True,
         logger: Optional[logging.Logger] = None
     ):
         self.data_dir = Path(data_dir)
         self.output_dir = Path(output_dir)
         self.logger = logger or logging.getLogger(__name__)
+        self.using_hektor = False
         
-        # Initialize vector store
+        # Initialize vector store - try Hektor first
         vectors_path = self.data_dir / "vectors"
-        self.store = VectorStore(vectors_path)
+        
+        if prefer_hektor and HEKTOR_AVAILABLE:
+            try:
+                from .hektor_store import HektorVectorStore
+                self.store = HektorVectorStore(vectors_path)
+                self.using_hektor = True
+                self.logger.info(f"[COGNITION] Using Hektor VDB (native C++ backend)")
+            except Exception as e:
+                self.logger.warning(f"[COGNITION] Hektor init failed: {e}, using hnswlib")
+                self.store = VectorStore(vectors_path)
+        else:
+            self.store = VectorStore(vectors_path)
         
         self.logger.info(f"[COGNITION] Initialized with {self.store.count()} documents")
     
@@ -175,6 +200,37 @@ class SyndicateCognition:
             List of SearchResult objects
         """
         return self.store.search(query, k=k, doc_type=doc_type, min_score=min_score)
+    
+    def hybrid_search(
+        self,
+        query: str,
+        k: int = 5,
+        doc_type: Optional[str] = None,
+        vector_weight: float = 0.7,
+        bm25_weight: float = 0.3
+    ) -> List[SearchResult]:
+        """
+        Hybrid search combining vector similarity and BM25 lexical matching.
+        
+        Only available when using Hektor backend. Falls back to regular search otherwise.
+        
+        Args:
+            query: Search query
+            k: Number of results
+            doc_type: Filter by document type
+            vector_weight: Weight for vector similarity (0-1)
+            bm25_weight: Weight for BM25 lexical match (0-1)
+        
+        Returns:
+            List of SearchResult objects
+        """
+        if self.using_hektor and hasattr(self.store, 'hybrid_search'):
+            return self.store.hybrid_search(
+                query, k=k, doc_type=doc_type,
+                vector_weight=vector_weight, bm25_weight=bm25_weight
+            )
+        else:
+            return self.search(query, k=k, doc_type=doc_type)
     
     def get_context_for_analysis(
         self,
