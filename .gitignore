@@ -83,3 +83,4 @@ Artifact/hektor/*.egg-info/
 .DS_Store
 Thumbs.db
 Artifact/hektor/
+*.gguf

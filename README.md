@@ -1,191 +1,156 @@
-# Gladius
+<br>
 
-> Autonomous Enterprise Operating System with Native AI
-
-An autonomous enterprise system evolving toward **fully native AI** - no external API dependencies. Manages multiple artifacts (business units) through unified cognition, native vectorization, and semantic memory. Features native C++ vector database (Hektor), native tool routing, and autonomous learning.
+<p align="center">
+  <img src="https://img.shields.io/badge/Language-C++-blue.svg" alt="C++">
+  <img src="https://img.shields.io/badge/Python-3.10+-yellow.svg" alt="Python">
+  <img src="https://img.shields.io/badge/AI-Native-brightgreen.svg" alt="Native AI">
+  <img src="https://img.shields.io/badge/VectorDB-Hektor-informational.svg" alt="Hektor VDB">
+  <img src="https://img.shields.io/github/last-commit/adam/gladius?style=flat-square" alt="Last Commit">
+  <img src="https://img.shields.io/github/commit-activity/m/adam/gladius?style=flat-square" alt="Commit Activity">
+  <img src="https://img.shields.io/github/issues/adam/gladius?style=flat-square" alt="Issues">
+  <img src="https://img.shields.io/github/license/adam/gladius?style=flat-square" alt="License">
+</p>
 
 ---
 
-## 🚀 Quick Start
+## Overview
 
-```bash
-cd /home/adam/worxpace/gladius
+Gladius is an **Autonomous Enterprise Operating System** with a fully native AI stack—no external API dependencies. It manages multiple business artifacts through unified cognition, native vectorization, and semantic memory. Core features include a native C++ vector database (Hektor), native tool routing, and autonomous learning.
 
-# Start all services
-./gladius.sh start
+---
 
-# Check status
-./gladius.sh status
+## Architecture
 
-# Stop services
-./gladius.sh stop
+```mermaid
+flowchart TD
+    A["GLADIUS<br/>(Autonomous Enterprise Manager)"]
+    subgraph Core
+        B["Hektor VDB<br/>SIMD/HNSW"]
+        C["Native Router<br/>(tool <10ms)"]
+        D["Memory Module<br/>(16 tools)"]
+    end
+    E["MODEL STACK<br/>Native GGUF (<10ms) → Ollama (~100ms) → Fallback"]
+    F1["ALPHA<br/>Syndicate<br/>Research"]
+    F2["BETA<br/>Cthulu<br/>Trading"]
+    F3["THETA<br/>(Future)<br/>Publishing"]
+
+    A --> Core
+    Core --> E
+    E --> F1
+    E --> F2
+    E --> F3
 ```
 
-**Access Points**:
-| Service | URL | Credentials |
-|---------|-----|-------------|
-| Dashboard | http://localhost:3000 | admin / gladius |
-| API Docs | http://localhost:7000/docs | - |
-| Grafana | http://localhost:3001 | admin / admin |
+---
+
+## Native AI Model Stack
+
+```mermaid
+flowchart LR
+    A["Tool Routing<br/>Native GGUF<br/>&lt;10ms<br/>🚧 Training ready"]
+    B["Fallback<br/>Pattern Match<br/>&lt;1ms<br/>✅ Working"]
+    C["Reasoning<br/>Ollama<br/>~100ms<br/>✅ Production"]
+    D["Embeddings<br/>TF-IDF + Hektor<br/>&lt;5ms<br/>✅ Production"]
+
+    subgraph ModelStack
+        A
+        B
+        C
+        D
+    end
+```
+
+**Evolution Path:**
+
+```mermaid
+flowchart LR
+    P1["Phase 1<br/>Ollama + patterns"]
+    P2["Phase 2<br/>Fine-tuned GGUF"]
+    P3["Phase 3<br/>Gladius Native (full autonomy)"]
+    P1 --> P2 --> P3
+```
 
 ---
 
-## 📋 Documentation
+## Core Systems
 
-| Document | Purpose |
-|----------|---------|
-| **[ARCHITECTURE.md](ARCHITECTURE.md)** | System architecture & component design |
-| **[MODEL.md](MODEL.md)** | Native AI model strategy & training pipeline |
-| **[COMMANDS.md](COMMANDS.md)** | Complete command reference |
-| **[CONTEXT.md](CONTEXT.md)** | Current operational context |
-| **[MANDATE.md](MANDATE.md)** | Operational mandate |
+```mermaid
+flowchart TD
+    H["Hektor VDB<br/>Native C++ vectors"]
+    R["Native Router<br/>Tool routing"]
+    M["Memory Module<br/>16 tools, multi-DB"]
+    I["Infra API<br/>Market data, portfolios"]
+    D["Dashboard<br/>Control panel"]
+    S["Syndicate<br/>Market intelligence"]
+    C["Cthulu<br/>MQL5/MT5 trading"]
+
+    H --> R
+    R --> M
+    M --> I
+    I --> D
+    D --> S
+    S --> C
+```
+
+---
+
+## Roadmap
+
+```mermaid
+gantt
+    dateFormat  YYYY-MM-DD
+    title       Gladius Roadmap
+
+    section Phase 2.1
+    Native_tool_router_GGUF      :done,    p21, 2026-01-01, 2026-03-31
+    section Phase 2.2
+    Domain_specialist_gold_trading :active, p22, 2026-04-01, 2026-06-30
+    section Phase 3
+    Gladius_Native_full_autonomy   :        p3, 2026-07-01, 2026-12-31
+```
 
 ---
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         GLADIUS                                  │
-│              (Autonomous Enterprise Manager)                     │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐       │
-│  │  Hektor VDB   │  │ Native Router │  │ Memory Module │       │
-│  │  SIMD/HNSW    │  │  (tool <10ms) │  │  (16 tools)   │       │
-│  └───────────────┘  └───────────────┘  └───────────────┘       │
-│  ┌───────────────────────────────────────────────────────┐     │
-│  │                    MODEL STACK                         │     │
-│  │  Native GGUF (<10ms) → Ollama (~100ms) → Fallback     │     │
-│  └───────────────────────────────────────────────────────┘     │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-         ┌────────────────────┼────────────────────┐
-         ▼                    ▼                    ▼
-  ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
-  │   ALPHA     │      │    BETA     │      │   THETA     │
-  │  Syndicate  │      │   Cthulu    │      │  (Future)   │
-  │  Research   │      │   Trading   │      │  Publishing │
-  └─────────────┘      └─────────────┘      └─────────────┘
+```mermaid
+flowchart TD
+    subgraph GLADIUS [GLADIUS (Autonomous Enterprise Manager)]
+        Hektor["Hektor VDB<br/>SIMD/HNSW"]
+        Router["Native Router<br/>(tool <10ms)"]
+        Memory["Memory Module<br/>(16 tools)"]
+        ModelStack["MODEL STACK<br/>Native GGUF (<10ms) → Ollama (~100ms) → Fallback"]
+    end
+    GLADIUS -->|Manages| Alpha["ALPHA<br/>Syndicate<br/>Research"]
+    GLADIUS -->|Manages| Beta["BETA<br/>Cthulu<br/>Trading"]
+    GLADIUS -->|Manages| Theta["THETA<br/>(Future)<br/>Publishing"]
 ```
 
 ---
 
 ## 🧠 Native AI Model Stack
 
-The system is evolving toward fully native AI (see [MODEL.md](MODEL.md)):
+```mermaid
+flowchart TB
+    ToolRouting["Tool Routing<br/>Native GGUF<br/><10ms<br/>🚧 Training ready"]
+    Fallback["Fallback<br/>Pattern Match<br/><1ms<br/>✅ Working"]
+    Reasoning["Reasoning<br/>Ollama<br/>~100ms<br/>✅ Production"]
+    Embeddings["Embeddings<br/>TF-IDF + Hektor<br/><5ms<br/>✅ Production"]
 
-| Layer | Component | Latency | Status |
-|-------|-----------|---------|--------|
-| **Tool Routing** | Native GGUF | <10ms | 🚧 Training ready |
-| **Fallback** | Pattern Match | <1ms | ✅ Working |
-| **Reasoning** | Ollama | ~100ms | ✅ Production |
-| **Embeddings** | TF-IDF + Hektor | <5ms | ✅ Production |
+    ToolRouting --> Fallback
+    ToolRouting --> Reasoning
+    ToolRouting --> Embeddings
+```
 
 **Evolution Path:**
-```
-Phase 1 (current) → Phase 2 (next) → Phase 3 (target)
-Ollama + patterns → Fine-tuned GGUF → Gladius Native (full autonomy)
-```
 
----
-
-## ⚙️ Core Systems
-
-| System | Port | Status | Description |
-|--------|------|--------|-------------|
-| **Hektor VDB** | - | ✅ Production | Native C++ vectors (SIMD, HNSW, BM25) |
-| **Native Router** | - | ✅ Implemented | Tool routing (<10ms target) |
-| **Memory Module** | - | ✅ Production | 16 tools, multi-DB access |
-| **Infra API** | 7000 | ✅ Production | Market data, portfolios |
-| **Dashboard** | 5000 | ✅ Production | Control panel |
-| **Syndicate** | - | ✅ Production | Market intelligence |
-| **Cthulu** | - | ✅ Staging | MQL5/MT5 trading |
-
----
-
-## 🔧 Quick Examples
-
-### Hektor VDB (Native Vectors)
-
-```bash
-cd Artifact/hektor && mkdir build && cd build
-cmake .. -DVDB_BUILD_PYTHON=ON && make -j$(nproc)
-```
-
-```python
-from cognition.hektor_store import get_vector_store
-store = get_vector_store("./vectors", dim=384)
-store.add_text("doc1", "Gold broke above resistance")
-results = store.hybrid_search("gold breakout", k=5)
-```
-
-### Native Tool Router
-
-```python
-from cognition import NativeToolRouter
-
-router = NativeToolRouter()
-result = router.route("Search for gold analysis")
-print(f"Tool: {result.tool_name}, Confidence: {result.confidence}")
-```
-
-### Memory Module
-
-```python
-from cognition import MemoryModule
-
-mm = MemoryModule(base_dir='.')
-mm.call_tool('search', query='gold bullish', k=5)
-mm.remember('pattern', 'Head and shoulders at 2700')
-mm.recall('gold patterns', k=3)
-```
-
-### Learning Loop
-
-```python
-from cognition import CognitionLearningLoop
-
-with CognitionLearningLoop('.') as loop:
-    result = loop.run_cycle(current_gold_price=2690.0)
-    print(f"Training examples: {result.training_examples_generated}")
+```mermaid
+flowchart LR
+    Phase1["Phase 1 (current)<br/>Ollama + patterns"]
+    Phase2["Phase 2 (next)<br/>Fine-tuned GGUF"]
+    Phase3["Phase 3 (target)<br/>Gladius Native (full autonomy)"]
+    Phase1 --> Phase2 --> Phase3
 ```
 
 ---
 
-## 📊 Training Pipeline
-
-Generate training data for native models:
-
-```python
-from cognition import TrainingDataGenerator
-
-gen = TrainingDataGenerator('./data/training')
-dataset = gen.generate_synthetic(n_per_category=100)
-gen.export_all([dataset], formats=['llama'])
-```
-
-Fine-tune with LoRA (see [MODEL.md](MODEL.md) for details):
-```bash
-llama-finetune --model-base smollm2-135m.gguf \
-    --train-data combined.jsonl --lora-r 8 --epochs 3
-```
-
----
-
-## 🎯 Roadmap
-
-| Phase | Target | Status |
-|-------|--------|--------|
-| **Phase 2.1** | Native tool router GGUF | Q1 2026 |
-| **Phase 2.2** | Domain specialist (gold/trading) | Q2 2026 |
-| **Phase 3** | Gladius Native (full autonomy) | Q3-Q4 2026 |
-
----
-
-*See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed design.*
-*See [MODEL.md](MODEL.md) for native AI strategy.*
-*See [COMMANDS.md](COMMANDS.md) for complete reference.*
-
----
-
-*Last updated: 2026-01-13*

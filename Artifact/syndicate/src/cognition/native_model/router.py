@@ -123,18 +123,32 @@ class NativeToolRouter:
     def __init__(
         self,
         model_path: Optional[str] = None,
+        pattern_model_path: Optional[str] = None,
         ollama_model: str = "qwen2.5:0.5b",
         ollama_host: str = "http://localhost:11434",
         use_native: bool = True,
+        use_pattern: bool = True,
         use_ollama: bool = True,
         logger: Optional[logging.Logger] = None
     ):
         self.model_path = Path(model_path) if model_path else None
+        self.pattern_model_path = Path(pattern_model_path) if pattern_model_path else None
         self.ollama_model = ollama_model
         self.ollama_host = ollama_host
         self.use_native = use_native and NATIVE_MODEL_AVAILABLE
+        self.use_pattern = use_pattern
         self.use_ollama = use_ollama
         self.logger = logger or logging.getLogger(__name__)
+        
+        # Load pattern model if available
+        self.pattern_model = None
+        if self.use_pattern and self.pattern_model_path and self.pattern_model_path.exists():
+            try:
+                with open(self.pattern_model_path) as f:
+                    self.pattern_model = json.load(f)
+                self.logger.info(f"Loaded pattern model with {len(self.pattern_model.get('patterns', {}))} tools")
+            except Exception as e:
+                self.logger.warning(f"Failed to load pattern model: {e}")
         
         # Validate model path if provided
         if self.use_native and self.model_path:
@@ -154,13 +168,14 @@ class NativeToolRouter:
         # Routing statistics
         self._stats = {
             "native_calls": 0,
+            "pattern_calls": 0,
             "ollama_calls": 0,
             "fallback_calls": 0,
             "total_latency_ms": 0.0,
             "errors": 0
         }
         
-        self.logger.info(f"NativeToolRouter initialized (native={self.use_native}, ollama={self.use_ollama})")
+        self.logger.info(f"NativeToolRouter initialized (native={self.use_native}, pattern={self.use_pattern}, ollama={self.use_ollama})")
     
     def _init_system_prompt(self):
         """Initialize the system prompt for tool routing."""
@@ -204,20 +219,27 @@ IMPORTANT: Only output the JSON, no explanation."""
         Args:
             query: User query
             context: Optional context
-            prefer_source: Force specific source ("native", "ollama", "fallback")
+            prefer_source: Force specific source ("native", "pattern", "ollama", "fallback")
         
         Returns:
             ToolRoutingResult with tool selection
         """
         start_time = datetime.now()
         
-        # Try in order: native -> ollama -> fallback
+        # Try in order: native -> pattern -> ollama -> fallback
         result = None
         
         if prefer_source == "native" or (self.use_native and prefer_source is None):
             result = self._route_native(query, context)
             if result.success:
                 self._stats["native_calls"] += 1
+                self._record_latency(start_time)
+                return result
+        
+        if prefer_source == "pattern" or (self.use_pattern and self.pattern_model and prefer_source is None):
+            result = self._route_pattern(query)
+            if result.success:
+                self._stats["pattern_calls"] += 1
                 self._record_latency(start_time)
                 return result
         
@@ -228,7 +250,7 @@ IMPORTANT: Only output the JSON, no explanation."""
                 self._record_latency(start_time)
                 return result
         
-        # Fallback to pattern matching
+        # Fallback to regex pattern matching
         result = self._route_fallback(query)
         self._stats["fallback_calls"] += 1
         
@@ -237,6 +259,80 @@ IMPORTANT: Only output the JSON, no explanation."""
         
         self._record_latency(start_time)
         return result
+    
+    def _route_pattern(self, query: str) -> ToolRoutingResult:
+        """Route using trained pattern model."""
+        start = datetime.now()
+        
+        if not self.pattern_model:
+            return ToolRoutingResult(
+                tool_name=None,
+                arguments={},
+                confidence=0.0,
+                latency_ms=0.0,
+                source="pattern",
+                error="Pattern model not loaded"
+            )
+        
+        patterns = self.pattern_model.get("patterns", {})
+        query_lower = query.lower()
+        
+        best_match = None
+        best_score = 0.0
+        
+        for tool_name, tool_patterns in patterns.items():
+            for pattern_info in tool_patterns:
+                pattern_query = pattern_info.get("query", "").lower()
+                
+                # Simple similarity - word overlap
+                query_words = set(query_lower.split())
+                pattern_words = set(pattern_query.split())
+                
+                if not pattern_words:
+                    continue
+                
+                overlap = len(query_words & pattern_words)
+                score = overlap / max(len(query_words), len(pattern_words))
+                
+                if score > best_score:
+                    best_score = score
+                    best_match = {
+                        "tool": tool_name,
+                        "args": pattern_info.get("args", {}),
+                        "score": score
+                    }
+        
+        latency = (datetime.now() - start).total_seconds() * 1000
+        
+        if best_match and best_score >= 0.3:  # Threshold for pattern match
+            # Adapt arguments from pattern to current query
+            args = self._adapt_pattern_args(best_match["tool"], best_match["args"], query)
+            return ToolRoutingResult(
+                tool_name=best_match["tool"],
+                arguments=args,
+                confidence=min(0.9, best_score + 0.3),  # Boost confidence
+                latency_ms=latency,
+                source="pattern"
+            )
+        
+        return ToolRoutingResult(
+            tool_name=None,
+            arguments={},
+            confidence=0.0,
+            latency_ms=latency,
+            source="pattern",
+            error="No pattern match found"
+        )
+    
+    def _adapt_pattern_args(self, tool: str, template_args: Dict[str, Any], query: str) -> Dict[str, Any]:
+        """Adapt template arguments to the current query."""
+        args = dict(template_args)
+        
+        # For search-like tools, use the query
+        if tool in ["search", "hybrid_search", "recall", "get_context"]:
+            args["query"] = query
+        
+        return args
     
     def _record_latency(self, start_time: datetime):
         """Record latency statistics."""
@@ -455,18 +551,34 @@ IMPORTANT: Only output the JSON, no explanation."""
     
     def _parse_tool_json(self, text: str) -> Optional[Dict[str, Any]]:
         """Parse tool call JSON from model output."""
-        # Try to find JSON in the text
+        # Try parsing the entire text first (most common case)
         try:
-            # Look for JSON object
-            match = re.search(r'\{[^{}]*\}', text, re.DOTALL)
-            if match:
-                return json.loads(match.group())
+            parsed = json.loads(text.strip())
+            if isinstance(parsed, dict) and "tool" in parsed:
+                return parsed
         except json.JSONDecodeError:
             pass
         
-        # Try parsing the entire text
+        # Try to find JSON with nested braces (for args object)
         try:
-            return json.loads(text)
+            # Find the outermost JSON object
+            start = text.find('{')
+            if start != -1:
+                depth = 0
+                end = start
+                for i, char in enumerate(text[start:], start):
+                    if char == '{':
+                        depth += 1
+                    elif char == '}':
+                        depth -= 1
+                        if depth == 0:
+                            end = i + 1
+                            break
+                
+                json_str = text[start:end]
+                parsed = json.loads(json_str)
+                if isinstance(parsed, dict) and "tool" in parsed:
+                    return parsed
         except json.JSONDecodeError:
             pass
         
@@ -476,12 +588,14 @@ IMPORTANT: Only output the JSON, no explanation."""
         """Get routing statistics."""
         total_calls = (
             self._stats["native_calls"] +
+            self._stats["pattern_calls"] +
             self._stats["ollama_calls"] +
             self._stats["fallback_calls"]
         )
         
         return {
             "native_calls": self._stats["native_calls"],
+            "pattern_calls": self._stats["pattern_calls"],
             "ollama_calls": self._stats["ollama_calls"],
             "fallback_calls": self._stats["fallback_calls"],
             "total_calls": total_calls,
@@ -499,6 +613,7 @@ IMPORTANT: Only output the JSON, no explanation."""
         """Reset routing statistics."""
         self._stats = {
             "native_calls": 0,
+            "pattern_calls": 0,
             "ollama_calls": 0,
             "fallback_calls": 0,
             "total_latency_ms": 0.0,
