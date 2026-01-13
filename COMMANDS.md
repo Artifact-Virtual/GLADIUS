@@ -700,6 +700,131 @@ export LINKEDIN_ACCESS_TOKEN=your-token
 
 ---
 
+## Native Tool Model
+
+**Location**: `Artifact/syndicate/src/cognition/native_model/`
+
+### Overview
+
+The native model stack provides tool routing without external API dependencies:
+
+| Layer | Component | Latency | Status |
+|-------|-----------|---------|--------|
+| 1 | Native GGUF | <10ms | 🚧 Training ready |
+| 2 | Ollama | ~100ms | ✅ Fallback |
+| 3 | Pattern Match | <1ms | ✅ Working |
+
+### NativeToolRouter Usage
+
+```python
+from cognition import NativeToolRouter
+
+# Initialize router
+router = NativeToolRouter(
+    model_path='./models/tool-router.gguf',  # Optional: native model
+    ollama_model='llama3.2',                  # Fallback LLM
+    use_native=True,                          # Try native first
+    use_ollama=True                           # Allow Ollama fallback
+)
+
+# Route a query
+result = router.route("Search for gold resistance levels")
+print(f"Tool: {result.tool_name}")
+print(f"Args: {result.arguments}")
+print(f"Confidence: {result.confidence}")
+print(f"Source: {result.source}")  # "native", "ollama", or "fallback"
+
+# Execute via memory module
+from cognition import MemoryModule
+mem = MemoryModule(base_dir='.')
+execution = mem.call_tool(result.tool_name, **result.arguments)
+
+# Get stats
+print(router.stats())
+```
+
+### ModelTrainer Usage
+
+```python
+from cognition import ModelTrainer, TrainingConfig
+
+# Configure training
+config = TrainingConfig(
+    base_model='smollm2-135m',  # Tiny model for fast inference
+    output_dir='./models',
+    epochs=3,
+    batch_size=4,
+    learning_rate=1e-4,
+    lora_rank=8,
+    quantization='q4_k_m'
+)
+
+# Initialize trainer
+trainer = ModelTrainer(config=config)
+
+# Generate training data from history
+sample_history = [
+    {'tool': 'search', 'args': {'query': 'gold analysis'}, 'success': True},
+    {'tool': 'read_file', 'args': {'path': 'journal.md'}, 'success': True},
+]
+training_data = trainer.generate_training_data(sample_history)
+
+# Train model
+metrics = trainer.train(training_data, model_name='tool-router')
+print(f"Trained: {metrics.output_model_path}")
+print(f"Success: {metrics.success}")
+
+# Validate
+results = trainer.validate_model(
+    model_path=metrics.output_model_path,
+    test_data=test_examples
+)
+print(f"Accuracy: {results['accuracy']}%")
+```
+
+### CLI Testing
+
+```bash
+cd Artifact/syndicate
+
+# Test NativeToolRouter
+python3 -c "
+import sys; sys.path.insert(0, 'src')
+from cognition import NativeToolRouter, NATIVE_MODEL_AVAILABLE
+print(f'Native model available: {NATIVE_MODEL_AVAILABLE}')
+
+router = NativeToolRouter(use_native=False)
+result = router.route('Search for gold price')
+print(f'Tool: {result.tool_name}, Source: {result.source}')
+"
+
+# Test ModelTrainer
+python3 -c "
+import sys; sys.path.insert(0, 'src')
+from cognition import ModelTrainer, TrainingConfig
+config = TrainingConfig(base_model='smollm2-135m')
+trainer = ModelTrainer(config=config)
+print('Trainer ready')
+"
+```
+
+### Model Files
+
+```
+Artifact/syndicate/models/
+├── base_models/           # Original base models (GGUF)
+│   └── smollm2-135m.gguf
+├── lora/                  # LoRA adapters
+│   └── tool-router/
+│       └── adapter.gguf
+├── production/            # Merged & quantized
+│   └── tool-router.gguf
+└── training_data/         # Training artifacts
+    └── combined_training.jsonl
+```
+
+---
+
 ## Emergency Operations
 
 ### Stop All

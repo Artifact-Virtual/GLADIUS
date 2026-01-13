@@ -76,6 +76,21 @@ except ImportError as e:
     SelfImprovementEngine = None
     CognitionLearningLoop = None
 
+# Native Model (for tool routing)
+try:
+    from .native_model import (
+        NativeToolRouter,
+        ToolRoutingResult,
+        NATIVE_MODEL_AVAILABLE,
+        ModelTrainer,
+        TrainingConfig,
+        TrainingMetrics
+    )
+except ImportError:
+    NATIVE_MODEL_AVAILABLE = False
+    NativeToolRouter = None
+    ModelTrainer = None
+
 __all__ = [
     # Core
     'VectorStore', 
@@ -117,4 +132,12 @@ __all__ = [
     'run_learning_cycle',
     'run_benchmark',
     'LEARNING_AVAILABLE',
+    
+    # Native Model
+    'NativeToolRouter',
+    'ToolRoutingResult',
+    'NATIVE_MODEL_AVAILABLE',
+    'ModelTrainer',
+    'TrainingConfig',
+    'TrainingMetrics',
 ]

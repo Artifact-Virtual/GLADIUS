@@ -6,98 +6,151 @@
 
 ## System Overview
 
-Gladius is an autonomous enterprise operating system that manages multiple artifacts (autonomous business units) through a unified cognition layer with native vectorization, ONNX Runtime, and llama.cpp inference.
+Gladius is an autonomous enterprise operating system evolving toward **full native AI** - no external API dependencies. It manages multiple artifacts (autonomous business units) through a unified cognition layer.
 
 - **Root**: `/home/adam/worxpace/gladius`
 - **Primary Domain**: artifactvirtual.com (planned)
-- **Cognition Backend**: Hektor VDB (native C++) + llama.cpp + ONNX Runtime
+- **Cognition Backend**: Hektor VDB + Native Tool Router + Ollama (transitional)
 
 ---
 
-## Active Artifacts
+## Current State
 
-### Alpha: Syndicate (Research)
-- **Path**: `Artifact/syndicate/`
-- **Purpose**: Market research, analysis, journal generation
-- **Status**: ✅ Production
-- **Cognition**: Hektor VDB (SIMD + hybrid search)
-- **Outputs**: Journals, Premarket, Catalysts, Calendar, Charts
+### Model Stack
 
-### Beta: Cthulu (Trading)
-- **Path**: External (`/_build/cthulu/`)
-- **Purpose**: Trade execution via MQL5/MetaTrader 5
-- **Status**: ✅ Staging (GCP deployed)
+| Layer | Component | Speed | Status |
+|-------|-----------|-------|--------|
+| Tool Routing | Native GGUF (target) | <10ms | 🚧 Training pipeline ready |
+| Tool Routing | Pattern fallback | <1ms | ✅ Working |
+| Reasoning | Ollama (llama3.2) | ~100ms | ✅ Production |
+| Embeddings | TF-IDF + Hektor | <5ms | ✅ Production |
+| Vectors | Hektor VDB (SIMD) | <1ms | ✅ Production |
 
-### Infrastructure
-- **Infra API** (7000): Markets, assets, portfolios
-- **Automata Dashboard** (5000): Control panel
-- **Frontend UI** (3000): React operator interface
+### Active Artifacts
+
+| Artifact | Purpose | Status | Cognition |
+|----------|---------|--------|-----------|
+| **Alpha (Syndicate)** | Market research | ✅ Production | Hektor + native tools |
+| **Beta (Cthulu)** | Trade execution | ✅ Staging | Pending integration |
+| **Infrastructure** | APIs, Dashboard | ✅ Production | N/A |
+
+### Services
+
+| Service | Port | Status |
+|---------|------|--------|
+| Infra API | 7000 | ✅ Running |
+| Dashboard API | 5000 | ✅ Running |
+| Dashboard UI | 3000 | ○ On-demand |
+| Grafana | 3001 | ✅ Running |
 
 ---
 
-## Cognition Engine
-
-The cognition engine provides semantic memory and native AI across all artifacts:
+## Cognition Engine Components
 
 ```
 Location: Artifact/syndicate/src/cognition/
-├── __init__.py
-├── embedder.py              # TF-IDF / neural embeddings
+├── __init__.py              # Module exports
+├── embedder.py              # TF-IDF embeddings
 ├── vector_store.py          # hnswlib fallback
-├── hektor_store.py          # Native Hektor VDB integration
-├── memory_module.py         # Unified memory access (planned)
-├── tool_calling.py          # Native tool definitions (planned)
-└── syndicate_integration.py # Report ingestion & search
+├── hektor_store.py          # Native Hektor VDB
+├── memory_module.py         # Multi-DB access, tool execution
+├── tool_calling.py          # Tool definitions & registry
+├── syndicate_integration.py # Report ingestion, prediction learning
+├── training_generator.py    # Fine-tuning data generation
+├── self_improvement.py      # Autonomous improvement proposals
+├── learning_loop.py         # Continuous learning cycle
+└── native_model/            # Native AI models
+    ├── __init__.py
+    ├── router.py            # NativeToolRouter
+    └── trainer.py           # ModelTrainer for GGUF
 ```
 
-### Hektor VDB Features
-- **SIMD Optimization**: AVX2/AVX512 vector operations
-- **Hybrid Search**: Vector similarity + BM25 lexical fusion
-- **Gold Standard Types**: Journal, Chart, Catalyst, Calendar, etc.
-- **Native NLP**: WordPiece tokenizer, llama.cpp inference
-- **ONNX Runtime**: Native text/image encoders on Linux
-- **Python Bindings**: pyvdb module for seamless integration
+### Features Status
 
-### Current State
-| Metric | Value |
-|--------|-------|
-| Backend | Hektor VDB (native) |
-| Fallback | hnswlib + TF-IDF |
-| Vector Dimension | 384 |
-| LLM Integration | llama.cpp (b7716) |
-| ONNX Runtime | ✅ Enabled |
-| Build Status | ✅ Complete |
-| Training Data | ✅ Generator available |
-| Self-Improvement | ✅ Engine available |
-| Learning Loop | ✅ Autonomous cycles |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Hektor VDB | ✅ Working | SIMD vectors, hybrid search |
+| Memory Module | ✅ Working | 11/11 tools passing |
+| Tool Calling | ✅ Working | 16 tools registered |
+| Native Router | ✅ Implemented | Pattern fallback active |
+| Model Trainer | ✅ Implemented | Ready for fine-tuning |
+| Training Data | ✅ Generating | 155+ examples collected |
+| Learning Loop | ✅ Working | 5 cycle benchmark complete |
+| Self-Improvement | ✅ Working | Proposal pipeline ready |
 
 ---
 
-## Training & Self-Improvement
+## Training & Learning
 
-### Training Data Generation
-The system generates fine-tuning data from tool usage:
+### Data Generation
 
 ```python
 from cognition import TrainingDataGenerator
 
-gen = TrainingDataGenerator(output_dir='./data/training')
-
-# Generate from tool history
+gen = TrainingDataGenerator('./data/training')
 dataset = gen.generate_from_history(memory.history)
-
-# Generate synthetic examples
-synthetic = gen.generate_synthetic(n_per_category=20)
-
-# Export for llama.cpp fine-tuning
-gen.export_all([dataset, synthetic], formats=['llama'])
+dataset += gen.generate_synthetic(n_per_category=100)
+gen.export(dataset, format='llama')
 ```
 
-### Self-Improvement Engine
-Autonomous improvement with full audit trail:
+### Model Training (Planned)
+
+```bash
+# Download base model
+# Fine-tune with LoRA
+# Quantize to Q4_K_M
+# Deploy as tool-router.gguf
+```
+
+### Learning Loop
 
 ```python
-from cognition import SelfImprovementEngine, ImprovementCategory
+from cognition import CognitionLearningLoop
+
+with CognitionLearningLoop('.') as loop:
+    result = loop.run_cycle(current_gold_price=2690.0)
+    # Ingests reports → generates training data → proposes improvements
+```
+
+---
+
+## Model Evolution
+
+See `MODEL.md` for complete native AI strategy.
+
+| Phase | Model | Capability | Target |
+|-------|-------|------------|--------|
+| **Phase 1** (current) | Ollama + patterns | Tool routing, analysis | ✅ Working |
+| **Phase 2** (next) | SmolLM2-135M GGUF | Native tool routing (<10ms) | Q1 2026 |
+| **Phase 3** (target) | Gladius Native 1-3B | Full autonomy | Q3-Q4 2026 |
+
+---
+
+## Key Metrics
+
+| Metric | Current | Target |
+|--------|---------|--------|
+| Tool routing latency | ~50ms (pattern) | <10ms (native) |
+| Tool routing accuracy | ~60% (pattern) | >95% (trained) |
+| Documents indexed | 18+ | Growing |
+| Training examples | 155+ | 1000+ |
+| Prediction win rate | 55% | >65% |
+| Memory module tools | 11/11 passing | All |
+| Self-improvement proposals | Pipeline ready | Autonomous |
+
+---
+
+## Immediate Next Steps
+
+1. **Download SmolLM2-135M GGUF** - Base model for tool router
+2. **Generate 1000+ training examples** - From history + synthetic
+3. **Fine-tune with LoRA** - 8 rank, 3 epochs
+4. **Integrate native router** - Replace pattern fallback
+5. **Benchmark latency/accuracy** - vs Ollama
+
+---
+
+*Last updated: 2026-01-13*
 
 engine = SelfImprovementEngine(base_dir='.')
 

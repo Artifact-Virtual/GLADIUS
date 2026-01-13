@@ -3,47 +3,76 @@
 > Autonomous Enterprise Operating System with Native AI
 
 ---
+
 ## High-Level Architecture
 
-```mermaid
-flowchart TB
-       subgraph GLADIUS["GLADIUS\n(Autonomous Enterprise Manager)"]
-              direction TB
-              COG["COGNITION ENGINE\nHektor VDB + llama.cpp\nSIMD • ONNX • Native AI"]
-              MEM["MEMORY MODULE\nContext • Learning • History\nTool Calling • Multi-DB Access\nWorkspace • File Management"]
-       end
-
-       ALPHA["ALPHA\nSyndicate\nResearch"]
-       BETA["BETA\nCthulu\nTrading"]
-       THETA["THETA\n(Future)\nPublishing"]
-
-       GLADIUS --> ALPHA
-       GLADIUS --> BETA
-       GLADIUS --> THETA
-
-       JOURNALS["Journals\nPremarket\nCatalysts\nSignals"]
-       EXEC["Execute Trades\nManage Positions"]
-
-       ALPHA --> JOURNALS
-       BETA --> EXEC
-       JOURNALS --> EXEC
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              GLADIUS                                        │
+│                    (Autonomous Enterprise Manager)                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                       COGNITION ENGINE                               │   │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌────────────┐  │   │
+│  │  │ Hektor VDB  │  │ Native Tool │  │   Memory    │  │  Learning  │  │   │
+│  │  │ SIMD/HNSW   │  │   Router    │  │   Module    │  │    Loop    │  │   │
+│  │  │ Vectors     │  │   (<10ms)   │  │  Multi-DB   │  │  Training  │  │   │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘  └────────────┘  │   │
+│  │                           │                                          │   │
+│  │  ┌─────────────────────────────────────────────────────────────┐    │   │
+│  │  │                    MODEL STACK                               │    │   │
+│  │  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │    │   │
+│  │  │  │ Tool Router │  │ Ollama LLM  │  │  Gladius Native     │  │    │   │
+│  │  │  │ (tiny GGUF) │  │ (fallback)  │  │  (future: full)     │  │    │   │
+│  │  │  │   <10ms     │  │   ~100ms    │  │   <50ms all tasks   │  │    │   │
+│  │  │  └─────────────┘  └─────────────┘  └─────────────────────┘  │    │   │
+│  │  └─────────────────────────────────────────────────────────────┘    │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+           ┌────────────────────────┼────────────────────────┐
+           │                        │                        │
+           ▼                        ▼                        ▼
+    ┌─────────────┐          ┌─────────────┐          ┌─────────────┐
+    │  ARTIFACT   │          │  ARTIFACT   │          │  ARTIFACT   │
+    │   ALPHA     │          │    BETA     │          │   THETA     │
+    │  Syndicate  │          │   Cthulu    │          │  (Future)   │
+    │  Research   │          │   Trading   │          │ Publishing  │
+    └─────────────┘          └─────────────┘          └─────────────┘
 ```
 
 ---
 
 ## Core Components
 
-### 1. Gladius (Enterprise Brain)
-- **Context Management**: Unified context across all artifacts via native vectorization
-- **Hektor VDB**: SIMD-optimized vector database with hybrid search (BM25 + semantic)
-- **Native AI**: llama.cpp + ONNX Runtime for local inference and embeddings
-- **Memory Module**: Historical learning, prediction tracking, native tool/function calling
-- **Cognition Engine**: Autonomous learning loop with self-improvement capabilities
-- **Multi-DB Access**: Read/write across all databases with unified memory hooks
-- **Workspace Access**: File/structure management for business and automata training
+### 1. Cognition Engine
 
-### 2. Artifacts (Autonomous Units)
-Each artifact is a self-contained operational unit with its own identity:
+The brain of Gladius - provides semantic memory, native AI inference, and autonomous learning.
+
+| Component | Purpose | Status |
+|-----------|---------|--------|
+| **Hektor VDB** | SIMD-optimized vectors, hybrid search | ✅ Production |
+| **Native Tool Router** | Route queries to tools (<10ms) | ✅ Implemented |
+| **Memory Module** | Multi-DB access, tool calling, history | ✅ Production |
+| **Learning Loop** | Continuous training, self-improvement | ✅ Implemented |
+| **Model Trainer** | Fine-tune GGUF models from history | ✅ Implemented |
+
+### 2. Model Stack (see MODEL.md for details)
+
+```
+Layer 1: Native GGUF    ──► Tool routing (target: <10ms)
+Layer 2: Ollama         ──► Complex reasoning (fallback: ~100ms)  
+Layer 3: Gladius Native ──► Full autonomy (future: <50ms all tasks)
+```
+
+**Evolution Path:**
+- Phase 1 (current): Ollama + pattern fallback
+- Phase 2 (next): Fine-tuned tool router GGUF
+- Phase 3 (target): Full native model, no external dependencies
+
+### 3. Artifacts (Autonomous Business Units)
 
 | Artifact | Codename | Purpose | Status | Domain |
 |----------|----------|---------|--------|--------|
@@ -51,53 +80,127 @@ Each artifact is a self-contained operational unit with its own identity:
 | Beta | Cthulu | Trade execution (MQL5/MT5) | ✅ Staging | /beta |
 | Theta | TBD | Social/Publishing | 🚧 Planned | /theta |
 
-### 3. Infrastructure Layer
-- **Infra API** (7000): Market data, assets, portfolios
-- **Automata Dashboard** (5000): Control panel, orchestration
-- **Frontend UI** (3000): React-based operator interface
-- **Grafana** (3000 via Docker): Metrics and monitoring dashboards
+### 4. Infrastructure Layer
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| Infra API | 7000 | Market data, assets, portfolios |
+| Dashboard Backend | 5000 | Automata control, content |
+| Dashboard Frontend | 3000 | React operator interface |
+| Grafana | 3001 | Metrics dashboards |
 
 ---
 
 ## Data Flow
 
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│                      SYNDICATE PIPELINE                          │
-└──────────────────────────────────────────────────────────────────┘
-                              │
-    ┌─────────────────────────┼─────────────────────────┐
-    │                         │                         │
-    ▼                         ▼                         ▼
-┌──────────┐           ┌──────────┐            ┌──────────┐
-│ Journals │           │ Premarket│            │Catalysts │
-│ Analysis │           │ Reports  │            │ Calendar │
-└────┬─────┘           └────┬─────┘            └────┬─────┘
-     │                      │                       │
-     └──────────────────────┼───────────────────────┘
-                            │
-                            ▼
-              ┌─────────────────────────┐
-              │    COGNITION ENGINE     │
-              │   ┌─────────────────┐   │
-              │   │  Hektor VDB     │   │
-              │   │  SIMD Vectors   │   │
-              │   │  BM25 Hybrid    │   │
-              │   └─────────────────┘   │
-              │   ┌─────────────────┐   │
-              │   │  llama.cpp +    │   │
-              │   │  ONNX Runtime   │   │
-              │   │  Native AI      │   │
-              │   └─────────────────┘   │
-              └───────────┬─────────────┘
-                          │
-         ┌────────────────┼────────────────┐
-         │                │                │
-         ▼                ▼                ▼
-    ┌─────────┐     ┌──────────┐    ┌──────────┐
-    │ Context │     │ Learning │    │ Signals  │
-    │ Memory  │     │ History  │    │ to Trade │
-    └─────────┘     └──────────┘    └────┬─────┘
+Market Sources (yfinance, FRED)
+         │
+         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    SYNDICATE PIPELINE                        │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐    │
+│  │ Journals │  │ Premarket│  │ Catalysts│  │ Calendar │    │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘    │
+│       └─────────────┼───────────────┼───────────────┘       │
+└─────────────────────┼───────────────┼───────────────────────┘
+                      ▼               │
+         ┌────────────────────────────┼──────────────────┐
+         │       COGNITION ENGINE     │                  │
+         │  ┌──────────────────────┐  │                  │
+         │  │    NativeToolRouter  │◄─┘                  │
+         │  │   (route → execute)  │                     │
+         │  └──────────┬───────────┘                     │
+         │             ▼                                 │
+         │  ┌──────────────────────┐                     │
+         │  │     Hektor VDB       │                     │
+         │  │  (ingest → search)   │                     │
+         │  └──────────┬───────────┘                     │
+         │             ▼                                 │
+         │  ┌──────────────────────┐                     │
+         │  │   TrainingGenerator  │                     │
+         │  │ (history → dataset)  │                     │
+         │  └──────────┬───────────┘                     │
+         │             ▼                                 │
+         │  ┌──────────────────────┐                     │
+         │  │    ModelTrainer      │                     │
+         │  │  (train → deploy)    │                     │
+         │  └──────────────────────┘                     │
+         └───────────────────────────────────────────────┘
+                      │
+                      ▼
+              Trade Signals → Cthulu → Execution
+```
+
+---
+
+## Technology Stack
+
+### Native AI (No External APIs)
+- **llama.cpp**: GGUF model inference, fine-tuning
+- **Hektor VDB**: SIMD vectors, hybrid search, ONNX encoders
+- **pyvdb**: Python bindings for Hektor
+
+### Python Backend
+- **FastAPI**: REST APIs (Infra, Dashboard)
+- **SQLite**: Lightweight persistence
+- **hnswlib**: Fallback vector search
+- **scikit-learn**: TF-IDF embeddings
+
+### External (Being Replaced)
+- **Ollama**: Local LLM inference (→ replaced by native GGUF)
+- **Google Genai**: Cloud fallback (→ phased out)
+
+---
+
+## File Structure
+
+```
+gladius/
+├── gladius.sh              # Unified control script
+├── ARCHITECTURE.md         # This file
+├── MODEL.md               # Native AI model strategy
+├── COMMANDS.md            # Operator reference
+├── CONTEXT.md             # Operational context
+├── README.md              # Quick start
+│
+├── Artifact/
+│   ├── syndicate/         # Alpha: Market research
+│   │   ├── main.py        # Analysis pipeline
+│   │   ├── run.py         # Daemon runner
+│   │   ├── src/
+│   │   │   └── cognition/ # Cognition engine
+│   │   │       ├── native_model/  # Tool router + trainer
+│   │   │       ├── hektor_store.py
+│   │   │       ├── memory_module.py
+│   │   │       ├── learning_loop.py
+│   │   │       └── ...
+│   │   ├── data/          # Databases, vectors, training
+│   │   ├── output/        # Reports, charts, journals
+│   │   └── models/        # GGUF models, LoRA adapters
+│   │
+│   ├── deployment/        # Infrastructure
+│   │   ├── infra/         # FastAPI backend
+│   │   └── automata/      # Dashboard
+│   │
+│   └── hektor/            # Native vector database
+│       ├── src/           # C++ core
+│       ├── bindings/      # Python (pyvdb)
+│       └── build/         # Compiled artifacts
+│
+├── projects/              # External project links
+│   ├── goldmax/           # Market memory
+│   ├── herald/            # Execution agent
+│   └── cthulu/            # MQL5 trading
+│
+└── obsidian_sync/         # Research knowledge base
+```
+
+---
+
+*See MODEL.md for detailed native AI architecture and training pipeline.*
+*See COMMANDS.md for operational commands.*
+*See CONTEXT.md for current system state.*
                                          │
                                          ▼
                                   ┌──────────┐
