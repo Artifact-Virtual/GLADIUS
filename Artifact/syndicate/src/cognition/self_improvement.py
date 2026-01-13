@@ -907,3 +907,151 @@ class SelfImprovementEngine:
             "total_snapshots": len(self.snapshots),
             "total_revisions": sum(p.revision_count for p in self.proposals.values())
         }
+    
+    # ==================== Obsidian Sync ====================
+    
+    def sync_to_obsidian(
+        self,
+        obsidian_dir: str,
+        impact_levels: List[str] = ["low", "medium"],
+        include_completed: bool = True
+    ) -> int:
+        """
+        Sync proposals to Obsidian for visibility.
+        
+        Args:
+            obsidian_dir: Path to obsidian_sync/gladius directory
+            impact_levels: Which impact levels to sync
+            include_completed: Whether to include completed proposals
+        
+        Returns:
+            Number of proposals synced
+        """
+        obsidian_path = Path(obsidian_dir)
+        obsidian_path.mkdir(parents=True, exist_ok=True)
+        
+        synced = 0
+        
+        for proposal in self.proposals.values():
+            # Check impact level
+            item_impacts = [item.impact for item in proposal.items]
+            max_impact = max(item_impacts) if item_impacts else "low"
+            
+            if max_impact not in impact_levels:
+                continue
+            
+            # Skip completed unless requested
+            if proposal.status == ProposalStatus.COMPLETED and not include_completed:
+                continue
+            
+            # Generate markdown
+            md_content = self._proposal_to_markdown(proposal)
+            
+            # Write to obsidian
+            filename = f"{proposal.id}_{proposal.title[:30].replace(' ', '_')}.md"
+            filepath = obsidian_path / filename
+            
+            with open(filepath, 'w') as f:
+                f.write(md_content)
+            
+            synced += 1
+            self.logger.info(f"[OBSIDIAN] Synced: {proposal.id}")
+        
+        # Write index file
+        self._write_obsidian_index(obsidian_path)
+        
+        return synced
+    
+    def _proposal_to_markdown(self, proposal: ImprovementProposal) -> str:
+        """Convert a proposal to Obsidian-compatible markdown."""
+        lines = [
+            "---",
+            f"id: {proposal.id}",
+            f"status: {proposal.status.value}",
+            f"category: {proposal.category.value}",
+            f"created: {proposal.created_at}",
+            f"updated: {proposal.updated_at}",
+            "tags: [gladius, improvement, system]",
+            "---",
+            "",
+            f"# {proposal.title}",
+            "",
+            f"> **Status**: {proposal.status.value}  ",
+            f"> **Category**: {proposal.category.value}  ",
+            f"> **Created**: {proposal.created_at}",
+            "",
+            "## Summary",
+            "",
+            proposal.summary,
+            "",
+            "## Items",
+            ""
+        ]
+        
+        for item in proposal.items:
+            lines.extend([
+                f"### {item.description}",
+                f"- **Impact**: {item.impact}",
+                f"- **Risk**: {item.risk}",
+                f"- **Effort**: {item.estimated_effort}",
+                f"- **Rationale**: {item.rationale}",
+                ""
+            ])
+        
+        # Reviews
+        if proposal.reviews:
+            lines.extend(["## Reviews", ""])
+            for review in proposal.reviews:
+                lines.append(f"- **{review.reviewer}** ({review.action}): {review.comment}")
+            lines.append("")
+        
+        # Checklist
+        if proposal.checklist:
+            lines.extend(["## Implementation Checklist", ""])
+            for item in proposal.checklist:
+                status = "x" if item.completed else " "
+                lines.append(f"- [{status}] {item.task}")
+            lines.append("")
+        
+        # Implementation plan
+        if proposal.implementation_plan:
+            lines.extend([
+                "## Implementation Plan",
+                "",
+                proposal.implementation_plan,
+                ""
+            ])
+        
+        return "\n".join(lines)
+    
+    def _write_obsidian_index(self, obsidian_path: Path):
+        """Write an index file for Obsidian."""
+        proposals_by_status = {}
+        for p in self.proposals.values():
+            status = p.status.value
+            if status not in proposals_by_status:
+                proposals_by_status[status] = []
+            proposals_by_status[status].append(p)
+        
+        lines = [
+            "---",
+            "tags: [gladius, index]",
+            "---",
+            "",
+            "# Gladius Improvement Proposals",
+            "",
+            f"**Last Updated**: {datetime.now().isoformat()}",
+            f"**Total Proposals**: {len(self.proposals)}",
+            ""
+        ]
+        
+        for status, proposals in sorted(proposals_by_status.items()):
+            lines.append(f"## {status.title()} ({len(proposals)})")
+            lines.append("")
+            for p in sorted(proposals, key=lambda x: x.updated_at, reverse=True):
+                filename = f"{p.id}_{p.title[:30].replace(' ', '_')}"
+                lines.append(f"- [[{filename}|{p.title}]] - {p.category.value}")
+            lines.append("")
+        
+        with open(obsidian_path / "_index.md", 'w') as f:
+            f.write("\n".join(lines))

@@ -191,6 +191,42 @@ flowchart TD
 
 ---
 
+## Digital Footprint Architecture
+
+```mermaid
+flowchart TD
+    subgraph SYNDICATE [SYNDICATE OUTPUTS]
+        Journals[Journals]
+        Catalysts[Catalysts]
+        Monthly[Monthly Reports]
+    end
+    
+    subgraph PUBLISHING [PUBLISHING MODULE]
+        Pipeline[Content Pipeline<br/>Ingest/Approve/Schedule]
+        Formatters[Format Adapters<br/>Discord/LinkedIn/Twitter/Notion]
+        Router[Platform Router<br/>Auth/Publish/Analytics]
+    end
+    
+    subgraph PLATFORMS [PLATFORMS]
+        Discord[Discord<br/>via Arty Bot]
+        LinkedIn[LinkedIn<br/>via Arty]
+        Twitter[Twitter/X<br/>via Automata]
+        Notion[Notion<br/>via API]
+    end
+    
+    Journals --> Pipeline
+    Catalysts --> Pipeline
+    Monthly --> Pipeline
+    Pipeline --> Formatters
+    Formatters --> Router
+    Router --> Discord
+    Router --> LinkedIn
+    Router --> Twitter
+    Router --> Notion
+```
+
+---
+
 ## Module Summary
 
 | Module | Purpose | Status |
@@ -205,6 +241,10 @@ flowchart TD
 | Context Manager | Summarization + coherence | ✅ Implemented |
 | Native Tool Router | Pattern-based tool routing | ✅ Implemented |
 | Model Trainer | GGUF fine-tuning pipeline | 🚧 In Progress |
+| **Digital Footprint** | Content pipeline + publishing | ✅ Implemented |
+| **Content Pipeline** | Ingest → Approve → Schedule → Track | ✅ Implemented |
+| **Format Adapters** | Platform-specific formatting | ✅ Implemented |
+| **Platform Router** | Multi-platform publishing | ✅ Implemented |
 
 ---
 

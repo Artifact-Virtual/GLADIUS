@@ -201,6 +201,9 @@ class CognitionLearningLoop:
             result.pattern_success_rate = accuracy.get("win_rate")
             result.confidence_score = accuracy.get("confidence_score")
             
+            # Step 7: Sync low/medium impact proposals to Obsidian
+            self._sync_to_obsidian()
+            
         except Exception as e:
             self.logger.error(f"[LEARNING] Cycle error: {e}")
             result.success = False
@@ -622,6 +625,20 @@ class CognitionLearningLoop:
         """Execute documentation improvement tasks."""
         # Documentation tasks are typically manual
         return True, "Documentation task acknowledged"
+    
+    def _sync_to_obsidian(self):
+        """Sync low/medium impact proposals to Obsidian for visibility."""
+        obsidian_dir = self.base_dir / "obsidian_sync" / "gladius"
+        if obsidian_dir.exists() or (self.base_dir / "obsidian_sync").exists():
+            try:
+                synced = self.improvement.sync_to_obsidian(
+                    str(obsidian_dir),
+                    impact_levels=["low", "medium"],
+                    include_completed=True
+                )
+                self.logger.info(f"[LEARNING] Synced {synced} proposals to Obsidian")
+            except Exception as e:
+                self.logger.warning(f"[LEARNING] Obsidian sync failed: {e}")
     
     def run_benchmark(self, n_cycles: int = 10) -> Dict[str, Any]:
         """
