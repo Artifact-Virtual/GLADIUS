@@ -942,4 +942,4 @@ if __name__ == '__main__':
     port = config.get('dashboard.port', 5000)
     
     logger.info(f"Starting Dashboard API on {host}:{port}")
-    socketio.run(app, host=host, port=port, debug=True)
+    socketio.run(app, host=host, port=port, debug=True, allow_unsafe_werkzeug=True)

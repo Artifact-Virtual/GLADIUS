@@ -2287,6 +2287,21 @@ def execute(
     # Initialize components
     cortex = Cortex(config, logger)
     quant = QuantEngine(config, logger)
+    
+    # Initialize cognition engine for semantic memory
+    cognition = None
+    try:
+        import sys
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+        from cognition import SyndicateCognition
+        cognition = SyndicateCognition(
+            data_dir=config.DATA_DIR,
+            output_dir=config.OUTPUT_DIR,
+            logger=logger
+        )
+        logger.info(f"[COGNITION] Loaded with {cognition.store.count()} documents")
+    except Exception as e:
+        logger.warning(f"[COGNITION] Not available: {e}")
     # The legacy `force` flag is no longer used. Chart generation skips only
     # duplicate charts produced earlier in the same run; on-disk charts from
     # previous runs do not prevent fresh generation in a new run.
@@ -2314,8 +2329,22 @@ def execute(
         logger.info(f"[TRADE] Auto-closed: #{trade['id']} - {trade.get('exit_reason', 'TRIGGERED')}")
         cortex.close_trade(trade["id"], gold_price, trade.get("exit_reason", "AUTO"))
 
-    # 4. AI Analysis
+    # 4. AI Analysis with semantic context
     memory_context = cortex.get_formatted_history()
+    
+    # Get semantic context from cognition engine
+    semantic_context = ""
+    if cognition:
+        try:
+            # Build query from current conditions
+            gsr = data.get("RATIOS", {}).get("GSR", "N/A")
+            vix = data.get("VIX", {}).get("price", "N/A")
+            query = f"Gold at ${gold_price:.2f} with GSR {gsr} and VIX {vix}"
+            semantic_context = cognition.get_context_for_analysis(query, k=3)
+            logger.info(f"[COGNITION] Retrieved {len(semantic_context)} chars of historical context")
+        except Exception as e:
+            logger.warning(f"[COGNITION] Context retrieval failed: {e}")
+    
     report = ""
     new_bias = "NEUTRAL"
 
@@ -2324,12 +2353,30 @@ def execute(
         report = "[NO AI MODE] - AI analysis skipped by CLI option."
         new_bias = "NEUTRAL"
     else:
-        strat = Strategist(config, logger, data, quant.news, memory_context, model=model, cortex=cortex)
+        # Combine memory context with semantic context
+        full_context = memory_context
+        if semantic_context:
+            full_context = f"{memory_context}\n\n{semantic_context}"
+        
+        strat = Strategist(config, logger, data, quant.news, full_context, model=model, cortex=cortex)
         report, new_bias = strat.think()
 
     # 5. Save Bias to Memory (unless dry-run)
     if not dry_run:
         cortex.update_memory(new_bias, gold_price)
+        
+        # Record prediction for learning
+        if cognition:
+            try:
+                cognition.learn_from_prediction(
+                    prediction_date=str(datetime.date.today()),
+                    predicted_bias=new_bias,
+                    actual_outcome="PENDING",  # Will be updated on next cycle
+                    gold_price_then=gold_price,
+                    gold_price_now=gold_price
+                )
+            except Exception as e:
+                logger.warning(f"[COGNITION] Failed to record prediction: {e}")
     else:
         logger.info("Dry-run mode: memory not updated")
 
@@ -2451,10 +2498,24 @@ def execute(
             except Exception as la_err:
                 logger.warning(f"Live analysis failed: {la_err}")
 
+        # Ingest generated reports into cognition engine for future retrieval
+        if cognition and not dry_run:
+            try:
+                counts = cognition.ingest_all_reports()
+                logger.info(f"[COGNITION] Ingested reports: {counts}")
+                cognition.close()
+            except Exception as ce:
+                logger.warning(f"[COGNITION] Post-ingestion failed: {ce}")
+
         return True
 
     except Exception as e:
         logger.error(f"Error writing report: {e}", exc_info=True)
+        if cognition:
+            try:
+                cognition.close()
+            except:
+                pass
         return False
 
 

@@ -17,7 +17,9 @@ arty/discord/node_modules/
 arty/discord/data/
 arty/discord/logs/
 arty/discord/backups/
-arty/discord/package-lock.json# Artifact deployment specifics and local dev artifacts
+arty/discord/package-lock.json
+
+# Artifact deployment specifics and local dev artifacts
 Artifact/deployment/.git.nested_backup/
 Artifact/deployment/**/.env
 Artifact/deployment/**/.env.*
@@ -40,8 +42,44 @@ env/
 node_modules/
 package-lock.json
 npm-debug.log
+*.tar.gz
+*.log
+
+# Data files (do not commit)
+*.json
+!package.json
+!tsconfig.json
+!**/config.example.json
+*.bak
+*.lock
+!package-lock.json
 *.db
 *.sqlite
 *.sqlite3
-*.tar.gz
-*.log
+
+# Cognition engine data
+Artifact/syndicate/data/vectors/
+Artifact/syndicate/data/*.db
+
+# Build artifacts
+*.o
+*.so
+*.a
+build/
+cmake-build-*/
+
+# Hektor VDB build
+Artifact/hektor/build/
+Artifact/hektor/*.egg-info/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+Artifact/hektor/

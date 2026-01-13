@@ -2,7 +2,7 @@
 
 > Complete operational command reference for developers and operators
 > 
-> **Last Updated**: 2026-01-11
+> **Last Updated**: 2026-01-13
 
 ---
 
@@ -44,6 +44,53 @@ The unified `gladius.sh` script manages all services:
 | `./gladius.sh health` | Full health check with API tests |
 | `./gladius.sh infra` | Test Infra API specifically |
 | `./gladius.sh logs` | Tail all log files |
+
+---
+
+## 🧠 Cognition Engine
+
+**Location**: `Artifact/syndicate/src/cognition/`
+
+### Python Usage
+
+```python
+from cognition import SyndicateCognition
+
+# Initialize
+cognition = SyndicateCognition(
+    data_dir='./data',
+    output_dir='./output'
+)
+
+# Ingest all reports
+counts = cognition.ingest_all_reports()
+
+# Semantic search
+results = cognition.search("gold bullish momentum", k=5)
+
+# Get context for AI analysis
+context = cognition.get_context_for_analysis("Gold testing resistance")
+
+# Get stats
+stats = cognition.stats()
+
+cognition.close()
+```
+
+### CLI Testing
+
+```bash
+cd Artifact/syndicate
+
+# Test cognition engine
+python3 -c "
+import sys; sys.path.insert(0, 'src')
+from cognition import SyndicateCognition
+cog = SyndicateCognition('./data', './output')
+print(cog.stats())
+cog.close()
+"
+```
 
 ---
 
@@ -621,4 +668,4 @@ sqlite3 Artifact/arty/store/arty.db ".tables"
 
 ---
 
-*Generated: 2026-01-11 | Gladius Command Reference v1.0*
+*Generated: 2026-01-13 | Gladius Command Reference v1.1*

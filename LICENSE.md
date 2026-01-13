@@ -1,6 +1,6 @@
 # All Rights Reserved — Proprietary License
 
-**Copyright © 2025 amuzetnoM**
+**Copyright © 2025 amuzetnoM, Artifact Virtual**
 
 ---
 

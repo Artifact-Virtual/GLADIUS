@@ -1,8 +1,8 @@
 # Gladius
 
-> Private AI Research & Trading Systems Repository
+> Autonomous Enterprise Operating System for AI Research & Trading
 
-A comprehensive research workspace for autonomous agent development, trading systems, and algorithmic strategies. This repository combines 60+ research articles, production trading systems, and enterprise automation frameworks.
+A comprehensive autonomous enterprise system managing multiple artifacts (business units) through unified context, vectorization, and semantic memory. Combines 60+ research articles, production trading systems, and enterprise automation frameworks.
 
 ---
 
@@ -31,13 +31,32 @@ cd /home/adam/worxpace/gladius
 
 ---
 
+## 🏗️ Architecture
+
+```
+                    ┌─────────────────────────────────────┐
+                    │           GLADIUS                   │
+                    │   Context • Vectorization • Memory  │
+                    └───────────────┬─────────────────────┘
+                                    │
+           ┌────────────────────────┼────────────────────────┐
+           ▼                        ▼                        ▼
+    ┌─────────────┐          ┌─────────────┐          ┌─────────────┐
+    │   ALPHA     │          │    BETA     │          │   THETA     │
+    │  Syndicate  │          │   Cthulu    │          │  (Future)   │
+    │  Research   │          │   Trading   │          │  Publishing │
+    └─────────────┘          └─────────────┘          └─────────────┘
+```
+
+---
+
 ## 📋 Quick Navigation
 
 ### Operational Guides
 - **[COMMANDS.md](COMMANDS.md)** - Complete command reference for developers
-- **[DASHBOARD_STRATEGY.md](DASHBOARD_STRATEGY.md)** - Dashboard architecture & roadmap
-- **[Artifact/MANDATE.md](Artifact/MANDATE.md)** - Operational mandate
-- **[Artifact/CONTEXT.md](Artifact/CONTEXT.md)** - Current system context
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture & design
+- **[MANDATE.md](MANDATE.md)** - Operational mandate
+- **[CONTEXT.md](CONTEXT.md)** - Current system context
 
 ### Documentation
 - [Main Repository README](obsidian_sync/README.md)
@@ -53,13 +72,13 @@ cd /home/adam/worxpace/gladius
 
 | System | Description | Status |
 |--------|-------------|--------|
+| **Cognition Engine** | HNSW + SQLite semantic memory | ✅ Production |
 | **Infra API** (7000) | Market data, portfolios, assets | ✅ Production |
 | **Automata Dashboard** (5000) | Control panel, content management | ✅ Production |
-| **Syndicate** | Market intelligence pipeline | ✅ Production |
+| **Syndicate** (Alpha) | Market intelligence pipeline | ✅ Production |
+| **Cthulu** (Beta) | MQL5/MT5 trading execution | ✅ Staging |
 | **Arty** | Autonomous research & social | ✅ Production |
-| **GoldMax** | Market analysis system | ✅ Active |
-| **Herald** | Execution agent | 🚧 Development |
-| **Cthulu** | MQL5/MT5 trading | ✅ Deployed |
+| **Hektor** | Native C++ VDB | 🚧 Pending fixes |
 
 ---
 
@@ -227,4 +246,4 @@ cd /home/adam/worxpace/gladius
 
 ---
 
-*Last updated: 2026-01-11*
+*Last updated: 2026-01-13*
