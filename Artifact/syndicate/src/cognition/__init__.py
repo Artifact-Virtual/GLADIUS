@@ -105,7 +105,24 @@ except ImportError:
     CONTEXT_MANAGER_AVAILABLE = False
     ContextManager = None
 
-# Native Model (for tool routing)
+# Native Model (for tool routing) - Gladius Router
+try:
+    from .gladius_model import (
+        GladiusToolRouter,
+        ToolCall,
+        TrainingMetrics as GladiusTrainingMetrics,
+        get_gladius_router,
+        route_query
+    )
+    GLADIUS_MODEL_AVAILABLE = True
+except ImportError:
+    GLADIUS_MODEL_AVAILABLE = False
+    GladiusToolRouter = None
+    ToolCall = None
+    get_gladius_router = None
+    route_query = None
+
+# Legacy native model support (fallback)
 try:
     from .native_model import (
         NativeToolRouter,
@@ -183,5 +200,13 @@ __all__ = [
     'ModelTrainer',
     'TrainingConfig',
     'TrainingMetrics',
+    
+    # Gladius Model (primary router)
+    'GladiusToolRouter',
+    'ToolCall',
+    'GladiusTrainingMetrics',
+    'get_gladius_router',
+    'route_query',
+    'GLADIUS_MODEL_AVAILABLE',
 ]
 

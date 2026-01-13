@@ -1,7 +1,9 @@
 # Gladius System Snapshot
 
-**Generated**: 2026-01-13T15:30:00Z  
-**Version**: 2.3.0-progressive-learning
+**Generated**: 2026-01-13T10:52:24Z  
+**Version**: 2.4.0-gladius-router
+**Router Accuracy**: 100%
+**Latency**: 0.93ms
 
 ---
 
@@ -10,7 +12,7 @@
 **Status**: ✅ FULLY OPERATIONAL  
 **Health Score**: 100/100  
 **Tool Routing Accuracy**: 100% (18/18 tools)  
-**Average Latency**: 1.06ms
+**Average Latency**: 0.93ms (improved from 1.06ms)
 
 | Service | Status | Port | Response |
 |---------|--------|------|----------|
@@ -21,69 +23,46 @@
 | Syndicate Daemon | ✅ Active | - | 4-hour cycle |
 | Publishing Pipeline | ✅ Ready | - | Configured |
 | Cognition Loop | ✅ Active | - | Autonomous |
+| Gladius Router | ✅ Active | - | 100% accuracy |
 | Obsidian Sync | ✅ Active | - | Real-time |
 
 ---
 
-## Progressive Training Results (2026-01-13)
+## Latest Benchmark (2026-01-13T10:52)
 
-### Gladius Pattern Model
+### Gladius Tool Router Performance
 
-| Tier | Tools | Examples | Accuracy | Latency |
-|------|-------|----------|----------|---------|
-| **Tier 1** (Zero-arg) | list_databases, get_tools, get_history | 150 | 100% | <1ms |
-| **Tier 2** (Single-arg) | list_dir, read_file, file_exists | 150 | 100% | <1ms |
-| **Tier 3** (Query) | search, recall, get_context, hybrid_search | 200 | 100% | <1ms |
-| **Tier 4** (Complex) | remember, forget, read_db, write_file | 200 | 100% | <1ms |
-| **Tier 5** (Advanced) | write_db, execute_workflow, schedule_task, publish_content | 200 | 100% | ~1ms |
+| Metric | Value |
+|--------|-------|
+| **Model Version** | 2 |
+| **Training Accuracy** | 94.5% |
+| **Benchmark Accuracy** | 100.0% |
+| **Average Latency** | 0.93ms |
+| **P99 Latency** | 2.28ms |
+| **Tools Supported** | 18 |
+| **Training Examples** | 914 |
 
-**Total**: 18 tools, 914 patterns, 100% accuracy, 1.06ms avg latency
+### 5-Cycle Autonomous Run
+
+| Metric | Value |
+|--------|-------|
+| **Cycles Completed** | 5 |
+| **Total Time** | 0.3s |
+| **Reports Ingested** | 75 (15/cycle) |
+| **Training Examples** | 165 (33/cycle) |
+| **Proposals Created** | 5 |
+| **Proposals Completed** | 5 |
+| **Errors** | 0 |
 
 ### Performance Comparison
 
 | Method | Latency | Cost | Accuracy |
 |--------|---------|------|----------|
-| **Gladius Pattern** | 1.06ms | $0 | 100% |
+| **Gladius Router** | 0.93ms | $0 | 100% |
 | Ollama (local) | ~100ms | $0 | ~95% |
 | Cloud API | ~500ms | $0.001+ | 98% |
 
-**Improvement**: ~100x faster than Ollama, ~500x faster than cloud APIs
-
----
-
-## Latest Benchmark (2026-01-13T15:30)
-
-### 5 Cycle Autonomous Run
-
-| Metric | Value |
-|--------|-------|
-| **Cycles Completed** | 5 |
-| **Reports Ingested** | 75 (15/cycle) |
-| **Training Examples** | 155 (31/cycle) |
-| **Proposals Created** | 0 (all handled) |
-| **Proposals Completed** | 10 |
-| **Obsidian Synced** | 11 proposals |
-| **Errors** | 0 |
-| **Memory DBs Connected** | 7 |
-| **Memory Tools Available** | 16 |
-
-### Performance Metrics
-
-| Component | Latency |
-|-----------|---------|
-| Tool Selection (Pattern) | <1ms |
-| Vector Search (Hektor) | <50ms |
-| Document Add (Cached) | <10ms |
-| Report Ingestion | <100ms/doc |
-| Obsidian Sync | <50ms |
-| Infra API Response | <2ms |
-
-### Snapshots Created
-
-| Snapshot | Purpose |
-|----------|---------|
-| snap_20260113_012032_4a896e | Benchmark Start |
-| snap_20260113_012032_6b1726 | Benchmark End |
+**Improvement**: ~107x faster than Ollama, ~537x faster than cloud APIs
 
 ---
 

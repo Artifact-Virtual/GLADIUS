@@ -84,3 +84,4 @@ Artifact/hektor/*.egg-info/
 Thumbs.db
 Artifact/hektor/
 *.gguf
+Artifact/syndicate/models/base_models/
