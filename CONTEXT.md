@@ -1,15 +1,16 @@
 # Gladius Context
 
-> Working context and operational notes for the Gladius autonomous enterprise system.
+> Operational context for the Gladius autonomous enterprise system
 
 ---
 
-## Overview
+## System Overview
 
-Gladius is an autonomous enterprise operating system that manages multiple artifacts (autonomous business units) through a unified context and cognition layer.
+Gladius is an autonomous enterprise operating system that manages multiple artifacts (autonomous business units) through a unified cognition layer with native vectorization and AI capabilities.
 
 - **Root**: `/home/adam/worxpace/gladius`
 - **Primary Domain**: artifactvirtual.com (planned)
+- **Cognition Backend**: Hektor VDB (native C++) + llama.cpp
 
 ---
 
@@ -19,7 +20,8 @@ Gladius is an autonomous enterprise operating system that manages multiple artif
 - **Path**: `Artifact/syndicate/`
 - **Purpose**: Market research, analysis, journal generation
 - **Status**: ✅ Production
-- **Cognition**: Integrated (HNSW + SQLite)
+- **Cognition**: Hektor VDB (SIMD + hybrid search)
+- **Outputs**: Journals, Premarket, Catalysts, Calendar, Charts
 
 ### Beta: Cthulu (Trading)
 - **Path**: External (`/_build/cthulu/`)
@@ -35,25 +37,80 @@ Gladius is an autonomous enterprise operating system that manages multiple artif
 
 ## Cognition Engine
 
-The cognition engine provides semantic memory across all artifacts:
+The cognition engine provides semantic memory and native AI across all artifacts:
 
 ```
 Location: Artifact/syndicate/src/cognition/
 ├── __init__.py
-├── embedder.py          # TF-IDF / neural embeddings
-├── vector_store.py      # HNSW index + SQLite persistence
-└── syndicate_integration.py  # Report ingestion & search
+├── embedder.py              # TF-IDF / neural embeddings
+├── vector_store.py          # hnswlib fallback
+├── hektor_store.py          # Native Hektor VDB integration
+└── syndicate_integration.py # Report ingestion & search
 ```
 
-**Current State**:
-- Documents indexed: 12+
-- Vector dimension: 384
-- Embedder: TF-IDF (sklearn)
-- Fallback: SQLite persistence
+### Hektor VDB Features
+- **SIMD Optimization**: AVX2/AVX512 vector operations
+- **Hybrid Search**: Vector similarity + BM25 lexical fusion
+- **Gold Standard Types**: Journal, Chart, Catalyst, Calendar, etc.
+- **Native NLP**: WordPiece tokenizer, llama.cpp inference
+- **Python Bindings**: pyvdb module for seamless integration
+
+### Current State
+| Metric | Value |
+|--------|-------|
+| Backend | Hektor VDB (native) |
+| Fallback | hnswlib + TF-IDF |
+| Vector Dimension | 384 |
+| LLM Integration | llama.cpp (local GGUF) |
+| Build Status | ✅ Complete |
 
 ---
 
-## Environment Variables
+## Memory Module
+
+The memory module provides persistent learning and tool capabilities:
+
+### Capabilities
+- **Document Ingestion**: All Syndicate outputs vectorized
+- **Semantic Search**: Natural language queries across history
+- **Context Retrieval**: Historical context for AI analysis
+- **Prediction Tracking**: Learning from outcomes
+- **Tool Calling**: Native function invocation (in development)
+- **Multi-DB Access**: Read/write across databases
+
+### Data Flow
+```
+Syndicate Outputs → Cognition Engine → Hektor VDB
+                                          │
+                         ┌────────────────┼────────────────┐
+                         │                │                │
+                         ▼                ▼                ▼
+                    Semantic         Learning         Context
+                    Memory           History          Retrieval
+```
+
+---
+
+## Document Types
+
+Hektor VDB recognizes these Gold Standard document types:
+
+| Type | Purpose | Source |
+|------|---------|--------|
+| Journal | Daily/weekly market journals | Syndicate |
+| Chart | Annotated chart analysis | Syndicate |
+| CatalystWatchlist | Upcoming market catalysts | Syndicate |
+| EconomicCalendar | Economic event schedules | Syndicate |
+| PreMarket | Pre-market analysis | Syndicate |
+| WeeklyRundown | Weekly summaries | Syndicate |
+| MonthlyReport | Monthly analysis | Syndicate |
+| ThreeMonthReport | Quarterly outlook | Syndicate |
+| OneYearReport | Annual predictions | Syndicate |
+| InstitutionalMatrix | Institutional flows | Syndicate |
+
+---
+
+## Environment Configuration
 
 ```bash
 # Core
@@ -85,44 +142,63 @@ JWT_SECRET_KEY=your-jwt-secret
 
 # Run single Syndicate cycle
 cd Artifact/syndicate && python main.py --once
+
+# Build Hektor VDB
+cd Artifact/hektor/build && cmake .. && make -j$(nproc)
 ```
 
 ---
 
-## Recent Changes (2026-01-13)
+## Current Capabilities
 
-1. **Cognition Engine Integration**
-   - Added HNSW-based vector store with SQLite fallback
-   - Reports automatically ingested into semantic memory
-   - AI analysis now receives historical context
+### ✅ Implemented
+- Unified control script (`gladius.sh`)
+- Hektor VDB native vector database
+- llama.cpp local LLM inference
+- Syndicate research pipeline
+- Cognition engine with hybrid search
+- Dashboard backend/frontend
+- Infra API for market data
 
-2. **Unified Control Script**
-   - `gladius.sh` manages all services
-   - Automatic health checks on start
-   - Regression verification on stop
+### 🚧 In Progress
+- Native tool/function calling
+- Multi-database memory hooks
+- ONNX Runtime for Linux (currently MSVC only)
 
-3. **Dashboard Enhancement**
-   - React frontend at port 3000
-   - Backend API at port 5000
-   - JWT authentication
-
----
-
-## Current Limitations / TODOs
-
-- [ ] Fix Hektor C++ VDB for native performance
-- [ ] Persist portfolios & positions to SQLite
-- [ ] Add API authentication to Infra API
-- [ ] Deploy web presence (artifactvirtual.com)
-- [ ] Implement blockchain/token architecture
+### 📋 Planned
+- Artifact-specific GGUF/GGM models
+- Web3 integration per artifact
+- Social/publishing pipeline (Theta)
+- Native embeddings without external APIs
 
 ---
 
-## Next Steps
+## Integration Points
 
-1. **Short-term**: Stabilize Syndicate cognition loop
-2. **Medium-term**: Deploy Cthulu to production trading
-3. **Long-term**: Web3 integration per artifact
+### Syndicate → Cognition
+All Syndicate outputs are ingested:
+- Journals → Vector memory
+- Premarket reports → Semantic search
+- Catalyst watchlists → Context retrieval
+- Charts → Historical analysis
+
+### Cognition → Cthulu
+Trade signals flow through:
+- Semantic context from history
+- Prediction outcomes for learning
+- Risk parameters from analysis
+
+---
+
+## Build Status
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| libvdb_core.a | ✅ Built | Core C++ library |
+| hektor CLI | ✅ Built | Command-line interface |
+| pyvdb.so | ✅ Built | Python bindings |
+| llama.cpp | ✅ Integrated | Tag b7716 |
+| ONNX Runtime | ⚠️ Windows only | VDB_USE_ONNX_RUNTIME=OFF on Linux |
 
 ---
 

@@ -133,7 +133,53 @@ class HektorVectorStore:
         self._id_map: Dict[str, int] = {}  # doc_id -> internal id
         self._reverse_id_map: Dict[int, str] = {}  # internal id -> doc_id
         
+        # Load persisted document cache
+        self._load_document_cache()
+        
         self.logger.info(f"HektorVectorStore initialized: {self.path}")
+    
+    def _load_document_cache(self):
+        """Load document cache from disk."""
+        cache_path = self.path / "document_cache.json"
+        if cache_path.exists():
+            try:
+                with open(cache_path, 'r') as f:
+                    data = json.load(f)
+                for doc_data in data.get('documents', []):
+                    doc = Document(
+                        id=doc_data['id'],
+                        content=doc_data['content'],
+                        metadata=doc_data.get('metadata', {}),
+                        doc_type=doc_data.get('doc_type', 'text'),
+                        created_at=doc_data.get('created_at', datetime.now().isoformat())
+                    )
+                    self._documents[doc.id] = doc
+                    internal_id = doc_data.get('internal_id')
+                    if internal_id is not None:
+                        self._id_map[doc.id] = internal_id
+                        self._reverse_id_map[internal_id] = doc.id
+                self.logger.info(f"Loaded {len(self._documents)} documents from cache")
+            except Exception as e:
+                self.logger.warning(f"Failed to load document cache: {e}")
+    
+    def _save_document_cache(self):
+        """Save document cache to disk."""
+        cache_path = self.path / "document_cache.json"
+        try:
+            docs_data = []
+            for doc_id, doc in self._documents.items():
+                docs_data.append({
+                    'id': doc.id,
+                    'content': doc.content,
+                    'metadata': doc.metadata,
+                    'doc_type': doc.doc_type,
+                    'created_at': doc.created_at,
+                    'internal_id': self._id_map.get(doc_id)
+                })
+            with open(cache_path, 'w') as f:
+                json.dump({'documents': docs_data}, f)
+        except Exception as e:
+            self.logger.warning(f"Failed to save document cache: {e}")
     
     def _init_hektor(self):
         """Initialize Hektor VDB."""
@@ -141,7 +187,7 @@ class HektorVectorStore:
         
         # Create config with our dimension
         config = pyvdb.DatabaseConfig()
-        config.path = db_path
+        config.path = str(db_path)  # Must be string, not Path object
         config.dimension = self.dim
         config.max_elements = self.max_elements
         config.metric = pyvdb.DistanceMetric.Cosine
@@ -200,6 +246,10 @@ class HektorVectorStore:
         )
         self._id_map[doc_id] = internal_id
         self._reverse_id_map[internal_id] = doc_id
+        
+        # Persist cache periodically (every 10 documents)
+        if len(self._documents) % 10 == 0:
+            self._save_document_cache()
         
         return doc_id
     
@@ -347,6 +397,8 @@ class HektorVectorStore:
     
     def close(self):
         """Close the store."""
+        # Save document cache before closing
+        self._save_document_cache()
         if hasattr(self, 'db') and self.db:
             self.db.sync()
     
