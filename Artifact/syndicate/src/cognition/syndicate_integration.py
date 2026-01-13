@@ -283,7 +283,9 @@ class SyndicateCognition:
         predicted_bias: str,
         actual_outcome: str,
         gold_price_then: float,
-        gold_price_now: float
+        gold_price_now: float,
+        market_context: Optional[str] = None,
+        catalysts: Optional[List[str]] = None
     ) -> bool:
         """
         Record a prediction outcome for learning.
@@ -291,9 +293,11 @@ class SyndicateCognition:
         Args:
             prediction_date: Date of the prediction
             predicted_bias: What was predicted (BULLISH, BEARISH, NEUTRAL)
-            actual_outcome: What actually happened (WIN, LOSS, NEUTRAL)
+            actual_outcome: What actually happened (WIN, LOSS, NEUTRAL, PENDING)
             gold_price_then: Gold price at prediction time
             gold_price_now: Current gold price
+            market_context: Optional market conditions at time of prediction
+            catalysts: Optional list of catalysts that influenced the outcome
         
         Returns:
             True if recorded successfully
@@ -303,8 +307,30 @@ class SyndicateCognition:
             
             pct_change = ((gold_price_now - gold_price_then) / gold_price_then * 100) if gold_price_then else 0
             
+            # Determine outcome if it was PENDING
+            if actual_outcome == "PENDING":
+                # Auto-evaluate: if price moved >0.5% in predicted direction = WIN
+                if predicted_bias == "BULLISH" and pct_change > 0.5:
+                    actual_outcome = "WIN"
+                elif predicted_bias == "BEARISH" and pct_change < -0.5:
+                    actual_outcome = "WIN"
+                elif abs(pct_change) <= 0.5:
+                    actual_outcome = "NEUTRAL"
+                else:
+                    actual_outcome = "LOSS"
+            
+            # Build rich content for semantic learning
+            catalyst_str = ", ".join(catalysts) if catalysts else "None specified"
+            context_str = market_context or "No context recorded"
+            
+            # Determine what patterns led to this outcome
+            outcome_analysis = self._analyze_prediction_outcome(
+                predicted_bias, actual_outcome, pct_change, catalysts
+            )
+            
             content = f"""
 Prediction Outcome Record
+========================
 Date: {prediction_date}
 Predicted Bias: {predicted_bias}
 Actual Outcome: {actual_outcome}
@@ -312,7 +338,16 @@ Gold Price Then: ${gold_price_then:.2f}
 Gold Price Now: ${gold_price_now:.2f}
 Change: {pct_change:+.2f}%
 
-Analysis: The {predicted_bias} prediction resulted in a {actual_outcome}.
+Market Context:
+{context_str}
+
+Active Catalysts:
+{catalyst_str}
+
+Learning Analysis:
+{outcome_analysis}
+
+Key Insight: {self._extract_key_insight(predicted_bias, actual_outcome, pct_change)}
 """
             
             metadata = {
@@ -321,15 +356,93 @@ Analysis: The {predicted_bias} prediction resulted in a {actual_outcome}.
                 "actual_outcome": actual_outcome,
                 "gold_price_then": gold_price_then,
                 "gold_price_now": gold_price_now,
-                "pct_change": pct_change
+                "pct_change": pct_change,
+                "catalysts": catalysts or [],
+                "has_context": market_context is not None,
+                "recorded_at": datetime.now().isoformat()
             }
             
             self.store.add_text(doc_id, content, metadata, doc_type="outcome")
+            self.logger.info(f"[COGNITION] Recorded prediction outcome: {prediction_date} -> {actual_outcome} ({pct_change:+.2f}%)")
             return True
             
         except Exception as e:
             self.logger.error(f"[COGNITION] Failed to record outcome: {e}")
             return False
+    
+    def _analyze_prediction_outcome(
+        self,
+        predicted_bias: str,
+        actual_outcome: str,
+        pct_change: float,
+        catalysts: Optional[List[str]]
+    ) -> str:
+        """Generate learning analysis from prediction outcome."""
+        if actual_outcome == "WIN":
+            if abs(pct_change) > 1.0:
+                return f"Strong {predicted_bias} prediction confirmed with {abs(pct_change):.2f}% move. Pattern recognition was accurate."
+            else:
+                return f"Correct {predicted_bias} bias but moderate movement. Consider position sizing for similar setups."
+        elif actual_outcome == "LOSS":
+            if abs(pct_change) > 1.0:
+                return f"Strong reversal against {predicted_bias} bias ({pct_change:+.2f}%). Review: Was there a missed catalyst or technical signal?"
+            else:
+                return f"Moderate loss on {predicted_bias} prediction. The setup may have been valid but timing was off."
+        else:  # NEUTRAL
+            return f"Consolidation phase. {predicted_bias} bias neither confirmed nor denied. Market awaiting catalyst."
+    
+    def _extract_key_insight(self, predicted_bias: str, actual_outcome: str, pct_change: float) -> str:
+        """Extract a single key insight for quick reference."""
+        if actual_outcome == "WIN" and abs(pct_change) > 1.5:
+            return f"High-conviction {predicted_bias} patterns remain reliable"
+        elif actual_outcome == "LOSS" and abs(pct_change) > 1.5:
+            return "Strong reversal - need to weight contrary signals more"
+        elif actual_outcome == "NEUTRAL":
+            return "Consolidation periods require patience before directional bets"
+        elif actual_outcome == "WIN":
+            return f"{predicted_bias} setups are working - maintain strategy"
+        else:
+            return "Minor loss - within acceptable variance"
+    
+    def update_pending_predictions(self, current_gold_price: float) -> Dict[str, str]:
+        """
+        Update all PENDING predictions with actual outcomes.
+        
+        Args:
+            current_gold_price: Current gold price for comparison
+        
+        Returns:
+            Dict of {prediction_date: new_outcome}
+        """
+        updates = {}
+        pending = self.store.list_documents(doc_type="outcome", limit=100)
+        
+        for doc in pending:
+            if doc.metadata.get("actual_outcome") == "PENDING":
+                prediction_date = doc.metadata.get("prediction_date")
+                predicted_bias = doc.metadata.get("predicted_bias", "NEUTRAL")
+                gold_price_then = doc.metadata.get("gold_price_then", current_gold_price)
+                
+                # Re-record with current price to trigger auto-evaluation
+                self.learn_from_prediction(
+                    prediction_date=prediction_date,
+                    predicted_bias=predicted_bias,
+                    actual_outcome="PENDING",  # Will be auto-evaluated
+                    gold_price_then=gold_price_then,
+                    gold_price_now=current_gold_price,
+                    catalysts=doc.metadata.get("catalysts")
+                )
+                
+                # Get the new outcome
+                updated_doc = self.store.get_document(f"outcome_{prediction_date}")
+                if updated_doc:
+                    new_outcome = updated_doc.metadata.get("actual_outcome", "UNKNOWN")
+                    updates[prediction_date] = new_outcome
+        
+        if updates:
+            self.logger.info(f"[COGNITION] Updated {len(updates)} pending predictions")
+        
+        return updates
     
     def get_prediction_accuracy(self, last_n: int = 20) -> Dict[str, Any]:
         """
@@ -339,28 +452,96 @@ Analysis: The {predicted_bias} prediction resulted in a {actual_outcome}.
             last_n: Number of recent predictions to analyze
         
         Returns:
-            Dict with accuracy statistics
+            Dict with comprehensive accuracy statistics
         """
         outcomes = self.store.list_documents(doc_type="outcome", limit=last_n)
         
         if not outcomes:
-            return {"total": 0, "win_rate": 0.0}
+            return {"total": 0, "win_rate": 0.0, "message": "No predictions recorded yet"}
         
+        # Basic counts
         wins = sum(1 for o in outcomes if o.metadata.get("actual_outcome") == "WIN")
         losses = sum(1 for o in outcomes if o.metadata.get("actual_outcome") == "LOSS")
         neutrals = sum(1 for o in outcomes if o.metadata.get("actual_outcome") == "NEUTRAL")
+        pending = sum(1 for o in outcomes if o.metadata.get("actual_outcome") == "PENDING")
         
         total = wins + losses + neutrals
         win_rate = (wins / (wins + losses) * 100) if (wins + losses) > 0 else 0.0
+        
+        # Breakdown by bias type
+        bullish_outcomes = [o for o in outcomes if o.metadata.get("predicted_bias") == "BULLISH"]
+        bearish_outcomes = [o for o in outcomes if o.metadata.get("predicted_bias") == "BEARISH"]
+        
+        bullish_wins = sum(1 for o in bullish_outcomes if o.metadata.get("actual_outcome") == "WIN")
+        bearish_wins = sum(1 for o in bearish_outcomes if o.metadata.get("actual_outcome") == "WIN")
+        
+        bullish_wr = (bullish_wins / len(bullish_outcomes) * 100) if bullish_outcomes else 0.0
+        bearish_wr = (bearish_wins / len(bearish_outcomes) * 100) if bearish_outcomes else 0.0
+        
+        # Price movement analysis
+        pct_changes = [o.metadata.get("pct_change", 0) for o in outcomes if o.metadata.get("pct_change") is not None]
+        avg_pct_change = sum(pct_changes) / len(pct_changes) if pct_changes else 0
+        max_win = max([p for p in pct_changes if p > 0], default=0)
+        max_loss = min([p for p in pct_changes if p < 0], default=0)
+        
+        # Streak analysis
+        recent_streak = self._calculate_streak(outcomes[:10])
         
         return {
             "total": total,
             "wins": wins,
             "losses": losses,
             "neutrals": neutrals,
-            "win_rate": win_rate,
-            "avg_pct_change": sum(o.metadata.get("pct_change", 0) for o in outcomes) / total if total else 0
+            "pending": pending,
+            "win_rate": round(win_rate, 1),
+            "avg_pct_change": round(avg_pct_change, 2),
+            "max_win_pct": round(max_win, 2),
+            "max_loss_pct": round(max_loss, 2),
+            "by_bias": {
+                "bullish": {"total": len(bullish_outcomes), "wins": bullish_wins, "win_rate": round(bullish_wr, 1)},
+                "bearish": {"total": len(bearish_outcomes), "wins": bearish_wins, "win_rate": round(bearish_wr, 1)}
+            },
+            "current_streak": recent_streak,
+            "confidence_score": self._calculate_confidence_score(win_rate, total, recent_streak)
         }
+    
+    def _calculate_streak(self, outcomes: List) -> Dict[str, Any]:
+        """Calculate current win/loss streak."""
+        if not outcomes:
+            return {"type": "none", "length": 0}
+        
+        streak_type = None
+        streak_length = 0
+        
+        for o in outcomes:
+            outcome = o.metadata.get("actual_outcome")
+            if outcome in ("WIN", "LOSS"):
+                if streak_type is None:
+                    streak_type = outcome
+                    streak_length = 1
+                elif outcome == streak_type:
+                    streak_length += 1
+                else:
+                    break
+        
+        return {"type": streak_type or "none", "length": streak_length}
+    
+    def _calculate_confidence_score(self, win_rate: float, total: int, streak: Dict) -> float:
+        """Calculate overall confidence score (0-100)."""
+        # Base score from win rate (40% weight)
+        base = win_rate * 0.4
+        
+        # Sample size bonus (30% weight) - more predictions = more confidence
+        sample_bonus = min(total / 50, 1.0) * 30
+        
+        # Streak bonus/penalty (30% weight)
+        streak_factor = 0
+        if streak["type"] == "WIN":
+            streak_factor = min(streak["length"] * 5, 30)
+        elif streak["type"] == "LOSS":
+            streak_factor = -min(streak["length"] * 5, 20)
+        
+        return round(max(0, min(100, base + sample_bonus + streak_factor)), 1)
     
     def stats(self) -> Dict[str, Any]:
         """Get cognition statistics."""

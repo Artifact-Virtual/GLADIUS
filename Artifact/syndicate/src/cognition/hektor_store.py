@@ -185,6 +185,9 @@ class HektorVectorStore:
         """Initialize Hektor VDB."""
         db_path = self.path / "hektor.db"
         
+        # Check if this is an existing database
+        self._is_loaded_db = (db_path / "index.hnsw").exists()
+        
         # Create config with our dimension
         config = pyvdb.DatabaseConfig()
         config.path = str(db_path)  # Must be string, not Path object
@@ -195,7 +198,7 @@ class HektorVectorStore:
         # Always use config-based creation to control dimension
         self.db = pyvdb.VectorDatabase(config)
         self.db.init()
-        self.logger.info(f"Hektor VDB created: {db_path} (dim={self.dim})")
+        self.logger.info(f"Hektor VDB created: {db_path} (dim={self.dim}, loaded={self._is_loaded_db})")
         
         # Initialize hybrid search engine if enabled
         if self.use_hybrid:
@@ -228,13 +231,20 @@ class HektorVectorStore:
         # Generate embedding using our embedder
         embedding = self.embedder.embed(content).astype(np.float32)
         
-        # Create Hektor metadata
-        hektor_meta = pyvdb.Metadata()
-        hektor_meta.type = self._get_doc_type(doc_type)
-        hektor_meta.date = datetime.now().strftime("%Y-%m-%d")
-        
-        # Add to database using vector API
-        internal_id = self.db.add_vector(embedding, hektor_meta)
+        # WORKAROUND: Hektor has a segfault bug when adding to loaded databases
+        # We cache the document but skip the native add if DB was loaded
+        # The document cache is the source of truth for content
+        if self._is_loaded_db:
+            self.logger.debug(f"Skipping native add for loaded DB, caching only: {doc_id}")
+            internal_id = len(self._documents) + self.db.size()  # Synthetic ID
+        else:
+            # Create Hektor metadata
+            hektor_meta = pyvdb.Metadata()
+            hektor_meta.type = self._get_doc_type(doc_type)
+            hektor_meta.date = datetime.now().strftime("%Y-%m-%d")
+            
+            # Add to database using vector API
+            internal_id = self.db.add_vector(embedding, hektor_meta)
         
         # Cache document
         self._documents[doc_id] = Document(
@@ -264,38 +274,62 @@ class HektorVectorStore:
         # Embed query
         query_embedding = self.embedder.embed(query).astype(np.float32)
         
-        # Use Hektor's native vector search
-        options = pyvdb.QueryOptions()
-        options.k = k * 2  # Over-fetch for filtering
-        
-        results = self.db.query_vector(query_embedding, options)
-        
         search_results = []
-        for r in results:
-            # Get score (Hektor returns distance, convert to similarity)
-            score = 1.0 - r.distance if hasattr(r, 'distance') else 1.0
-            
-            if score < min_score:
-                continue
-            
-            # Get document from cache or create from result
-            internal_id = r.id if hasattr(r, 'id') else None
-            doc_id = self._reverse_id_map.get(internal_id, str(internal_id))
-            doc = self._documents.get(doc_id)
-            
-            if doc_type and doc and doc.doc_type != doc_type:
-                continue
-            
-            search_results.append(SearchResult(
-                id=doc_id,
-                score=score,
-                document=doc
-            ))
-            
-            if len(search_results) >= k:
-                break
         
-        return search_results
+        # Search native index first (for documents added to fresh DB)
+        if not self._is_loaded_db or self.db.size() > 0:
+            options = pyvdb.QueryOptions()
+            options.k = k * 2  # Over-fetch for filtering
+            
+            try:
+                results = self.db.query_vector(query_embedding, options)
+                
+                for r in results:
+                    # Get score (Hektor returns distance, convert to similarity)
+                    score = 1.0 - r.distance if hasattr(r, 'distance') else 1.0
+                    
+                    if score < min_score:
+                        continue
+                    
+                    # Get document from cache or create from result
+                    internal_id = r.id if hasattr(r, 'id') else None
+                    doc_id = self._reverse_id_map.get(internal_id, str(internal_id))
+                    doc = self._documents.get(doc_id)
+                    
+                    if doc_type and doc and doc.doc_type != doc_type:
+                        continue
+                    
+                    search_results.append(SearchResult(
+                        id=doc_id,
+                        score=score,
+                        document=doc
+                    ))
+            except Exception as e:
+                self.logger.warning(f"Native search failed: {e}")
+        
+        # Also search documents in cache that have embeddings (for loaded DB workaround)
+        if self._is_loaded_db:
+            for doc_id, doc in self._documents.items():
+                if doc.embedding is not None:
+                    # Cosine similarity
+                    sim = float(np.dot(query_embedding, doc.embedding) / 
+                               (np.linalg.norm(query_embedding) * np.linalg.norm(doc.embedding) + 1e-9))
+                    
+                    if sim >= min_score:
+                        if doc_type and doc.doc_type != doc_type:
+                            continue
+                        
+                        # Avoid duplicates
+                        if not any(r.id == doc_id for r in search_results):
+                            search_results.append(SearchResult(
+                                id=doc_id,
+                                score=sim,
+                                document=doc
+                            ))
+        
+        # Sort by score and limit
+        search_results.sort(key=lambda x: x.score, reverse=True)
+        return search_results[:k]
     
     def hybrid_search(
         self,
