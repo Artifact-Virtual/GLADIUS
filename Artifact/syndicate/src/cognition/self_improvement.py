@@ -361,6 +361,62 @@ class SelfImprovementEngine:
         self.logger.info(f"[IMPROVE] Submitted for review: {proposal_id}")
         return True
     
+    async def route_to_consensus(
+        self,
+        proposal_id: str,
+        consensus_system: 'ConsensusSystem'  # Type hint as string to avoid circular import
+    ) -> Dict[str, Any]:
+        """
+        Route a proposal through the consensus system based on impact level.
+        
+        - low impact: Auto-approve
+        - medium impact: Discord community vote
+        - high/critical: Email escalation
+        """
+        if proposal_id not in self.proposals:
+            return {"error": "Proposal not found"}
+        
+        proposal = self.proposals[proposal_id]
+        
+        # Determine impact level from items
+        impacts = [item.impact for item in proposal.items]
+        if "critical" in impacts or "high" in impacts:
+            impact_level = "high"
+        elif "medium" in impacts:
+            impact_level = "medium"
+        else:
+            impact_level = "low"
+        
+        # Route through consensus
+        result = await consensus_system.route_proposal(
+            proposal_id=proposal_id,
+            title=proposal.title,
+            summary=proposal.summary,
+            impact_level=impact_level,
+            items=[{
+                "description": item.description,
+                "impact": item.impact,
+                "risk": item.risk
+            } for item in proposal.items],
+            category=proposal.category.value
+        )
+        
+        # Update proposal status based on routing
+        if result.get("auto_approved"):
+            proposal.status = ProposalStatus.APPROVED
+            proposal.add_review("consensus_system", "Auto-approved (low impact)", "approve")
+        elif result.get("session_id"):
+            proposal.status = ProposalStatus.PENDING_REVIEW
+            proposal.execution_log.append({
+                "timestamp": datetime.now().isoformat(),
+                "action": "routed_to_consensus",
+                "session_id": result["session_id"],
+                "impact_level": impact_level
+            })
+        
+        self._save_proposal(proposal)
+        return result
+    
     def review_proposal(
         self,
         proposal_id: str,

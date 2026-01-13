@@ -13,6 +13,8 @@ Features:
 - Training Generator: Generate fine-tuning data from tool usage
 - Self-Improvement: Autonomous improvement proposals with audit trail
 - Learning Loop: Continuous learning cycle with benchmarking
+- Consensus System: Discord voting and email escalation for proposals
+- Context Management: Summarization and narrative coherence
 """
 
 from .vector_store import VectorStore, Document, SearchResult
@@ -76,6 +78,33 @@ except ImportError as e:
     SelfImprovementEngine = None
     CognitionLearningLoop = None
 
+# Consensus System
+try:
+    from .consensus import (
+        ConsensusSystem,
+        VotingSession,
+        Vote,
+        VoteType,
+        EscalationLevel
+    )
+    CONSENSUS_AVAILABLE = True
+except ImportError:
+    CONSENSUS_AVAILABLE = False
+    ConsensusSystem = None
+    VotingSession = None
+
+# Context Management
+try:
+    from .context import (
+        ContextManager,
+        ContextEntry,
+        ContextSummary
+    )
+    CONTEXT_MANAGER_AVAILABLE = True
+except ImportError:
+    CONTEXT_MANAGER_AVAILABLE = False
+    ContextManager = None
+
 # Native Model (for tool routing)
 try:
     from .native_model import (
@@ -133,6 +162,20 @@ __all__ = [
     'run_benchmark',
     'LEARNING_AVAILABLE',
     
+    # Consensus
+    'ConsensusSystem',
+    'VotingSession',
+    'Vote',
+    'VoteType',
+    'EscalationLevel',
+    'CONSENSUS_AVAILABLE',
+    
+    # Context Management
+    'ContextManager',
+    'ContextEntry',
+    'ContextSummary',
+    'CONTEXT_MANAGER_AVAILABLE',
+    
     # Native Model
     'NativeToolRouter',
     'ToolRoutingResult',
@@ -141,3 +184,4 @@ __all__ = [
     'TrainingConfig',
     'TrainingMetrics',
 ]
+

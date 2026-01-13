@@ -14,10 +14,14 @@ flowchart TD
                      TOOL_ROUTER[Native Tool Router<br/>(<10ms)]
                      MEMORY[Memory Module<br/>Multi-DB]
                      LEARNING[Learning Loop<br/>Training]
+                     CONSENSUS[Consensus System<br/>Discord/Email]
+                     CONTEXT[Context Manager<br/>Summarization]
                      HEKTOR --> MODEL_STACK
                      TOOL_ROUTER --> MODEL_STACK
                      MEMORY --> MODEL_STACK
                      LEARNING --> MODEL_STACK
+                     CONSENSUS --> MODEL_STACK
+                     CONTEXT --> MODEL_STACK
                      subgraph MODEL_STACK [MODEL STACK]
                             TOOL_ROUTER2[Tool Router<br/>(tiny GGUF)<br/><10ms]
                             OLLAMA[Ollama LLM<br/>(fallback)<br/>~100ms]
@@ -52,12 +56,17 @@ flowchart TD
               HektorVDB[Hektor VDB<br/>(ingest → search)]
               TrainingGenerator[TrainingGenerator<br/>(history → dataset)]
               ModelTrainer[ModelTrainer<br/>(train → deploy)]
+              ContextManager[ContextManager<br/>(summarize → coherence)]
+              ConsensusSystem[ConsensusSystem<br/>(vote → escalate)]
               NativeToolRouter --> HektorVDB
               HektorVDB --> TrainingGenerator
               TrainingGenerator --> ModelTrainer
+              TrainingGenerator --> ConsensusSystem
+              ContextManager --> TrainingGenerator
        end
        SyndicatePipeline --> CognitionEngine
        ModelTrainer -->|Trade Signals| Cthulu[Cthulu<br/>(Execution)]
+       ConsensusSystem -->|Approved| SelfImprove[Self Improve<br/>(Execute)]
 ```
 
 ---
@@ -81,12 +90,55 @@ flowchart TD
                      MultiDB[Multi-Database Access]
                      ToolCalling[Native Tool Calling]
               end
+              subgraph CONSENSUS_LAYER [CONSENSUS LAYER]
+                     DiscordVote[Discord Voting]
+                     EmailEscalate[Email Escalation]
+                     ContextManage[Context Management]
+              end
               subgraph FALLBACK_LAYER [FALLBACK LAYER]
                      SQLite[SQLite persistence]
                      TFIDF[TF-IDF embeddings]
                      JSON[JSON export]
               end
        end
+```
+
+---
+
+## Consensus System Flow
+
+```mermaid
+flowchart TD
+       Proposal[Create Proposal] --> AssessImpact{Assess Impact}
+       AssessImpact -->|Low| AutoApprove[Auto-Approve]
+       AssessImpact -->|Medium| DiscordVote[Discord Community Vote]
+       AssessImpact -->|High/Critical| EmailEscalate[Email to Dev Team]
+       DiscordVote --> CollectVotes[Collect Votes]
+       CollectVotes --> CheckThreshold{60% Threshold?}
+       CheckThreshold -->|Yes| Approve[Approve]
+       CheckThreshold -->|No| Reject[Reject]
+       EmailEscalate --> AwaitReview[Await Review]
+       AwaitReview --> DevDecision{Developer Decision}
+       DevDecision -->|Approve| Approve
+       DevDecision -->|Reject| Reject
+       Approve --> Execute[Execute Improvement]
+       Execute --> Snapshot[Create Snapshot]
+```
+
+---
+
+## Context Management Flow
+
+```mermaid
+flowchart TD
+       Events[Events/Observations] --> ContextWindow[Context Window]
+       ContextWindow --> CheckTokens{Tokens > 6000?}
+       CheckTokens -->|No| Continue[Continue]
+       CheckTokens -->|Yes| Summarize[Auto-Summarize]
+       Summarize --> CompressOld[Compress Old Entries]
+       CompressOld --> StoreSummary[Store Summary]
+       StoreSummary --> Continue
+       Continue --> ExportContext[Export for Training]
 ```
 
 ---
@@ -129,11 +181,30 @@ flowchart TD
 ```mermaid
 flowchart TD
        IngestReports[Ingest Reports] --> GenerateTraining[Generate Training Data]
-       GenerateTraining --> ProposeImprove[Propose Improve]
-       ProposeImprove --> ExecuteChanges[Execute Changes]
-       ExecuteChanges --> SnapshotBenchmark[Snapshot Benchmark]
-       SnapshotBenchmark --> IngestReports
+       GenerateTraining --> ProposeImprove[Propose Improvements]
+       ProposeImprove --> RouteConsensus[Route to Consensus]
+       RouteConsensus --> ExecuteChanges[Execute Changes]
+       ExecuteChanges --> SnapshotBenchmark[Snapshot & Benchmark]
+       SnapshotBenchmark --> UpdateContext[Update Context]
+       UpdateContext --> IngestReports
 ```
+
+---
+
+## Module Summary
+
+| Module | Purpose | Status |
+|--------|---------|--------|
+| Hektor VDB | Native C++ vector database with SIMD | ✅ Implemented |
+| Memory Module | Multi-database access with 16 tools | ✅ Implemented |
+| Tool Calling | Native function definitions | ✅ Implemented |
+| Training Generator | Generate fine-tuning data | ✅ Implemented |
+| Self-Improvement | Autonomous proposals with audit | ✅ Implemented |
+| Learning Loop | Continuous learning cycles | ✅ Implemented |
+| Consensus System | Discord voting + email escalation | ✅ Implemented |
+| Context Manager | Summarization + coherence | ✅ Implemented |
+| Native Tool Router | Pattern-based tool routing | ✅ Implemented |
+| Model Trainer | GGUF fine-tuning pipeline | 🚧 In Progress |
 
 ---
 
