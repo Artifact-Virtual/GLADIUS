@@ -501,14 +501,33 @@ class SelfImprovementEngine:
         
         # Backup files (handle both files and directories)
         for file_path in files_to_backup:
-            src = Path(file_path)
+            src = Path(file_path).resolve()
+            
+            # Skip if the source is inside the snapshots directory (prevent recursion)
+            try:
+                src.relative_to(self.snapshots_dir.resolve())
+                self.logger.debug(f"[IMPROVE] Skipping snapshot dir: {src}")
+                continue
+            except ValueError:
+                pass  # Not inside snapshots dir, safe to backup
+            
             if src.exists():
                 dest = snapshot_dir / src.name
                 if src.is_dir():
-                    # Copy entire directory tree
+                    # Copy directory but exclude snapshots subdirectory
                     if dest.exists():
                         shutil.rmtree(dest)
-                    shutil.copytree(src, dest)
+                    
+                    def ignore_snapshots(dir, files):
+                        # Ignore any 'snapshots' directory to prevent recursion
+                        ignored = []
+                        for f in files:
+                            full_path = Path(dir) / f
+                            if 'snapshots' in str(full_path) or full_path.name.startswith('snap_'):
+                                ignored.append(f)
+                        return ignored
+                    
+                    shutil.copytree(src, dest, ignore=ignore_snapshots)
                 else:
                     shutil.copy2(src, dest)
                 backed_up.append(str(src))
@@ -520,7 +539,7 @@ class SelfImprovementEngine:
             db_dir.mkdir(exist_ok=True)
             for db_path in database_paths:
                 src = Path(db_path)
-                if src.exists():
+                if src.exists() and src.is_file():
                     shutil.copy2(src, db_dir / src.name)
             db_backup = str(db_dir)
         
