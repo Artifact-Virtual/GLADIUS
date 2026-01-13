@@ -207,7 +207,8 @@ class SyndicateCognition:
         k: int = 5,
         doc_type: Optional[str] = None,
         vector_weight: float = 0.7,
-        bm25_weight: float = 0.3
+        bm25_weight: float = 0.3,
+        lexical_weight: Optional[float] = None
     ) -> List[SearchResult]:
         """
         Hybrid search combining vector similarity and BM25 lexical matching.
@@ -219,15 +220,19 @@ class SyndicateCognition:
             k: Number of results
             doc_type: Filter by document type
             vector_weight: Weight for vector similarity (0-1)
-            bm25_weight: Weight for BM25 lexical match (0-1)
+            bm25_weight: Weight for BM25 lexical match (0-1) - alias for lexical_weight
+            lexical_weight: Weight for BM25 lexical match (0-1)
         
         Returns:
             List of SearchResult objects
         """
+        # Use lexical_weight if provided, otherwise use bm25_weight
+        lex_weight = lexical_weight if lexical_weight is not None else bm25_weight
+        
         if self.using_hektor and hasattr(self.store, 'hybrid_search'):
             return self.store.hybrid_search(
                 query, k=k, doc_type=doc_type,
-                vector_weight=vector_weight, bm25_weight=bm25_weight
+                vector_weight=vector_weight, lexical_weight=lex_weight
             )
         else:
             return self.search(query, k=k, doc_type=doc_type)

@@ -3,44 +3,30 @@
 > Autonomous Enterprise Operating System with Native AI
 
 ---
-
 ## High-Level Architecture
 
-```
-                    ┌─────────────────────────────────────────┐
-                    │              GLADIUS                     │
-                    │    (Autonomous Enterprise Manager)       │
-                    │                                          │
-                    │   ┌─────────────────────────────────┐   │
-                    │   │      COGNITION ENGINE           │   │
-                    │   │   Hektor VDB + llama.cpp        │   │
-                    │   │   Native SIMD • NLP • Embeddings│   │
-                    │   └─────────────────────────────────┘   │
-                    │                                          │
-                    │   ┌─────────────────────────────────┐   │
-                    │   │         MEMORY MODULE           │   │
-                    │   │   Context • Learning • History   │   │
-                    │   │   Tool Calling • DB Access       │   │
-                    │   └─────────────────────────────────┘   │
-                    └───────────────┬─────────────────────────┘
-                                    │
-           ┌────────────────────────┼────────────────────────┐
-           │                        │                        │
-           ▼                        ▼                        ▼
-    ┌─────────────┐          ┌─────────────┐          ┌─────────────┐
-    │  ARTIFACT   │          │  ARTIFACT   │          │  ARTIFACT   │
-    │   ALPHA     │          │    BETA     │          │   THETA     │
-    │  Syndicate  │          │   Cthulu    │          │  (Future)   │
-    │  Research   │          │   Trading   │          │  Publishing │
-    └──────┬──────┘          └──────┬──────┘          └─────────────┘
-           │                        │
-           ▼                        ▼
-    ┌─────────────┐          ┌─────────────┐
-    │  Journals   │          │   Execute   │
-    │  Premarket  │   ───►   │   Trades    │
-    │  Catalysts  │          │   Manage    │
-    │  Signals    │          │   Positions │
-    └─────────────┘          └─────────────┘
+```mermaid
+flowchart TB
+       subgraph GLADIUS["GLADIUS\n(Autonomous Enterprise Manager)"]
+              direction TB
+              COG["COGNITION ENGINE\nHektor VDB + llama.cpp\nSIMD • ONNX • Native AI"]
+              MEM["MEMORY MODULE\nContext • Learning • History\nTool Calling • Multi-DB Access\nWorkspace • File Management"]
+       end
+
+       ALPHA["ALPHA\nSyndicate\nResearch"]
+       BETA["BETA\nCthulu\nTrading"]
+       THETA["THETA\n(Future)\nPublishing"]
+
+       GLADIUS --> ALPHA
+       GLADIUS --> BETA
+       GLADIUS --> THETA
+
+       JOURNALS["Journals\nPremarket\nCatalysts\nSignals"]
+       EXEC["Execute Trades\nManage Positions"]
+
+       ALPHA --> JOURNALS
+       BETA --> EXEC
+       JOURNALS --> EXEC
 ```
 
 ---
@@ -50,9 +36,11 @@
 ### 1. Gladius (Enterprise Brain)
 - **Context Management**: Unified context across all artifacts via native vectorization
 - **Hektor VDB**: SIMD-optimized vector database with hybrid search (BM25 + semantic)
-- **Native AI**: llama.cpp integration for local GGUF model inference
-- **Memory Module**: Historical learning, prediction tracking, tool/function calling
+- **Native AI**: llama.cpp + ONNX Runtime for local inference and embeddings
+- **Memory Module**: Historical learning, prediction tracking, native tool/function calling
 - **Cognition Engine**: Autonomous learning loop with self-improvement capabilities
+- **Multi-DB Access**: Read/write across all databases with unified memory hooks
+- **Workspace Access**: File/structure management for business and automata training
 
 ### 2. Artifacts (Autonomous Units)
 Each artifact is a self-contained operational unit with its own identity:
@@ -97,9 +85,9 @@ Each artifact is a self-contained operational unit with its own identity:
               │   │  BM25 Hybrid    │   │
               │   └─────────────────┘   │
               │   ┌─────────────────┐   │
-              │   │  llama.cpp      │   │
-              │   │  GGUF Models    │   │
-              │   │  Local Inference│   │
+              │   │  llama.cpp +    │   │
+              │   │  ONNX Runtime   │   │
+              │   │  Native AI      │   │
               │   └─────────────────┘   │
               └───────────┬─────────────┘
                           │
@@ -137,22 +125,27 @@ Each artifact is a self-contained operational unit with its own identity:
 │  └─────────────────────────────────────────────────────────┘    │
 │                                                                  │
 │  ┌─────────────────────────────────────────────────────────┐    │
-│  │                   llama.cpp                              │    │
+│  │                   INFERENCE LAYER                        │    │
 │  │  ┌───────────┐  ┌───────────┐  ┌───────────┐            │    │
-│  │  │ GGUF Load │  │ Inference │  │ Embeddings│            │    │
-│  │  │  Models   │  │   Engine  │  │  (Local)  │            │    │
+│  │  │ llama.cpp │  │   ONNX    │  │ Native    │            │    │
+│  │  │ GGUF/GGM  │  │  Runtime  │  │ Embeddings│            │    │
 │  │  └───────────┘  └───────────┘  └───────────┘            │    │
 │  │  GPU: CUDA (if available), CPU: AVX2/AVX512             │    │
 │  └─────────────────────────────────────────────────────────┘    │
 │                                                                  │
 │  ┌─────────────────────────────────────────────────────────┐    │
 │  │                   MEMORY MODULE                          │    │
-│  │  - Document ingestion (all Syndicate outputs)            │    │
-│  │  - Semantic search across history                        │    │
-│  │  - Context retrieval for AI analysis                     │    │
-│  │  - Prediction outcome learning                           │    │
-│  │  - Native tool/function calling                          │    │
-│  │  - Multi-database access (read/write)                    │    │
+│  │  ┌─────────────────────────────────────────────────┐    │    │
+│  │  │  Multi-Database Access                           │    │    │
+│  │  │  • Hektor VDB (vectors)  • SQLite (relational)   │    │    │
+│  │  │  • JSON stores           • Prediction history    │    │    │
+│  │  └─────────────────────────────────────────────────┘    │    │
+│  │  ┌─────────────────────────────────────────────────┐    │    │
+│  │  │  Native Tool Calling                             │    │    │
+│  │  │  • DB read/write         • File operations       │    │    │
+│  │  │  • Semantic search       • Context retrieval     │    │    │
+│  │  │  • Workspace management  • Structure learning    │    │    │
+│  │  └─────────────────────────────────────────────────┘    │    │
 │  └─────────────────────────────────────────────────────────┘    │
 │                                                                  │
 │  ┌─────────────────────────────────────────────────────────┐    │
@@ -175,10 +168,47 @@ Each artifact is a self-contained operational unit with its own identity:
 | **Hybrid Search** | ✅ | Vector + BM25 fusion (RRF) |
 | **Gold Standard Types** | ✅ | Journal, Chart, Catalyst, Calendar, etc. |
 | **Native Tokenizer** | ✅ | WordPiece (BERT-compatible) |
-| **llama.cpp Integration** | ✅ | Local GGUF model inference |
+| **llama.cpp Integration** | ✅ | Local GGUF model inference (b7716) |
 | **Python Bindings** | ✅ | pyvdb module for integration |
-| **ONNX Runtime** | ⚠️ | Windows/MSVC only (text/image encoders) |
+| **ONNX Runtime** | ✅ | Text/image encoders (libonnxruntime-dev) |
 | **CUDA Acceleration** | 🔧 | Optional GPU support |
+
+---
+
+## Memory Module Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      MEMORY MODULE                               │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌──────────────────────┐  ┌──────────────────────┐             │
+│  │   UNIFIED MEMORY     │  │   DATABASE HOOKS     │             │
+│  │   INTERFACE          │  │                      │             │
+│  │                      │  │  ┌────────────────┐  │             │
+│  │  • Query routing     │  │  │ Hektor VDB     │  │             │
+│  │  • Context assembly  │  │  │ (vectors)      │  │             │
+│  │  • Tool dispatch     │  │  └────────────────┘  │             │
+│  │  • Response merge    │  │  ┌────────────────┐  │             │
+│  │                      │  │  │ SQLite DBs     │  │             │
+│  └──────────────────────┘  │  │ (relational)   │  │             │
+│                            │  └────────────────┘  │             │
+│  ┌──────────────────────┐  │  ┌────────────────┐  │             │
+│  │   NATIVE TOOL        │  │  │ JSON stores    │  │             │
+│  │   CALLING            │  │  │ (configs)      │  │             │
+│  │                      │  │  └────────────────┘  │             │
+│  │  • read_db(name, q)  │  └──────────────────────┘             │
+│  │  • write_db(name, d) │                                       │
+│  │  • search(query, k)  │  ┌──────────────────────┐             │
+│  │  • read_file(path)   │  │   WORKSPACE ACCESS   │             │
+│  │  • write_file(p, d)  │  │                      │             │
+│  │  • list_dir(path)    │  │  • Sandboxed access  │             │
+│  │  • get_context(q)    │  │  • File operations   │             │
+│  │                      │  │  • Structure learn   │             │
+│  └──────────────────────┘  └──────────────────────┘             │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -187,9 +217,9 @@ Each artifact is a self-contained operational unit with its own identity:
 | Layer | Primary | Fallback |
 |-------|---------|----------|
 | **Vectorization** | Hektor VDB (C++/SIMD) | hnswlib + TF-IDF |
-| **Embeddings** | llama.cpp (native) | TF-IDF sklearn |
+| **Embeddings** | ONNX Runtime + llama.cpp | TF-IDF sklearn |
 | **LLM Inference** | llama.cpp (GGUF) | Ollama → Gemini API |
-| **Persistence** | Hektor native storage | SQLite + JSON |
+| **Persistence** | Hektor native + SQLite | JSON export |
 | **API Framework** | FastAPI | Flask |
 | **Frontend** | React + Vite | Grafana |
 | **Trading** | MQL5/MetaTrader 5 | - |
@@ -244,6 +274,8 @@ gladius/
 │   │   │       ├── embedder.py
 │   │   │       ├── vector_store.py    # hnswlib fallback
 │   │   │       ├── hektor_store.py    # Native Hektor VDB
+│   │   │       ├── memory_module.py   # Unified memory access
+│   │   │       ├── tool_calling.py    # Native tool definitions
 │   │   │       └── syndicate_integration.py
 │   │   ├── main.py            # Core daemon
 │   │   └── output/            # Generated reports

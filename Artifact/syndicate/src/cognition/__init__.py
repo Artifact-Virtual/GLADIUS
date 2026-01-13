@@ -5,7 +5,11 @@ Supports two backends:
 1. **Hektor VDB** (preferred): Native C++ SIMD-optimized vector database
 2. **hnswlib + SQLite** (fallback): Python-based with SQLite persistence
 
-Compatible with Hektor VDB API for future native integration.
+Features:
+- Semantic search across all historical data
+- Hybrid search (vector + BM25) with Hektor backend
+- Memory Module: Multi-database access with native tool calling
+- Tool Calling: Native function definitions for cognition learning
 """
 
 from .vector_store import VectorStore, Document, SearchResult
@@ -22,7 +26,27 @@ except ImportError:
         """Fallback when hektor_store can't be imported."""
         return VectorStore(path, dim=dim, **kwargs)
 
+# Memory Module and Tool Calling
+try:
+    from .memory_module import MemoryModule, ToolResult, DatabaseConnection
+    from .tool_calling import (
+        ToolDefinition, 
+        ToolParameter, 
+        ToolRegistry, 
+        TOOL_REGISTRY,
+        get_tool_registry,
+        get_tools_schema,
+        BUILTIN_TOOLS
+    )
+    MEMORY_MODULE_AVAILABLE = True
+except ImportError as e:
+    MEMORY_MODULE_AVAILABLE = False
+    MemoryModule = None
+    ToolResult = None
+    ToolRegistry = None
+
 __all__ = [
+    # Core
     'VectorStore', 
     'HektorVectorStore',
     'Document', 
@@ -31,4 +55,19 @@ __all__ = [
     'SyndicateCognition',
     'get_vector_store',
     'HEKTOR_AVAILABLE',
+    
+    # Memory Module
+    'MemoryModule',
+    'ToolResult',
+    'DatabaseConnection',
+    'MEMORY_MODULE_AVAILABLE',
+    
+    # Tool Calling
+    'ToolDefinition',
+    'ToolParameter',
+    'ToolRegistry',
+    'TOOL_REGISTRY',
+    'get_tool_registry',
+    'get_tools_schema',
+    'BUILTIN_TOOLS',
 ]

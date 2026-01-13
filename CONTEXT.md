@@ -6,11 +6,11 @@
 
 ## System Overview
 
-Gladius is an autonomous enterprise operating system that manages multiple artifacts (autonomous business units) through a unified cognition layer with native vectorization and AI capabilities.
+Gladius is an autonomous enterprise operating system that manages multiple artifacts (autonomous business units) through a unified cognition layer with native vectorization, ONNX Runtime, and llama.cpp inference.
 
 - **Root**: `/home/adam/worxpace/gladius`
 - **Primary Domain**: artifactvirtual.com (planned)
-- **Cognition Backend**: Hektor VDB (native C++) + llama.cpp
+- **Cognition Backend**: Hektor VDB (native C++) + llama.cpp + ONNX Runtime
 
 ---
 
@@ -45,6 +45,8 @@ Location: Artifact/syndicate/src/cognition/
 ├── embedder.py              # TF-IDF / neural embeddings
 ├── vector_store.py          # hnswlib fallback
 ├── hektor_store.py          # Native Hektor VDB integration
+├── memory_module.py         # Unified memory access (planned)
+├── tool_calling.py          # Native tool definitions (planned)
 └── syndicate_integration.py # Report ingestion & search
 ```
 
@@ -53,6 +55,7 @@ Location: Artifact/syndicate/src/cognition/
 - **Hybrid Search**: Vector similarity + BM25 lexical fusion
 - **Gold Standard Types**: Journal, Chart, Catalyst, Calendar, etc.
 - **Native NLP**: WordPiece tokenizer, llama.cpp inference
+- **ONNX Runtime**: Native text/image encoders on Linux
 - **Python Bindings**: pyvdb module for seamless integration
 
 ### Current State
@@ -61,24 +64,49 @@ Location: Artifact/syndicate/src/cognition/
 | Backend | Hektor VDB (native) |
 | Fallback | hnswlib + TF-IDF |
 | Vector Dimension | 384 |
-| LLM Integration | llama.cpp (local GGUF) |
+| LLM Integration | llama.cpp (b7716) |
+| ONNX Runtime | ✅ Enabled |
 | Build Status | ✅ Complete |
 
 ---
 
 ## Memory Module
 
-The memory module provides persistent learning and tool capabilities:
+The memory module provides persistent learning, multi-database access, and native tool capabilities:
 
-### Capabilities
-- **Document Ingestion**: All Syndicate outputs vectorized
-- **Semantic Search**: Natural language queries across history
-- **Context Retrieval**: Historical context for AI analysis
-- **Prediction Tracking**: Learning from outcomes
-- **Tool Calling**: Native function invocation (in development)
-- **Multi-DB Access**: Read/write across databases
+### Unified Memory Access
+All databases are accessible through a single interface:
 
-### Data Flow
+| Database | Type | Purpose |
+|----------|------|---------|
+| Hektor VDB | Vector | Semantic search, embeddings |
+| Syndicate DB | SQLite | Predictions, tasks, history |
+| Arty Store | SQLite | Automation state |
+| Configs | JSON | Runtime configuration |
+
+### Native Tool Calling (In Development)
+The cognition engine will learn to use tools natively, not through third-party LLMs:
+
+| Tool | Description |
+|------|-------------|
+| `read_db(name, query)` | Read from any connected database |
+| `write_db(name, data)` | Write to any connected database |
+| `search(query, k)` | Semantic search across all vectors |
+| `get_context(query)` | Retrieve historical context |
+| `read_file(path)` | Read file from workspace |
+| `write_file(path, data)` | Write file to workspace |
+| `list_dir(path)` | List directory contents |
+
+### Workspace Access
+The system will have sandboxed access to its own workspace for:
+- File and structure management training
+- Business automation learning
+- Automata self-improvement
+
+---
+
+## Data Flow
+
 ```
 Syndicate Outputs → Cognition Engine → Hektor VDB
                                           │
@@ -87,6 +115,15 @@ Syndicate Outputs → Cognition Engine → Hektor VDB
                          ▼                ▼                ▼
                     Semantic         Learning         Context
                     Memory           History          Retrieval
+                         │                │                │
+                         └────────────────┼────────────────┘
+                                          │
+                                          ▼
+                                   Memory Module
+                                          │
+                         ┌────────────────┼────────────────┐
+                         ▼                ▼                ▼
+                    Tool Calling    DB Access      Workspace Ops
 ```
 
 ---
@@ -143,8 +180,9 @@ JWT_SECRET_KEY=your-jwt-secret
 # Run single Syndicate cycle
 cd Artifact/syndicate && python main.py --once
 
-# Build Hektor VDB
-cd Artifact/hektor/build && cmake .. && make -j$(nproc)
+# Build Hektor VDB with ONNX
+cd Artifact/hektor/build
+cmake .. -DVDB_BUILD_PYTHON=ON -DVDB_USE_ONNX_RUNTIME=ON && make -j$(nproc)
 ```
 
 ---
@@ -154,22 +192,23 @@ cd Artifact/hektor/build && cmake .. && make -j$(nproc)
 ### ✅ Implemented
 - Unified control script (`gladius.sh`)
 - Hektor VDB native vector database
-- llama.cpp local LLM inference
+- llama.cpp local LLM inference (b7716)
+- ONNX Runtime for native embeddings
 - Syndicate research pipeline
 - Cognition engine with hybrid search
 - Dashboard backend/frontend
 - Infra API for market data
 
 ### 🚧 In Progress
-- Native tool/function calling
+- Native tool/function calling (cognition learns tools)
 - Multi-database memory hooks
-- ONNX Runtime for Linux (currently MSVC only)
+- Workspace access for self-improvement
 
 ### 📋 Planned
 - Artifact-specific GGUF/GGM models
 - Web3 integration per artifact
 - Social/publishing pipeline (Theta)
-- Native embeddings without external APIs
+- Full autonomous learning loop
 
 ---
 
@@ -182,11 +221,18 @@ All Syndicate outputs are ingested:
 - Catalyst watchlists → Context retrieval
 - Charts → Historical analysis
 
-### Cognition → Cthulu
-Trade signals flow through:
-- Semantic context from history
-- Prediction outcomes for learning
-- Risk parameters from analysis
+### Cognition → Memory Module
+The memory module connects:
+- All databases (vector + relational)
+- Workspace operations
+- Tool calling interface
+- Learning history
+
+### Memory Module → Artifacts
+Training data flows to:
+- Business automation learning
+- File/structure management
+- Self-improvement cycles
 
 ---
 
@@ -198,7 +244,7 @@ Trade signals flow through:
 | hektor CLI | ✅ Built | Command-line interface |
 | pyvdb.so | ✅ Built | Python bindings |
 | llama.cpp | ✅ Integrated | Tag b7716 |
-| ONNX Runtime | ⚠️ Windows only | VDB_USE_ONNX_RUNTIME=OFF on Linux |
+| ONNX Runtime | ✅ Enabled | VDB_USE_ONNX_RUNTIME=ON |
 
 ---
 

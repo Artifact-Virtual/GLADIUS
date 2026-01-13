@@ -2,7 +2,7 @@
 
 > Autonomous Enterprise Operating System for AI Research & Trading
 
-A comprehensive autonomous enterprise system managing multiple artifacts (business units) through unified context, vectorization, and semantic memory. Combines 60+ research articles, production trading systems, and enterprise automation frameworks.
+A comprehensive autonomous enterprise system managing multiple artifacts (business units) through unified context, native vectorization, and semantic memory. Features native C++ vector database (Hektor), llama.cpp inference, and ONNX Runtime for fully local AI operations.
 
 ---
 
@@ -37,6 +37,7 @@ cd /home/adam/worxpace/gladius
                     ┌─────────────────────────────────────┐
                     │           GLADIUS                   │
                     │   Context • Vectorization • Memory  │
+                    │   Hektor VDB • llama.cpp • ONNX     │
                     └───────────────┬─────────────────────┘
                                     │
            ┌────────────────────────┼────────────────────────┐
@@ -72,13 +73,33 @@ cd /home/adam/worxpace/gladius
 
 | System | Description | Status |
 |--------|-------------|--------|
-| **Cognition Engine** | HNSW + SQLite semantic memory | ✅ Production |
+| **Hektor VDB** | Native C++ vector database (SIMD, HNSW, BM25) | ✅ Production |
+| **Cognition Engine** | Semantic memory with hybrid search | ✅ Production |
 | **Infra API** (7000) | Market data, portfolios, assets | ✅ Production |
 | **Automata Dashboard** (5000) | Control panel, content management | ✅ Production |
 | **Syndicate** (Alpha) | Market intelligence pipeline | ✅ Production |
 | **Cthulu** (Beta) | MQL5/MT5 trading execution | ✅ Staging |
-| **Arty** | Autonomous research & social | ✅ Production |
-| **Hektor** | Native C++ VDB | 🚧 Pending fixes |
+| **Memory Module** | Multi-DB access, native tool calling | 🚧 In Progress |
+
+---
+
+## 🔧 Hektor VDB (Native C++)
+
+Build and use the native vector database:
+
+```bash
+# Build with all features
+cd Artifact/hektor
+mkdir -p build && cd build
+cmake .. -DVDB_BUILD_PYTHON=ON -DVDB_USE_LLAMA_CPP=ON -DVDB_USE_ONNX_RUNTIME=ON
+make -j$(nproc)
+
+# Python usage
+from cognition.hektor_store import get_vector_store
+store = get_vector_store("./vectors", dim=384, prefer_hektor=True)
+store.add_text("doc1", "Gold broke above resistance", {"type": "journal"})
+results = store.hybrid_search("gold breakout", k=5)
+```
 
 ---
 

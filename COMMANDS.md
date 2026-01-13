@@ -133,12 +133,21 @@ print('Hektor VDB available')
 
 **Location**: `Artifact/hektor/`
 
-### Build
+### Build Commands
 
 ```bash
 cd Artifact/hektor
 mkdir -p build && cd build
-cmake .. -DVDB_BUILD_PYTHON=ON -DVDB_USE_LLAMA_CPP=ON
+
+# Standard build with Python bindings
+cmake .. -DCMAKE_BUILD_TYPE=Release -DVDB_BUILD_PYTHON=ON
+make -j$(nproc)
+
+# Full build with all features
+cmake .. -DCMAKE_BUILD_TYPE=Release \
+  -DVDB_BUILD_PYTHON=ON \
+  -DVDB_USE_LLAMA_CPP=ON \
+  -DVDB_USE_ONNX_RUNTIME=ON
 make -j$(nproc)
 
 # Verify build
@@ -166,11 +175,21 @@ ls -la pyvdb*.so libvdb_core.a hektor
 | Option | Default | Description |
 |--------|---------|-------------|
 | `VDB_BUILD_PYTHON` | ON | Build Python bindings (pyvdb) |
-| `VDB_USE_LLAMA_CPP` | ON | Enable llama.cpp for local inference |
+| `VDB_USE_LLAMA_CPP` | ON | Enable llama.cpp for local inference (b7716) |
 | `VDB_USE_AVX2` | ON | Enable AVX2 SIMD optimizations |
 | `VDB_USE_AVX512` | OFF | Enable AVX-512 optimizations |
 | `VDB_ENABLE_GPU` | OFF | Enable CUDA GPU acceleration |
-| `VDB_USE_ONNX_RUNTIME` | OFF | ONNX Runtime (Windows/MSVC only) |
+| `VDB_USE_ONNX_RUNTIME` | ON | ONNX Runtime for text/image encoders |
+
+### Dependencies
+
+```bash
+# For ONNX Runtime support
+sudo apt install libonnxruntime-dev
+
+# For llama.cpp (fetched automatically)
+# Uses tag b7716 with updated API
+```
 
 ---
 
@@ -306,6 +325,34 @@ python db_manager.py       # Initialize
 python check_db_vm.py      # Check on VM
 python reset_db_vm.py      # Reset
 ```
+
+---
+
+## Memory Module (Native Tool Calling)
+
+**Location**: `Artifact/syndicate/src/cognition/`
+
+### Available Tools (In Development)
+
+| Tool | Description |
+|------|-------------|
+| `read_db(name, query)` | Read from any connected database |
+| `write_db(name, data)` | Write to any connected database |
+| `search(query, k)` | Semantic search across all vectors |
+| `get_context(query)` | Retrieve historical context |
+| `read_file(path)` | Read file from workspace |
+| `write_file(path, data)` | Write file to workspace |
+| `list_dir(path)` | List directory contents |
+
+### Database Connections
+
+| Database | Type | Path |
+|----------|------|------|
+| Hektor VDB | Vector | `data/hektor.db` |
+| Syndicate DB | SQLite | `data/syndicate.db` |
+| Arty Store | SQLite | `Artifact/arty/store/arty.db` |
+| Predictions | SQLite | `data/predictions.db` |
+| Configs | JSON | `data/*.json` |
 
 ---
 
