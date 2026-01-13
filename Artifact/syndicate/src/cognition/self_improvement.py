@@ -1055,3 +1055,103 @@ class SelfImprovementEngine:
         
         with open(obsidian_path / "_index.md", 'w') as f:
             f.write("\n".join(lines))
+    
+    def sync_and_push(
+        self,
+        obsidian_dir: str,
+        impact_levels: List[str] = ["low", "medium"],
+        auto_push: bool = True,
+        commit_message: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Sync proposals to Obsidian and push to remote.
+        
+        Args:
+            obsidian_dir: Path to obsidian_sync/gladius directory
+            impact_levels: Which impact levels to sync
+            auto_push: Whether to automatically push to remote
+            commit_message: Custom commit message
+        
+        Returns:
+            Sync and push results
+        """
+        import subprocess
+        
+        result = {
+            "synced": 0,
+            "staged": False,
+            "committed": False,
+            "pushed": False,
+            "error": None
+        }
+        
+        try:
+            # Sync to obsidian
+            synced = self.sync_to_obsidian(obsidian_dir, impact_levels)
+            result["synced"] = synced
+            
+            if synced == 0:
+                return result
+            
+            if not auto_push:
+                return result
+            
+            # Git operations
+            obsidian_path = Path(obsidian_dir)
+            repo_root = self.base_dir
+            
+            # Find git root
+            git_root = subprocess.run(
+                ["git", "rev-parse", "--show-toplevel"],
+                cwd=str(repo_root),
+                capture_output=True,
+                text=True
+            )
+            if git_root.returncode != 0:
+                result["error"] = "Not a git repository"
+                return result
+            
+            git_root_path = git_root.stdout.strip()
+            
+            # Stage obsidian files
+            stage_result = subprocess.run(
+                ["git", "add", str(obsidian_path)],
+                cwd=git_root_path,
+                capture_output=True,
+                text=True
+            )
+            result["staged"] = stage_result.returncode == 0
+            
+            # Commit
+            if not commit_message:
+                commit_message = f"[GLADIUS] Sync {synced} proposals to Obsidian - {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+            
+            commit_result = subprocess.run(
+                ["git", "commit", "-m", commit_message],
+                cwd=git_root_path,
+                capture_output=True,
+                text=True
+            )
+            result["committed"] = commit_result.returncode == 0 or "nothing to commit" in commit_result.stdout
+            
+            # Push
+            push_result = subprocess.run(
+                ["git", "push"],
+                cwd=git_root_path,
+                capture_output=True,
+                text=True,
+                timeout=60
+            )
+            result["pushed"] = push_result.returncode == 0
+            
+            if push_result.returncode != 0:
+                result["error"] = push_result.stderr[:200] if push_result.stderr else "Push failed"
+            
+            self.logger.info(f"[OBSIDIAN] Synced {synced} proposals, pushed={result['pushed']}")
+            
+        except subprocess.TimeoutExpired:
+            result["error"] = "Git push timeout"
+        except Exception as e:
+            result["error"] = str(e)
+        
+        return result
