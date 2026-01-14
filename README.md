@@ -1,6 +1,14 @@
 <div align="center">
 
-# ⚔️ GLADIUS
+```
+  ________.____       _____  ________  .___ ____ ___  _________
+ ╱  _____╱│    │     ╱  _  ╲ ╲______ ╲ │   │    │   ╲╱   _____╱
+╱   ╲  ___│    │    ╱  ╱_╲  ╲ │    │  ╲│   │    │   ╱╲_____  ╲ 
+╲    ╲_╲  ╲    │___╱    │    ╲│    `   ╲   │    │  ╱ ╱        ╲
+ ╲______  ╱_______ ╲____│__  ╱_______  ╱___│______╱ ╱_______  ╱
+        ╲╱        ╲╱       ╲╱        ╲╱                     ╲╱ 
+
+```
 
 ### Autonomous Enterprise Intelligence System
 
@@ -24,11 +32,11 @@
 
 GLADIUS is a **next-generation autonomous enterprise system** that combines:
 
-- 🧠 **Native Cognition** — Pattern-based tool routing with 100% accuracy, sub-millisecond latency
-- 🔄 **Self-Improvement** — Autonomous proposal generation, training, and implementation
-- 📢 **Multi-Platform Publishing** — Unified pipeline for Twitter, LinkedIn, Facebook, Instagram, YouTube
-- 📊 **Market Intelligence** — Real-time analysis of gold, crypto, and equities with chart generation
-- ⚡ **SIMD Performance** — C++ core with AVX2 optimization, zero external AI dependency for core ops
+> **⟡ Native Cognition** — Pattern-based tool routing with 100% accuracy, sub-millisecond latency <br>
+> **↺ Self-Improvement** — Autonomous proposal generation, training, and implementation <br>
+> **✉ Multi-Platform Publishing** — Unified pipeline for Twitter, LinkedIn, Facebook, Instagram, YouTube <br>
+> **⚙ Market Intelligence** — Real-time analysis of gold, crypto, and equities with chart generation <br>
+> **◼ SIMD Performance** — C++ core with AVX2 optimization, zero external AI dependency for core ops 
 
 ## System Schematic
 
