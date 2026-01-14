@@ -31,11 +31,7 @@
             --warning: #f59e0b;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -45,18 +41,11 @@
             line-height: 1.6;
         }
 
-        .container {
-            max-width: 1320px;
-            margin: 0 auto;
-            padding: 0 32px;
-        }
+        .container { max-width: 1320px; margin: 0 auto; padding: 0 32px; }
 
-        /* Header */
         header {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: 0; left: 0; right: 0;
             z-index: 100;
             padding: 20px 0;
             background: rgba(5, 5, 7, 0.85);
@@ -64,11 +53,7 @@
             border-bottom: 1px solid var(--border-color);
         }
 
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        .header-content { display: flex; justify-content: space-between; align-items: center; }
 
         .logo {
             font-size: 18px;
@@ -78,11 +63,7 @@
             text-decoration: none;
         }
 
-        nav {
-            display: flex;
-            gap: 32px;
-            align-items: center;
-        }
+        nav { display: flex; gap: 32px; align-items: center; }
 
         nav a {
             color: var(--text-muted);
@@ -93,9 +74,7 @@
             transition: color 0.2s;
         }
 
-        nav a:hover {
-            color: var(--text-secondary);
-        }
+        nav a:hover { color: var(--text-secondary); }
 
         .nav-cta {
             padding: 8px 16px;
@@ -128,10 +107,12 @@
             text-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
         }
 
-        /* Hero */
         .hero {
             padding: 180px 0 120px;
             border-bottom: 1px solid var(--border-color);
+            position: relative;
+            perspective: 1000px;
+            overflow: hidden;
         }
 
         .hero-grid {
@@ -139,6 +120,91 @@
             grid-template-columns: 1fr 1fr;
             gap: 80px;
             align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* New hero visual elements */
+        .blur-orb {
+            position: absolute;
+            width: 60vw;
+            height: 60vw;
+            max-width: 800px;
+            max-height: 800px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-dim) 0%, transparent 70%);
+            filter: blur(80px);
+            z-index: 1;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            transition: transform 0.1s linear;
+        }
+        
+        .glass-shard {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 2;
+            transition: transform 0.1s linear;
+            pointer-events: none;
+        }
+        
+        .shard-1 {
+            width: min(300px, 25vw);
+            height: min(600px, 50vh);
+            left: 10%;
+            top: -10%;
+            transform: rotate(-20deg);
+        }
+        
+        .shard-2 {
+            width: min(400px, 35vw);
+            height: min(200px, 20vh);
+            right: 5%;
+            bottom: 10%;
+            transform: rotate(15deg);
+        }
+        
+        .hero-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+            z-index: 2;
+            pointer-events: none;
+        }
+        
+        /* Disable parallax animations for users who prefer reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            .blur-orb,
+            .glass-shard {
+                transition: none;
+            }
+        }
+        
+        /* Stats section blur orb - smaller, more subtle parallax effect for secondary sections */
+        .stats-orb {
+            width: 40vw;
+            height: 40vw;
+            max-width: 600px;
+            max-height: 600px;
+            top: 50%;
+            left: 20%;
+            opacity: 0.6;
+        }
+        
+        /* Third glass shard for capabilities section - adds depth with varied positioning */
+        .shard-3 {
+            width: min(350px, 30vw);
+            height: min(500px, 40vh);
+            right: 15%;
+            top: 20%;
+            transform: rotate(10deg);
         }
 
         .hero-content h1 {
@@ -149,9 +215,7 @@
             margin-bottom: 24px;
         }
 
-        .hero-content h1 span {
-            color: var(--accent-secondary);
-        }
+        .hero-content h1 span { color: var(--accent-secondary); }
 
         .hero-description {
             font-size: 15px;
@@ -181,9 +245,14 @@
             height: 6px;
             background: var(--success);
             border-radius: 50%;
+            animation: pulse 2s infinite;
         }
 
-        /* Benchmark Card Hero */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
         .hero-benchmark {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -213,10 +282,7 @@
             font-family: 'JetBrains Mono', monospace;
         }
 
-        .benchmark-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-        }
+        .benchmark-grid { display: grid; grid-template-columns: 1fr 1fr; }
 
         .metric {
             padding: 20px;
@@ -224,13 +290,8 @@
             border-right: 1px solid var(--border-color);
         }
 
-        .metric:nth-child(2n) {
-            border-right: none;
-        }
-
-        .metric:nth-last-child(-n+2) {
-            border-bottom: none;
-        }
+        .metric:nth-child(2n) { border-right: none; }
+        .metric:nth-last-child(-n+2) { border-bottom: none; }
 
         .metric-label {
             font-size: 10px;
@@ -247,9 +308,7 @@
             color: var(--text-primary);
         }
 
-        .metric-value.success {
-            color: var(--success);
-        }
+        .metric-value.success { color: var(--success); }
 
         .metric-target {
             font-size: 10px;
@@ -258,15 +317,7 @@
             font-family: 'JetBrains Mono', monospace;
         }
 
-        /* System Topology */
-        .topology-section {
-            padding: 100px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .section-header {
-            margin-bottom: 60px;
-        }
+        .section-header { margin-bottom: 60px; }
 
         .section-label {
             font-size: 10px;
@@ -283,222 +334,46 @@
             letter-spacing: -0.5px;
         }
 
-        .topology-container {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 48px;
-            position: relative;
-        }
-
-        .topology-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 16px;
-            position: relative;
-        }
-
-        .topology-layer {
-            display: contents;
-        }
-
-        .topology-node {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 16px;
-            text-align: center;
-            transition: all 0.2s;
-            position: relative;
-        }
-
-        .topology-node:hover {
-            border-color: var(--border-hover);
-            transform: translateY(-2px);
-        }
-
-        .topology-node.core {
-            border-color: var(--accent-primary);
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, transparent 100%);
-            grid-column: span 1;
-        }
-
-        .topology-node.wide {
-            grid-column: span 2;
-        }
-
-        .topology-node.full {
-            grid-column: span 5;
-        }
-
-        .node-icon {
-            font-size: 16px;
-            margin-bottom: 8px;
-            color: var(--text-muted);
-        }
-
-        .node-name {
-            font-size: 12px;
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-
-        .node-detail {
-            font-size: 10px;
-            color: var(--text-muted);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .layer-label {
-            grid-column: span 5;
-            padding: 24px 0 8px;
-            font-size: 10px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-family: 'JetBrains Mono', monospace;
-            border-top: 1px dashed var(--border-color);
-            margin-top: 8px;
-        }
-
-        .layer-label:first-child {
-            border-top: none;
-            padding-top: 0;
-            margin-top: 0;
-        }
-
-        /* Parameters Section */
-        .params-section {
+        .stats-section {
             padding: 100px 0;
             border-bottom: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
         }
 
-        .params-grid {
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 24px;
         }
 
-        .param-card {
+        .stat-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 24px;
+            text-align: center;
         }
 
-        .param-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .param-card-title {
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        .param-card-badge {
-            font-size: 9px;
-            padding: 4px 8px;
-            background: var(--accent-dim);
+        .stat-value {
+            font-size: 36px;
+            font-weight: 600;
             color: var(--accent-secondary);
-            border-radius: 3px;
-            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 8px;
         }
 
-        .param-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .param-row:last-child {
-            border-bottom: none;
-        }
-
-        .param-name {
+        .stat-label {
             font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        .param-value {
-            font-size: 12px;
-            font-family: 'JetBrains Mono', monospace;
-            color: var(--text-primary);
-        }
-
-        /* Comparison Section */
-        .comparison-section {
-            padding: 100px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .comparison-table {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .comparison-row {
-            display: grid;
-            grid-template-columns: 200px repeat(4, 1fr);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .comparison-row:last-child {
-            border-bottom: none;
-        }
-
-        .comparison-row.header {
-            background: var(--bg-tertiary);
-        }
-
-        .comparison-cell {
-            padding: 16px 20px;
-            font-size: 12px;
-            border-right: 1px solid var(--border-color);
-        }
-
-        .comparison-cell:last-child {
-            border-right: none;
-        }
-
-        .comparison-cell.header {
-            font-weight: 500;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 10px;
+            letter-spacing: 1px;
         }
 
-        .comparison-cell.metric-name {
-            color: var(--text-secondary);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .comparison-cell.highlight {
-            background: rgba(99, 102, 241, 0.05);
-            color: var(--accent-secondary);
-            font-weight: 500;
-        }
-
-        .comparison-cell .check {
-            color: var(--success);
-        }
-
-        .comparison-cell .cross {
-            color: var(--text-muted);
-        }
-
-        /* Capabilities */
         .capabilities-section {
             padding: 100px 0;
             border-bottom: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
         }
 
         .capabilities-grid {
@@ -542,60 +417,6 @@
             line-height: 1.6;
         }
 
-        /* Tools Registry */
-        .tools-section {
-            padding: 100px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .tools-table {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .tools-row {
-            display: grid;
-            grid-template-columns: 160px 120px 100px 100px 1fr;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .tools-row:last-child {
-            border-bottom: none;
-        }
-
-        .tools-row.header {
-            background: var(--bg-tertiary);
-        }
-
-        .tools-cell {
-            padding: 12px 16px;
-            font-size: 12px;
-            border-right: 1px solid var(--border-color);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .tools-cell:last-child {
-            border-right: none;
-            font-family: 'Inter', sans-serif;
-            color: var(--text-muted);
-        }
-
-        .tools-cell.header {
-            font-weight: 500;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 10px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .tools-cell .success {
-            color: var(--success);
-        }
-
-        /* Footer */
         footer {
             padding: 60px 0;
             text-align: center;
@@ -623,9 +444,7 @@
             transition: color 0.2s;
         }
 
-        .footer-links a:hover {
-            color: var(--text-secondary);
-        }
+        .footer-links a:hover { color: var(--text-secondary); }
 
         .footer-meta {
             font-size: 11px;
@@ -633,84 +452,17 @@
             font-family: 'JetBrains Mono', monospace;
         }
 
-        /* Responsive */
         @media (max-width: 1024px) {
-            .hero-grid {
-                grid-template-columns: 1fr;
-                gap: 48px;
-            }
-
-            .topology-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-
-            .topology-node.wide {
-                grid-column: span 1;
-            }
-
-            .topology-node.full {
-                grid-column: span 3;
-            }
-
-            .layer-label {
-                grid-column: span 3;
-            }
-
-            .params-grid,
-            .capabilities-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .comparison-row {
-                grid-template-columns: 140px repeat(4, 1fr);
-            }
+            .hero-grid { grid-template-columns: 1fr; gap: 48px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .capabilities-grid { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 768px) {
-            .container {
-                padding: 0 20px;
-            }
-
-            nav {
-                display: none;
-            }
-
-            .hero {
-                padding: 140px 0 80px;
-            }
-
-            .hero-content h1 {
-                font-size: 36px;
-            }
-
-            .topology-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .topology-node.full {
-                grid-column: span 2;
-            }
-
-            .layer-label {
-                grid-column: span 2;
-            }
-
-            .comparison-row {
-                grid-template-columns: 1fr;
-            }
-
-            .comparison-cell {
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-            }
-
-            .tools-row {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .tools-row.header .tools-cell:nth-child(n+3) {
-                display: none;
-            }
+            .container { padding: 0 20px; }
+            nav { display: none; }
+            .hero { padding: 140px 0 80px; }
+            .hero-content h1 { font-size: 36px; }
         }
     </style>
 </head>
@@ -720,10 +472,8 @@
             <div class="header-content">
                 <a href="#" class="logo">GLADIUS</a>
                 <nav>
-                    <a href="#topology">Architecture</a>
-                    <a href="#parameters">Parameters</a>
-                    <a href="#comparison">Comparison</a>
-                    <a href="#tools">Tools</a>
+                    <a href="#stats">Metrics</a>
+                    <a href="#capabilities">Capabilities</a>
                     <a href="https://github.com/Artifact-Virtual/GLADIUS" class="nav-cta">Repository</a>
                     <a href="https://artifact-virtual.gitbook.io/gladius" class="nav-cta-docs">Docs</a>
                 </nav>
@@ -733,6 +483,10 @@
 
     <main>
         <section class="hero">
+            <div class="blur-orb" id="orb" aria-hidden="true"></div>
+            <div class="hero-line" aria-hidden="true"></div>
+            <div class="glass-shard shard-1" id="s1" aria-hidden="true"></div>
+            <div class="glass-shard shard-2" id="s2" aria-hidden="true"></div>
             <div class="container">
                 <div class="hero-grid">
                     <div class="hero-content">
@@ -744,12 +498,13 @@
                         <p class="hero-description">
                             Hybrid cognitive architecture with native tool routing, SIMD-optimized vector search, 
                             and recursive self-improvement. Pattern-based inference at 2.17ms with 100% routing accuracy.
+                            Fully autonomous operation with continuous learning.
                         </p>
                     </div>
                     <div class="hero-benchmark">
                         <div class="benchmark-header">
                             <span class="benchmark-title">Live Benchmark</span>
-                            <span class="benchmark-version">2026-01-13T10:48:00Z</span>
+                            <span class="benchmark-version">2026-01-14T04:09:00Z</span>
                         </div>
                         <div class="benchmark-grid">
                             <div class="metric">
@@ -763,24 +518,24 @@
                                 <div class="metric-target">target: &lt;10ms</div>
                             </div>
                             <div class="metric">
-                                <div class="metric-label">P99 Latency</div>
-                                <div class="metric-value">3.67ms</div>
-                                <div class="metric-target">target: &lt;20ms</div>
+                                <div class="metric-label">Win Rate</div>
+                                <div class="metric-value success">100%</div>
+                                <div class="metric-target">2 wins / 0 losses</div>
                             </div>
                             <div class="metric">
-                                <div class="metric-label">Model Size</div>
-                                <div class="metric-value">5.4MB</div>
-                                <div class="metric-target">target: &lt;100MB</div>
+                                <div class="metric-label">Cycle Snapshots</div>
+                                <div class="metric-value">33</div>
+                                <div class="metric-target">continuous</div>
                             </div>
                             <div class="metric">
                                 <div class="metric-label">Active Tools</div>
                                 <div class="metric-value">18</div>
-                                <div class="metric-target">expanding to 50+</div>
+                                <div class="metric-target">expanding</div>
                             </div>
                             <div class="metric">
                                 <div class="metric-label">Training Examples</div>
-                                <div class="metric-value">914</div>
-                                <div class="metric-target">target: 1000+</div>
+                                <div class="metric-value">118</div>
+                                <div class="metric-target">growing</div>
                             </div>
                         </div>
                     </div>
@@ -788,319 +543,36 @@
             </div>
         </section>
 
-        <section id="topology" class="topology-section">
+        <section id="stats" class="stats-section">
+            <div class="blur-orb stats-orb" aria-hidden="true"></div>
             <div class="container">
                 <div class="section-header">
-                    <div class="section-label">System Architecture</div>
-                    <h2 class="section-title">Cognitive Processing Topology</h2>
+                    <div class="section-label">Model Performance</div>
+                    <h2 class="section-title">Architecture Metrics</h2>
                 </div>
-                <div class="topology-container">
-                    <div class="topology-grid">
-                        <div class="layer-label">Input Layer</div>
-                        <div class="topology-node">
-                            <div class="node-icon">⊕</div>
-                            <div class="node-name">Data Ingestion</div>
-                            <div class="node-detail">yfinance · FRED</div>
-                        </div>
-                        <div class="topology-node">
-                            <div class="node-icon">⟳</div>
-                            <div class="node-name">Event Bus</div>
-                            <div class="node-detail">async queue</div>
-                        </div>
-                        <div class="topology-node">
-                            <div class="node-icon">⌘</div>
-                            <div class="node-name">Query Parser</div>
-                            <div class="node-detail">intent detection</div>
-                        </div>
-                        <div class="topology-node">
-                            <div class="node-icon">◈</div>
-                            <div class="node-name">Syndicate</div>
-                            <div class="node-detail">research engine</div>
-                        </div>
-                        <div class="topology-node">
-                            <div class="node-icon">⊘</div>
-                            <div class="node-name">Filters</div>
-                            <div class="node-detail">validation</div>
-                        </div>
-
-                        <div class="layer-label">Cognition Engine</div>
-                        <div class="topology-node core">
-                            <div class="node-icon">◉</div>
-                            <div class="node-name">Native Router</div>
-                            <div class="node-detail">2.17ms · 100%</div>
-                        </div>
-                        <div class="topology-node core">
-                            <div class="node-icon">⬡</div>
-                            <div class="node-name">Hektor VDB</div>
-                            <div class="node-detail">SIMD HNSW</div>
-                        </div>
-                        <div class="topology-node core">
-                            <div class="node-icon">⧉</div>
-                            <div class="node-name">Context Manager</div>
-                            <div class="node-detail">4096 tokens</div>
-                        </div>
-                        <div class="topology-node">
-                            <div class="node-icon">⊞</div>
-                            <div class="node-name">Memory Module</div>
-                            <div class="node-detail">multi-db</div>
-                        </div>
-                        <div class="topology-node">
-                            <div class="node-icon">⟐</div>
-                            <div class="node-name">Ollama Fallback</div>
-                            <div class="node-detail">llama3.2</div>
-                        </div>
-
-                        <div class="layer-label">Learning Layer</div>
-                        <div class="topology-node">
-                            <div class="node-icon">⊛</div>
-                            <div class="node-name">Training Generator</div>
-                            <div class="node-detail">914 examples</div>
-                        </div>
-                        <div class="topology-node">
-                            <div class="node-icon">⟲</div>
-                            <div class="node-name">Self-Improve</div>
-                            <div class="node-detail">proposals</div>
-                        </div>
-                        <div class="topology-node">
-                            <div class="node-icon">⊡</div>
-                            <div class="node-name">Benchmark</div>
-                            <div class="node-detail">continuous</div>
-                        </div>
-                        <div class="topology-node">
-                            <div class="node-icon">⊠</div>
-                            <div class="node-name">Consensus</div>
-                            <div class="node-detail">discord · email</div>
-                        </div>
-                        <div class="topology-node">
-                            <div class="node-icon">⊟</div>
-                            <div class="node-name">Snapshots</div>
-                            <div class="node-detail">rollback</div>
-                        </div>
-
-                        <div class="layer-label">Execution Layer</div>
-                        <div class="topology-node wide">
-                            <div class="node-icon">⎔</div>
-                            <div class="node-name">Tool Registry</div>
-                            <div class="node-detail">18 active tools</div>
-                        </div>
-                        <div class="topology-node">
-                            <div class="node-icon">⏱</div>
-                            <div class="node-name">Scheduler</div>
-                            <div class="node-detail">cron + event</div>
-                        </div>
-                        <div class="topology-node wide">
-                            <div class="node-icon">⊜</div>
-                            <div class="node-name">Sandboxed Executor</div>
-                            <div class="node-detail">isolated runtime</div>
-                        </div>
-
-                        <div class="layer-label">Output Layer</div>
-                        <div class="topology-node">
-                            <div class="node-icon">⊏</div>
-                            <div class="node-name">Reports</div>
-                            <div class="node-detail">journals</div>
-                        </div>
-                        <div class="topology-node">
-                            <div class="node-icon">⊐</div>
-                            <div class="node-name">Formatter</div>
-                            <div class="node-detail">multi-platform</div>
-                        </div>
-                        <div class="topology-node">
-                            <div class="node-icon">◇</div>
-                            <div class="node-name">Discord</div>
-                            <div class="node-detail">arty bot</div>
-                        </div>
-                        <div class="topology-node">
-                            <div class="node-icon">◆</div>
-                            <div class="node-name">LinkedIn</div>
-                            <div class="node-detail">arty</div>
-                        </div>
-                        <div class="topology-node">
-                            <div class="node-icon">◈</div>
-                            <div class="node-name">Notion</div>
-                            <div class="node-detail">api</div>
-                        </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">2.17ms</div>
+                        <div class="stat-label">Inference Latency</div>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="parameters" class="params-section">
-            <div class="container">
-                <div class="section-header">
-                    <div class="section-label">Technical Specifications</div>
-                    <h2 class="section-title">Model Parameters</h2>
-                </div>
-                <div class="params-grid">
-                    <div class="param-card">
-                        <div class="param-card-header">
-                            <span class="param-card-title">Pattern Router</span>
-                            <span class="param-card-badge">PRODUCTION</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">Model Type</span>
-                            <span class="param-value">TF-IDF + LR</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">Vocabulary</span>
-                            <span class="param-value">~5,000</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">Dimensions</span>
-                            <span class="param-value">384</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">File Size</span>
-                            <span class="param-value">5.4MB</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">Pattern Count</span>
-                            <span class="param-value">914</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">Memory</span>
-                            <span class="param-value">~20MB</span>
-                        </div>
+                    <div class="stat-card">
+                        <div class="stat-value">100%</div>
+                        <div class="stat-label">Routing Accuracy</div>
                     </div>
-                    <div class="param-card">
-                        <div class="param-card-header">
-                            <span class="param-card-title">Hektor VDB</span>
-                            <span class="param-card-badge">ACTIVE</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">Index Type</span>
-                            <span class="param-value">HNSW</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">Dimensions</span>
-                            <span class="param-value">384</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">M Connections</span>
-                            <span class="param-value">16</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">EF Construction</span>
-                            <span class="param-value">200</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">Distance Metric</span>
-                            <span class="param-value">Cosine</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">Query Latency</span>
-                            <span class="param-value">&lt;1ms</span>
-                        </div>
+                    <div class="stat-card">
+                        <div class="stat-value">18</div>
+                        <div class="stat-label">Native Tools</div>
                     </div>
-                    <div class="param-card">
-                        <div class="param-card-header">
-                            <span class="param-card-title">GGUF Target</span>
-                            <span class="param-card-badge">PHASE 3</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">Architecture</span>
-                            <span class="param-value">LLaMA/Qwen</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">Parameters</span>
-                            <span class="param-value">135M-500M</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">Quantization</span>
-                            <span class="param-value">Q4_K_M</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">Context Window</span>
-                            <span class="param-value">512</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">Target Size</span>
-                            <span class="param-value">80-300MB</span>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-name">Target Latency</span>
-                            <span class="param-value">&lt;10ms</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="comparison" class="comparison-section">
-            <div class="container">
-                <div class="section-header">
-                    <div class="section-label">Framework Analysis</div>
-                    <h2 class="section-title">Competitive Comparison</h2>
-                </div>
-                <div class="comparison-table">
-                    <div class="comparison-row header">
-                        <div class="comparison-cell header">Metric</div>
-                        <div class="comparison-cell header">GLADIUS</div>
-                        <div class="comparison-cell header">LangChain</div>
-                        <div class="comparison-cell header">AutoGPT</div>
-                        <div class="comparison-cell header">CrewAI</div>
-                    </div>
-                    <div class="comparison-row">
-                        <div class="comparison-cell metric-name">Tool Routing Latency</div>
-                        <div class="comparison-cell highlight">2.17ms</div>
-                        <div class="comparison-cell">50-200ms</div>
-                        <div class="comparison-cell">100-500ms</div>
-                        <div class="comparison-cell">80-300ms</div>
-                    </div>
-                    <div class="comparison-row">
-                        <div class="comparison-cell metric-name">Routing Accuracy</div>
-                        <div class="comparison-cell highlight">100%</div>
-                        <div class="comparison-cell">85-95%</div>
-                        <div class="comparison-cell">70-85%</div>
-                        <div class="comparison-cell">80-90%</div>
-                    </div>
-                    <div class="comparison-row">
-                        <div class="comparison-cell metric-name">Offline Capable</div>
-                        <div class="comparison-cell highlight"><span class="check">✓</span></div>
-                        <div class="comparison-cell"><span class="cross">—</span></div>
-                        <div class="comparison-cell"><span class="cross">—</span></div>
-                        <div class="comparison-cell"><span class="cross">—</span></div>
-                    </div>
-                    <div class="comparison-row">
-                        <div class="comparison-cell metric-name">Self-Improvement</div>
-                        <div class="comparison-cell highlight"><span class="check">✓</span></div>
-                        <div class="comparison-cell"><span class="cross">—</span></div>
-                        <div class="comparison-cell">Partial</div>
-                        <div class="comparison-cell"><span class="cross">—</span></div>
-                    </div>
-                    <div class="comparison-row">
-                        <div class="comparison-cell metric-name">Native Vector DB</div>
-                        <div class="comparison-cell highlight"><span class="check">✓</span> SIMD</div>
-                        <div class="comparison-cell">External</div>
-                        <div class="comparison-cell">External</div>
-                        <div class="comparison-cell">External</div>
-                    </div>
-                    <div class="comparison-row">
-                        <div class="comparison-cell metric-name">Model Size</div>
-                        <div class="comparison-cell highlight">5.4MB</div>
-                        <div class="comparison-cell">API-based</div>
-                        <div class="comparison-cell">API-based</div>
-                        <div class="comparison-cell">API-based</div>
-                    </div>
-                    <div class="comparison-row">
-                        <div class="comparison-cell metric-name">Memory Footprint</div>
-                        <div class="comparison-cell highlight">~35MB</div>
-                        <div class="comparison-cell">200MB+</div>
-                        <div class="comparison-cell">500MB+</div>
-                        <div class="comparison-cell">150MB+</div>
-                    </div>
-                    <div class="comparison-row">
-                        <div class="comparison-cell metric-name">Consensus System</div>
-                        <div class="comparison-cell highlight"><span class="check">✓</span></div>
-                        <div class="comparison-cell"><span class="cross">—</span></div>
-                        <div class="comparison-cell"><span class="cross">—</span></div>
-                        <div class="comparison-cell"><span class="cross">—</span></div>
+                    <div class="stat-card">
+                        <div class="stat-value">4096</div>
+                        <div class="stat-label">Context Window</div>
                     </div>
                 </div>
             </div>
         </section>
 
         <section id="capabilities" class="capabilities-section">
+            <div class="glass-shard shard-3" id="s3" aria-hidden="true"></div>
             <div class="container">
                 <div class="section-header">
                     <div class="section-label">Core Modules</div>
@@ -1140,73 +612,6 @@
                 </div>
             </div>
         </section>
-
-        <section id="tools" class="tools-section">
-            <div class="container">
-                <div class="section-header">
-                    <div class="section-label">Tool Inventory</div>
-                    <h2 class="section-title">Active Tool Registry</h2>
-                </div>
-                <div class="tools-table">
-                    <div class="tools-row header">
-                        <div class="tools-cell header">Tool</div>
-                        <div class="tools-cell header">Category</div>
-                        <div class="tools-cell header">Tier</div>
-                        <div class="tools-cell header">Latency</div>
-                        <div class="tools-cell header">Description</div>
-                    </div>
-                    <div class="tools-row">
-                        <div class="tools-cell">list_databases</div>
-                        <div class="tools-cell">introspection</div>
-                        <div class="tools-cell">1</div>
-                        <div class="tools-cell"><span class="success">0.8ms</span></div>
-                        <div class="tools-cell">Enumerate available data sources</div>
-                    </div>
-                    <div class="tools-row">
-                        <div class="tools-cell">hybrid_search</div>
-                        <div class="tools-cell">search</div>
-                        <div class="tools-cell">3</div>
-                        <div class="tools-cell"><span class="success">3.8ms</span></div>
-                        <div class="tools-cell">Combined BM25 + vector search</div>
-                    </div>
-                    <div class="tools-row">
-                        <div class="tools-cell">get_context</div>
-                        <div class="tools-cell">search</div>
-                        <div class="tools-cell">3</div>
-                        <div class="tools-cell"><span class="success">4.2ms</span></div>
-                        <div class="tools-cell">Retrieve relevant context window</div>
-                    </div>
-                    <div class="tools-row">
-                        <div class="tools-cell">read_db</div>
-                        <div class="tools-cell">database</div>
-                        <div class="tools-cell">3</div>
-                        <div class="tools-cell"><span class="success">5.1ms</span></div>
-                        <div class="tools-cell">Query structured data stores</div>
-                    </div>
-                    <div class="tools-row">
-                        <div class="tools-cell">remember</div>
-                        <div class="tools-cell">memory</div>
-                        <div class="tools-cell">4</div>
-                        <div class="tools-cell"><span class="success">4.8ms</span></div>
-                        <div class="tools-cell">Store episodic memory entries</div>
-                    </div>
-                    <div class="tools-row">
-                        <div class="tools-cell">recall</div>
-                        <div class="tools-cell">memory</div>
-                        <div class="tools-cell">4</div>
-                        <div class="tools-cell"><span class="success">3.2ms</span></div>
-                        <div class="tools-cell">Retrieve from long-term memory</div>
-                    </div>
-                    <div class="tools-row">
-                        <div class="tools-cell">write_file</div>
-                        <div class="tools-cell">workspace</div>
-                        <div class="tools-cell">4</div>
-                        <div class="tools-cell"><span class="success">3.5ms</span></div>
-                        <div class="tools-cell">Sandboxed file operations</div>
-                    </div>
-                </div>
-            </div>
-        </section>
     </main>
 
     <footer>
@@ -1218,8 +623,86 @@
                 <a href="ARCHITECTURE.md">Architecture</a>
                 <a href="https://artifactvirtual.com">Artifact Virtual</a>
             </div>
-            <div class="footer-meta">Agentic AI System · Phase 2 Active · Last benchmark 2026-01-13</div>
+            <div class="footer-meta">Agentic AI System · Phase 2 Active · Last benchmark 2026-01-14</div>
         </div>
     </footer>
+    
+    <script>
+        // Parallax animation - cache DOM elements for performance
+        const shard1 = document.getElementById('s1');
+        const shard2 = document.getElementById('s2');
+        const shard3 = document.getElementById('s3');
+        const orb = document.getElementById('orb');
+        const statsOrb = document.querySelector('.stats-orb');
+        
+        // Parallax configuration constants
+        const PARALLAX_INTENSITY = 40;
+        const SHARD1_MULTIPLIER_X = -1.2;
+        const SHARD1_MULTIPLIER_Y = -1.2;
+        const SHARD1_ROTATION = -20;
+        const SHARD2_MULTIPLIER_X = 1.5;
+        const SHARD2_MULTIPLIER_Y = 0.8;
+        const SHARD2_ROTATION = 15;
+        const SHARD3_MULTIPLIER_X = -0.8;
+        const SHARD3_MULTIPLIER_Y = 1.0;
+        const SHARD3_ROTATION = 10;
+        const ORB_MULTIPLIER = 0.5;
+        const STATS_ORB_MULTIPLIER = 0.3;
+        
+        // Set up motion preference detection with dynamic updates
+        const motionMediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let parallaxEnabled = !motionMediaQuery.matches;
+        let ticking = false;
+        
+        function handleParallaxMove(e) {
+            if (!parallaxEnabled || ticking) return;
+            
+            ticking = true;
+            requestAnimationFrame(() => {
+                const x = (e.clientX / window.innerWidth - 0.5) * PARALLAX_INTENSITY;
+                const y = (e.clientY / window.innerHeight - 0.5) * PARALLAX_INTENSITY;
+                
+                if (shard1) {
+                    shard1.style.transform = `translate(${x * SHARD1_MULTIPLIER_X}px, ${y * SHARD1_MULTIPLIER_Y}px) rotate(${SHARD1_ROTATION}deg)`;
+                }
+                if (shard2) {
+                    shard2.style.transform = `translate(${x * SHARD2_MULTIPLIER_X}px, ${y * SHARD2_MULTIPLIER_Y}px) rotate(${SHARD2_ROTATION}deg)`;
+                }
+                if (shard3) {
+                    shard3.style.transform = `translate(${x * SHARD3_MULTIPLIER_X}px, ${y * SHARD3_MULTIPLIER_Y}px) rotate(${SHARD3_ROTATION}deg)`;
+                }
+                if (orb) {
+                    orb.style.transform = `translate(calc(-50% + ${x * ORB_MULTIPLIER}px), calc(-50% + ${y * ORB_MULTIPLIER}px))`;
+                }
+                if (statsOrb) {
+                    statsOrb.style.transform = `translate(calc(-50% + ${x * STATS_ORB_MULTIPLIER}px), calc(-50% + ${y * STATS_ORB_MULTIPLIER}px))`;
+                }
+                
+                ticking = false;
+            });
+        }
+        
+        // Add event listener if parallax is enabled
+        if (parallaxEnabled) {
+            window.addEventListener('mousemove', handleParallaxMove);
+        }
+        
+        // Listen for changes in motion preferences
+        motionMediaQuery.addEventListener('change', (e) => {
+            parallaxEnabled = !e.matches;
+            if (!parallaxEnabled) {
+                // Remove event listener and reset transforms when reduced motion is preferred
+                window.removeEventListener('mousemove', handleParallaxMove);
+                if (shard1) shard1.style.transform = `rotate(${SHARD1_ROTATION}deg)`;
+                if (shard2) shard2.style.transform = `rotate(${SHARD2_ROTATION}deg)`;
+                if (shard3) shard3.style.transform = `rotate(${SHARD3_ROTATION}deg)`;
+                if (orb) orb.style.transform = 'translate(-50%, -50%)';
+                if (statsOrb) statsOrb.style.transform = 'translate(-50%, -50%)';
+            } else {
+                // Re-enable parallax when motion is allowed
+                window.addEventListener('mousemove', handleParallaxMove);
+            }
+        });
+    </script>
 </body>
 </html>
