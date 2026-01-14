@@ -398,6 +398,120 @@ BUILTIN_TOOLS: List[ToolDefinition] = [
             {"args": {"symbol": "XAUUSD", "bias": "LONG", "entry": 2685, "stop_loss": 2670, "target_1": 2710}, "result": {"setup_id": "ts_001", "risk_reward": 1.67}},
         ]
     ),
+    
+    # Publishing/Social Media Tools
+    ToolDefinition(
+        name="create_content",
+        description="Generate content from analysis, journals, or raw data. Formats for social media or website publication.",
+        category="publishing",
+        parameters=[
+            ToolParameter("source_type", "string", "Type of source: journal, analysis, catalyst, raw", enum=["journal", "analysis", "catalyst", "raw"]),
+            ToolParameter("source_path", "string", "Path to source file or data", required=False),
+            ToolParameter("content_type", "string", "Output format: post, thread, article, summary", enum=["post", "thread", "article", "summary"], required=False, default="post"),
+            ToolParameter("tone", "string", "Content tone: professional, casual, educational", required=False, default="professional"),
+        ],
+        examples=[
+            {"args": {"source_type": "journal", "source_path": "output/Journal_2026-01-13.md", "content_type": "post"}, "result": {"content_id": "cnt_001", "text": "Gold approaching key resistance...", "char_count": 280}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="schedule_post",
+        description="Schedule content for publishing at optimal time. Uses engagement analytics to determine best posting windows.",
+        category="publishing",
+        parameters=[
+            ToolParameter("content_id", "string", "ID of content to schedule"),
+            ToolParameter("platforms", "array", "Target platforms: discord, twitter, linkedin, notion"),
+            ToolParameter("schedule_time", "string", "ISO datetime or 'optimal' for auto-scheduling", required=False, default="optimal"),
+        ],
+        examples=[
+            {"args": {"content_id": "cnt_001", "platforms": ["discord", "twitter"], "schedule_time": "optimal"}, "result": {"scheduled_at": "2026-01-14T14:00:00Z", "platforms": ["discord", "twitter"]}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="publish_content",
+        description="Immediately publish content to specified platforms. Handles formatting per platform.",
+        category="publishing",
+        parameters=[
+            ToolParameter("content", "string", "Raw content to publish"),
+            ToolParameter("title", "string", "Content title", required=False),
+            ToolParameter("platforms", "array", "Target platforms", required=False, default=["discord"]),
+        ],
+        examples=[
+            {"args": {"content": "# Gold Update\n\nBullish momentum confirmed...", "title": "Gold Update", "platforms": ["discord"]}, "result": {"published": True, "urls": {"discord": "..."}}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="get_engagement",
+        description="Fetch engagement metrics from social platforms. Track likes, shares, comments, views.",
+        category="analytics",
+        parameters=[
+            ToolParameter("platform", "string", "Platform to check: discord, twitter, linkedin"),
+            ToolParameter("post_id", "string", "Specific post ID to check", required=False),
+            ToolParameter("time_range", "string", "Time range: 24h, 7d, 30d", required=False, default="7d"),
+        ],
+        examples=[
+            {"args": {"platform": "twitter", "time_range": "7d"}, "result": {"impressions": 1250, "engagements": 87, "engagement_rate": 6.9}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="contextualize_content",
+        description="Add market context to content. Enriches with current prices, trends, and relevant data.",
+        category="reasoning",
+        parameters=[
+            ToolParameter("content", "string", "Raw content to contextualize"),
+            ToolParameter("context_type", "string", "Type of context: market, technical, sentiment", enum=["market", "technical", "sentiment", "full"]),
+            ToolParameter("symbols", "array", "Symbols to include context for", required=False, default=["XAUUSD"]),
+        ],
+        examples=[
+            {"args": {"content": "Gold showing strength", "context_type": "market", "symbols": ["XAUUSD"]}, "result": {"contextualized": "Gold ($2,695) showing strength with RSI at 58.2 and ADX confirming trend..."}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="reason_about_audience",
+        description="Determine target audience and appropriate tone for content. Uses platform analytics and content type.",
+        category="reasoning",
+        parameters=[
+            ToolParameter("content", "string", "Content to analyze"),
+            ToolParameter("platform", "string", "Target platform"),
+        ],
+        examples=[
+            {"args": {"content": "Technical analysis of gold...", "platform": "linkedin"}, "result": {"audience": "professional traders", "tone": "educational", "hashtags": ["#gold", "#trading", "#markets"]}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="think_about_timing",
+        description="Determine optimal posting time based on audience activity, market hours, and historical engagement.",
+        category="reasoning",
+        parameters=[
+            ToolParameter("content_type", "string", "Type of content: alert, analysis, journal"),
+            ToolParameter("platforms", "array", "Target platforms"),
+            ToolParameter("timezone", "string", "User timezone", required=False, default="UTC"),
+        ],
+        examples=[
+            {"args": {"content_type": "analysis", "platforms": ["twitter", "linkedin"]}, "result": {"optimal_time": "2026-01-14T14:00:00Z", "reasoning": "Peak engagement for trading content during US market hours"}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="engage_with_reply",
+        description="Generate contextual reply for engagement. Maintains brand voice while being helpful.",
+        category="engagement",
+        parameters=[
+            ToolParameter("platform", "string", "Platform: discord, twitter, linkedin"),
+            ToolParameter("original_message", "string", "Message to reply to"),
+            ToolParameter("context", "string", "Additional context for reply", required=False),
+            ToolParameter("tone", "string", "Reply tone: helpful, professional, casual", required=False, default="helpful"),
+        ],
+        examples=[
+            {"args": {"platform": "discord", "original_message": "What's your view on gold?", "tone": "helpful"}, "result": {"reply": "Gold is showing bullish momentum above 2680 support. Key resistance at 2710. See today's journal for full analysis."}},
+        ]
+    ),
 ]
 
 

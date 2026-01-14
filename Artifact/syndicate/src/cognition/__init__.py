@@ -137,6 +137,26 @@ except ImportError:
     NativeToolRouter = None
     ModelTrainer = None
 
+# Training Harness (isolated cognition training)
+try:
+    from .training_harness import (
+        TrainingHarness,
+        InputProcessor,
+        LearningEngine,
+        OutputValidator,
+        ModelVersionControl,
+        TrainingInput,
+        ValidationResult,
+        ModelVersion,
+        ModelStage,
+        run_training_harness
+    )
+    TRAINING_HARNESS_AVAILABLE = True
+except ImportError:
+    TRAINING_HARNESS_AVAILABLE = False
+    TrainingHarness = None
+    run_training_harness = None
+
 __all__ = [
     # Core
     'VectorStore', 
@@ -208,5 +228,18 @@ __all__ = [
     'get_gladius_router',
     'route_query',
     'GLADIUS_MODEL_AVAILABLE',
+    
+    # Training Harness
+    'TrainingHarness',
+    'InputProcessor',
+    'LearningEngine',
+    'OutputValidator',
+    'ModelVersionControl',
+    'TrainingInput',
+    'ValidationResult',
+    'ModelVersion',
+    'ModelStage',
+    'run_training_harness',
+    'TRAINING_HARNESS_AVAILABLE',
 ]
 
