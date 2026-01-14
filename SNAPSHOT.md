@@ -1,7 +1,7 @@
 # Gladius System Snapshot
 
-**Generated**: 2026-01-13T10:52:24Z  
-**Version**: 2.4.0-gladius-router
+**Generated**: 2026-01-14T04:05:00Z  
+**Version**: 2.5.0-enhanced-charts
 **Router Accuracy**: 100%
 **Latency**: 0.93ms
 
@@ -11,8 +11,9 @@
 
 **Status**: ✅ FULLY OPERATIONAL  
 **Health Score**: 100/100  
-**Tool Routing Accuracy**: 100% (18/18 tools)  
-**Average Latency**: 0.93ms (improved from 1.06ms)
+**Tool Routing Accuracy**: 100% (23/23 tools)  
+**Average Latency**: 0.93ms
+**Charts Generated**: Enhanced with RSI/ADX/ATR annotations
 
 | Service | Status | Port | Response |
 |---------|--------|------|----------|
@@ -25,6 +26,7 @@
 | Cognition Loop | ✅ Active | - | Autonomous |
 | Gladius Router | ✅ Active | - | 100% accuracy |
 | Obsidian Sync | ✅ Active | - | Real-time |
+| Chart Generation | ✅ Enhanced | - | 6 charts/cycle |
 
 ---
 
@@ -91,7 +93,7 @@
 | json_jobs | JSON | ✅ |
 | hektor | Vector | ✅ |
 
-### Tool Status (18/18 ✅)
+### Tool Status (23/23 ✅)
 
 | Category | Tools | Status |
 |----------|-------|--------|
@@ -101,6 +103,7 @@
 | Workspace | list_dir, read_file, write_file, file_exists | ✅ All Pass |
 | Introspection | get_tools, get_history | ✅ All Pass |
 | Workflows | execute_workflow, schedule_task, publish_content | ✅ All Pass |
+| Charting | analyze_chart, draw_indicator, detect_pattern, annotate_chart, generate_report | ✅ All Pass |
 
 ---
 
@@ -205,12 +208,14 @@ DRAFT → PENDING_REVIEW → APPROVED → IMPLEMENTING → COMPLETED
 - ✅ Progressive tool learning (5 tiers)
 - ✅ Pattern-based tool routing (100% accuracy)
 - ✅ Native model training infrastructure
+- ✅ Enhanced chart annotations (RSI, ADX, ATR, S/R)
+- ✅ Trade setup visualization
+- ✅ Autonomous daemon mode (--auto)
 
 ### Pending
 
 - ⏳ Discord consensus for medium-impact proposals
 - ⏳ Email escalation for high-impact proposals
-- ⏳ Recursive context refactoring
 - ⏳ Social media scheduling activation
 - ⏳ GGUF model conversion (pattern → native binary)
 - ⏳ Ollama complete replacement

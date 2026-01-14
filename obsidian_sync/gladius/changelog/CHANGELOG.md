@@ -4,11 +4,29 @@ All notable changes to the Gladius Enterprise System are documented here.
 
 ## [Unreleased]
 
+### In Progress
+- GGUF model fine-tuning for complete Ollama replacement
+- Social media API integrations (keys configured, awaiting activation)
+- Discord consensus voting implementation
+
+## [2026-01-14] - Enhanced Chart Annotations & Autonomous Mode
+
 ### Added
-- Native tool model training (in progress - 100 iteration training loop)
-- SMTP email escalation configuration
-- Git auto-push for Obsidian sync
-- Flash attention optimization markers
+- **Enhanced Chart Annotations**: RSI, ADX, ATR indicators with subplots
+- **Support/Resistance Levels**: Automatic detection and visualization
+- **Trade Setup Visualization**: Entry/exit zones on charts
+- **Chart Learning Tools**: `analyze_chart`, `draw_indicator`, `detect_pattern`, `annotate_chart`, `generate_report`
+- **Autonomous Daemon Mode**: `--auto` flag for indefinite self-running operation
+- **30-Day Continuous Operation**: System designed for month-long autonomous runs
+
+### Changed
+- Charts now include multi-panel layout (price, volume, RSI, ADX)
+- All technical indicators integrated into visualization
+- Main daemon loop fully wired with cognition engine
+
+### Fixed
+- Chart annotation positioning for better readability
+- Indicator subplot scaling issues
 
 ## [2026-01-13] - Cognition Autonomy Complete
 
@@ -120,17 +138,18 @@ All notable changes to the Gladius Enterprise System are documented here.
 
 ## Statistics
 
-- **Total Commits**: 153
-- **Active Development Days**: 30+
+- **Total Commits**: 165
+- **Active Development Days**: 35+
 - **Core Modules**: 8 (Cognition, Syndicate, Automata, Arty, Hektor, Infra, Dashboard, Projects)
-- **Tools Implemented**: 16 native tools
-- **Proposals Created**: 11+ self-improvement proposals
+- **Tools Implemented**: 18 native tools + 5 charting tools
+- **Proposals Created**: 15+ self-improvement proposals
+- **Charts Generated**: 6 per cycle (GOLD, SILVER, DXY, VIX, SPX, YIELD)
 
 ## Version Naming
 
 - **v0.x.x**: Alpha development (current)
-- **v1.0.0**: First stable release (planned)
+- **v1.0.0**: First stable release (planned Q1 2026)
 
 ---
 
-*Generated: 2026-01-13*
+*Generated: 2026-01-14*
