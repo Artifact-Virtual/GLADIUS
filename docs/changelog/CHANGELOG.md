@@ -1,4 +1,4 @@
-# Gladius Changelog
+# CHANGELOG
 
 All notable changes to the Gladius Enterprise System are documented here.
 
