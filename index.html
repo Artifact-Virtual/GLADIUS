@@ -153,16 +153,16 @@
         }
         
         .shard-1 {
-            width: 300px;
-            height: 600px;
+            width: min(300px, 25vw);
+            height: min(600px, 50vh);
             left: 10%;
             top: -10%;
             transform: rotate(-20deg);
         }
         
         .shard-2 {
-            width: 400px;
-            height: 200px;
+            width: min(400px, 35vw);
+            height: min(200px, 20vh);
             right: 5%;
             bottom: 10%;
             transform: rotate(15deg);
@@ -617,35 +617,53 @@
         const SHARD2_ROTATION = 15;
         const ORB_MULTIPLIER = 0.5;
         
-        // Check if user prefers reduced motion
-        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        // Set up motion preference detection with dynamic updates
+        const motionMediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let parallaxEnabled = !motionMediaQuery.matches;
+        let ticking = false;
         
-        // Only add parallax animation if user hasn't requested reduced motion
-        if (!prefersReducedMotion) {
-            let ticking = false;
-            
-            window.addEventListener('mousemove', (e) => {
-                if (!ticking) {
-                    requestAnimationFrame(() => {
-                        const x = (e.clientX / window.innerWidth - 0.5) * PARALLAX_INTENSITY;
-                        const y = (e.clientY / window.innerHeight - 0.5) * PARALLAX_INTENSITY;
-                        
-                        if (shard1) {
-                            shard1.style.transform = `translate(${x * SHARD1_MULTIPLIER_X}px, ${y * SHARD1_MULTIPLIER_Y}px) rotate(${SHARD1_ROTATION}deg)`;
-                        }
-                        if (shard2) {
-                            shard2.style.transform = `translate(${x * SHARD2_MULTIPLIER_X}px, ${y * SHARD2_MULTIPLIER_Y}px) rotate(${SHARD2_ROTATION}deg)`;
-                        }
-                        if (orb) {
-                            orb.style.transform = `translate(calc(-50% + ${x * ORB_MULTIPLIER}px), calc(-50% + ${y * ORB_MULTIPLIER}px))`;
-                        }
-                        
-                        ticking = false;
-                    });
-                    ticking = true;
-                }
-            });
+        function handleParallaxMove(e) {
+            if (!parallaxEnabled || !ticking) return;
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    const x = (e.clientX / window.innerWidth - 0.5) * PARALLAX_INTENSITY;
+                    const y = (e.clientY / window.innerHeight - 0.5) * PARALLAX_INTENSITY;
+                    
+                    if (shard1) {
+                        shard1.style.transform = `translate(${x * SHARD1_MULTIPLIER_X}px, ${y * SHARD1_MULTIPLIER_Y}px) rotate(${SHARD1_ROTATION}deg)`;
+                    }
+                    if (shard2) {
+                        shard2.style.transform = `translate(${x * SHARD2_MULTIPLIER_X}px, ${y * SHARD2_MULTIPLIER_Y}px) rotate(${SHARD2_ROTATION}deg)`;
+                    }
+                    if (orb) {
+                        orb.style.transform = `translate(calc(-50% + ${x * ORB_MULTIPLIER}px), calc(-50% + ${y * ORB_MULTIPLIER}px))`;
+                    }
+                    
+                    ticking = false;
+                });
+                ticking = true;
+            }
         }
+        
+        // Add event listener if parallax is enabled
+        if (parallaxEnabled) {
+            window.addEventListener('mousemove', handleParallaxMove);
+        }
+        
+        // Listen for changes in motion preferences
+        motionMediaQuery.addEventListener('change', (e) => {
+            parallaxEnabled = !e.matches;
+            if (!parallaxEnabled) {
+                // Remove event listener and reset transforms when reduced motion is preferred
+                window.removeEventListener('mousemove', handleParallaxMove);
+                if (shard1) shard1.style.transform = `rotate(${SHARD1_ROTATION}deg)`;
+                if (shard2) shard2.style.transform = `rotate(${SHARD2_ROTATION}deg)`;
+                if (orb) orb.style.transform = 'translate(-50%, -50%)';
+            } else {
+                // Re-enable parallax when motion is allowed
+                window.addEventListener('mousemove', handleParallaxMove);
+            }
+        });
     </script>
 </body>
 </html>
