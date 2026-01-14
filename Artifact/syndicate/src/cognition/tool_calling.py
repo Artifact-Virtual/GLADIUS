@@ -298,6 +298,106 @@ BUILTIN_TOOLS: List[ToolDefinition] = [
             {"args": {"last_n": 5}, "result": [{"tool": "search", "success": True, "timestamp": "..."}]},
         ]
     ),
+    
+    # Charting Tools
+    ToolDefinition(
+        name="generate_chart",
+        description="Generate an enhanced technical chart with indicators (RSI, ADX, ATR), support/resistance levels, trendlines, and trade setups.",
+        category="charting",
+        parameters=[
+            ToolParameter("symbol", "string", "Asset symbol (e.g., XAUUSD, SPY)"),
+            ToolParameter("timeframe", "string", "Chart timeframe", required=False, default="1D"),
+            ToolParameter("show_indicators", "boolean", "Show RSI/ADX subplots", required=False, default=True),
+            ToolParameter("show_levels", "boolean", "Show S/R levels", required=False, default=True),
+            ToolParameter("show_trade_setup", "boolean", "Show trade setup zones", required=False, default=True),
+        ],
+        examples=[
+            {"args": {"symbol": "XAUUSD", "timeframe": "1D"}, "result": {"chart_path": "output/charts/XAUUSD_1D.png", "rsi": 58.2, "adx": 32.1}},
+            {"args": {"symbol": "SPY", "show_trade_setup": True}, "result": {"chart_path": "output/charts/SPY_1D.png", "regime": "TRENDING"}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="detect_support_resistance",
+        description="Detect horizontal support and resistance levels from price data using swing point analysis.",
+        category="charting",
+        parameters=[
+            ToolParameter("symbol", "string", "Asset symbol"),
+            ToolParameter("window", "integer", "Swing detection window size", required=False, default=10),
+            ToolParameter("num_levels", "integer", "Number of levels to return", required=False, default=3),
+        ],
+        examples=[
+            {"args": {"symbol": "XAUUSD"}, "result": {"support": [2650.0, 2680.5], "resistance": [2710.0, 2745.0]}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="detect_trendlines",
+        description="Detect trendlines using RANSAC algorithm on swing highs and lows.",
+        category="charting",
+        parameters=[
+            ToolParameter("symbol", "string", "Asset symbol"),
+            ToolParameter("max_lines", "integer", "Maximum trendlines to detect", required=False, default=2),
+        ],
+        examples=[
+            {"args": {"symbol": "XAUUSD"}, "result": {"support_lines": [{"angle": 12.5, "price": 2680}], "resistance_lines": [{"angle": -5.2, "price": 2720}]}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="calculate_indicators",
+        description="Calculate technical indicators (RSI, ADX, ATR, SMAs) for a symbol.",
+        category="charting",
+        parameters=[
+            ToolParameter("symbol", "string", "Asset symbol"),
+            ToolParameter("indicators", "array", "List of indicators to calculate", required=False, default=["RSI", "ADX_14", "ATR", "SMA_50", "SMA_200"]),
+        ],
+        examples=[
+            {"args": {"symbol": "XAUUSD"}, "result": {"RSI": 58.2, "ADX_14": 32.1, "ATR": 28.5, "regime": "TRENDING"}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="determine_regime",
+        description="Determine market regime (TRENDING, RANGING, VOLATILE) based on ADX and ATR values.",
+        category="charting",
+        parameters=[
+            ToolParameter("symbol", "string", "Asset symbol"),
+        ],
+        examples=[
+            {"args": {"symbol": "XAUUSD"}, "result": {"regime": "TRENDING", "adx": 32.1, "atr_pct": 1.2}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="annotate_chart",
+        description="Add custom annotations to a chart: levels, trendlines, zones, labels.",
+        category="charting",
+        parameters=[
+            ToolParameter("chart_path", "string", "Path to existing chart"),
+            ToolParameter("annotations", "object", "Annotations to add (support_levels, resistance_levels, labels)"),
+        ],
+        examples=[
+            {"args": {"chart_path": "output/charts/XAUUSD.png", "annotations": {"support_levels": [2680], "labels": [{"x": 10, "y": 2700, "text": "Key resistance"}]}}, "result": {"updated_path": "output/charts/XAUUSD_annotated.png"}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="create_trade_setup",
+        description="Create a trade setup with entry, stop loss, and take profit levels.",
+        category="charting",
+        parameters=[
+            ToolParameter("symbol", "string", "Asset symbol"),
+            ToolParameter("bias", "string", "Trade direction: LONG or SHORT", enum=["LONG", "SHORT"]),
+            ToolParameter("entry", "float", "Entry price"),
+            ToolParameter("stop_loss", "float", "Stop loss price"),
+            ToolParameter("target_1", "float", "First take profit target"),
+            ToolParameter("target_2", "float", "Second take profit target", required=False),
+        ],
+        examples=[
+            {"args": {"symbol": "XAUUSD", "bias": "LONG", "entry": 2685, "stop_loss": 2670, "target_1": 2710}, "result": {"setup_id": "ts_001", "risk_reward": 1.67}},
+        ]
+    ),
 ]
 
 
