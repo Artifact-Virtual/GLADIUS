@@ -730,6 +730,175 @@ do_cycle() {
 }
 
 # =============================================================================
+# AUTONOMOUS MODE - Run indefinitely with full learning and self-improvement
+# =============================================================================
+
+do_autonomous() {
+    local days=${1:-30}
+    local interval_min=${2:-60}
+    local max_cycles=$((days * 24 * 60 / interval_min))
+    
+    print_header
+    echo -e "${BLUE}╔═══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║           🤖 GLADIUS AUTONOMOUS MODE                          ║${NC}"
+    echo -e "${BLUE}╚═══════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    echo -e "  ${CYAN}Duration:${NC}       $days days"
+    echo -e "  ${CYAN}Interval:${NC}       $interval_min minutes"
+    echo -e "  ${CYAN}Max Cycles:${NC}     $max_cycles"
+    echo -e "  ${CYAN}Started:${NC}        $(date -Iseconds)"
+    echo -e "  ${CYAN}Expected End:${NC}   $(date -d "+$days days" -Iseconds)"
+    echo ""
+    echo "─────────────────────────────────────────────────────────────────"
+    
+    mkdir -p "$LOG_DIR"
+    mkdir -p "$GLADIUS_ROOT/obsidian_sync/gladius/reports"
+    
+    # Write startup report
+    local start_time=$(date -Iseconds)
+    local report_file="$GLADIUS_ROOT/obsidian_sync/gladius/reports/autonomous_$(date +%Y%m%d_%H%M%S).md"
+    cat > "$report_file" << EOF
+# Gladius Autonomous Mode Session
+
+## Session Info
+- **Started**: $start_time
+- **Duration**: $days days
+- **Interval**: $interval_min minutes
+- **Max Cycles**: $max_cycles
+- **Status**: RUNNING
+
+## Cycle Log
+| Cycle | Timestamp | Reports | Training | Proposals | Errors |
+|-------|-----------|---------|----------|-----------|--------|
+EOF
+
+    local cycle=0
+    local total_reports=0
+    local total_training=0
+    local total_proposals=0
+    local errors=0
+    
+    echo -e "${GREEN}Starting autonomous loop...${NC}"
+    echo ""
+    
+    while [ $cycle -lt $max_cycles ]; do
+        cycle=$((cycle + 1))
+        local cycle_start=$(date -Iseconds)
+        
+        echo -e "${CYAN}[CYCLE $cycle/$max_cycles]${NC} $(date)"
+        echo "─────────────────────────────────────────────────────────────────"
+        
+        # Run the full cycle
+        cd "$GLADIUS_ROOT/Artifact/syndicate"
+        
+        # Execute cycle and capture metrics
+        local result=$("$PYTHON" -c "
+import sys
+import json
+sys.path.insert(0, '.')
+try:
+    from src.cognition import LEARNING_AVAILABLE, CognitionLearningLoop
+    
+    if not LEARNING_AVAILABLE:
+        print(json.dumps({'error': 'Learning not available', 'reports': 0, 'training': 0, 'proposals': 0}))
+        sys.exit(0)
+    
+    loop = CognitionLearningLoop(base_dir='.', data_dir='./data', output_dir='./output')
+    result = loop.run_cycle()
+    loop.close()
+    
+    print(json.dumps({
+        'reports': result.reports_ingested,
+        'training': result.training_examples_generated,
+        'proposals': result.proposals_created + result.proposals_completed,
+        'error': None
+    }))
+except Exception as e:
+    print(json.dumps({'error': str(e), 'reports': 0, 'training': 0, 'proposals': 0}))
+" 2>&1)
+        
+        # Parse results
+        local reports=$(echo "$result" | python3 -c "import sys,json; d=json.loads(sys.stdin.read()); print(d.get('reports', 0))" 2>/dev/null || echo 0)
+        local training=$(echo "$result" | python3 -c "import sys,json; d=json.loads(sys.stdin.read()); print(d.get('training', 0))" 2>/dev/null || echo 0)
+        local proposals=$(echo "$result" | python3 -c "import sys,json; d=json.loads(sys.stdin.read()); print(d.get('proposals', 0))" 2>/dev/null || echo 0)
+        local error=$(echo "$result" | python3 -c "import sys,json; d=json.loads(sys.stdin.read()); print(d.get('error') or '')" 2>/dev/null || echo "parse_error")
+        
+        total_reports=$((total_reports + reports))
+        total_training=$((total_training + training))
+        total_proposals=$((total_proposals + proposals))
+        
+        if [ -n "$error" ] && [ "$error" != "None" ] && [ "$error" != "" ]; then
+            errors=$((errors + 1))
+            echo -e "  ${RED}❌ Error: $error${NC}"
+            echo "| $cycle | $cycle_start | $reports | $training | $proposals | $error |" >> "$report_file"
+        else
+            echo -e "  ${GREEN}✅ Reports: $reports | Training: $training | Proposals: $proposals${NC}"
+            echo "| $cycle | $cycle_start | $reports | $training | $proposals | - |" >> "$report_file"
+        fi
+        
+        # Run Syndicate research if needed (every 4 cycles = ~4 hours)
+        if [ $((cycle % 4)) -eq 0 ]; then
+            echo -e "  ${BLUE}→ Running Syndicate research cycle...${NC}"
+            cd "$GLADIUS_ROOT/Artifact/syndicate"
+            PREFER_OLLAMA=1 "$PYTHON" run.py --once >> "$LOG_DIR/syndicate_autonomous.log" 2>&1 &
+            wait $!
+            echo -e "  ${GREEN}✓ Syndicate cycle complete${NC}"
+        fi
+        
+        # Progress update every 10 cycles
+        if [ $((cycle % 10)) -eq 0 ]; then
+            echo ""
+            echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+            echo -e "${CYAN}Progress: $cycle/$max_cycles cycles ($(( cycle * 100 / max_cycles ))%)${NC}"
+            echo -e "  Total Reports:    $total_reports"
+            echo -e "  Total Training:   $total_training"
+            echo -e "  Total Proposals:  $total_proposals"
+            echo -e "  Errors:           $errors"
+            echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+            echo ""
+        fi
+        
+        # Wait for next cycle
+        if [ $cycle -lt $max_cycles ]; then
+            echo -e "  ${YELLOW}⏱ Sleeping $interval_min minutes until next cycle...${NC}"
+            sleep $((interval_min * 60))
+        fi
+    done
+    
+    # Final summary
+    local end_time=$(date -Iseconds)
+    echo ""
+    echo -e "${BLUE}╔═══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║           🎉 AUTONOMOUS MODE COMPLETE                         ║${NC}"
+    echo -e "${BLUE}╚═══════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    echo -e "  ${GREEN}Started:${NC}        $start_time"
+    echo -e "  ${GREEN}Ended:${NC}          $end_time"
+    echo -e "  ${GREEN}Cycles Run:${NC}     $cycle"
+    echo -e "  ${GREEN}Total Reports:${NC}  $total_reports"
+    echo -e "  ${GREEN}Total Training:${NC} $total_training"
+    echo -e "  ${GREEN}Total Proposals:${NC} $total_proposals"
+    echo -e "  ${GREEN}Errors:${NC}         $errors"
+    echo ""
+    
+    # Update report file
+    cat >> "$report_file" << EOF
+
+## Final Summary
+- **Ended**: $end_time
+- **Cycles Run**: $cycle
+- **Total Reports**: $total_reports
+- **Total Training Examples**: $total_training
+- **Total Proposals**: $total_proposals
+- **Errors**: $errors
+- **Status**: COMPLETED
+EOF
+
+    echo -e "Report saved to: $report_file"
+    echo ""
+}
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
@@ -771,6 +940,12 @@ case "${1:-help}" in
     cycle)
         do_cycle
         ;;
+    autonomous|auto)
+        # Parse arguments: autonomous [days] [interval_min]
+        days=${2:-30}
+        interval=${3:-60}
+        do_autonomous "$days" "$interval"
+        ;;
     *)
         echo ""
         echo -e "${BLUE}⚔️  GLADIUS Control Script${NC}"
@@ -788,6 +963,8 @@ case "${1:-help}" in
         echo "  cycle              Run single full autonomous cycle"
         echo "  cognition          Run cognition learning cycle only"
         echo "  benchmark [n]      Run n learning cycles for benchmark (default: 5)"
+        echo "  autonomous [d] [m] Run indefinitely for d days, m min interval (default: 30d, 60m)"
+        echo "  auto               Alias for autonomous"
         echo ""
         echo -e "${CYAN}Utilities:${NC}"
         echo "  infra              Test Infra API specifically"
@@ -803,10 +980,12 @@ case "${1:-help}" in
         echo "  • Syndicate Daemon         - Market intelligence + Cognition"
         echo ""
         echo "Examples:"
-        echo "  ./gladius.sh start         # Start all services"
-        echo "  ./gladius.sh cycle         # Run single autonomous cycle"
-        echo "  ./gladius.sh cognition     # Run learning cycle only"
-        echo "  ./gladius.sh benchmark 10  # Benchmark with 10 cycles"
+        echo "  ./gladius.sh start              # Start all services"
+        echo "  ./gladius.sh cycle              # Run single autonomous cycle"
+        echo "  ./gladius.sh cognition          # Run learning cycle only"
+        echo "  ./gladius.sh benchmark 10       # Benchmark with 10 cycles"
+        echo "  ./gladius.sh autonomous         # Run 30 days, 60min intervals"
+        echo "  ./gladius.sh autonomous 7 30    # Run 7 days, 30min intervals"
         echo ""
         ;;
 esac

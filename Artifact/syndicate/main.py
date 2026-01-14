@@ -1862,9 +1862,16 @@ class QuantEngine:
             self.logger.debug(f"Could not fetch news for {asset_key}: {e}")
 
     def _chart(self, name: str, df: pd.DataFrame) -> None:
-        """Generate candlestick chart with technical overlays."""
+        """Generate candlestick chart with technical overlays and annotations.
+        
+        Enhanced with:
+        - RSI, ADX subplots
+        - Support/Resistance level annotations  
+        - Trade setup zones
+        - Trend direction indicators
+        """
         try:
-            # Determine chart path
+            from pathlib import Path
             chart_path = os.path.join(self.config.CHARTS_DIR, f"{name}.png")
 
             # Only skip generation if this chart was already produced earlier
@@ -1874,50 +1881,79 @@ class QuantEngine:
                 self.logger.info(f"Chart already generated in this run, skipping: {chart_path}")
                 return
 
-            # Prepare additional plots
-            # Prefer columns if precomputed by _fetch; else compute safely
+            # Prepare data with indicators if not present
             def safe_sma(series, length):
                 try:
-                    out = None
-                    # Try using ta if available
                     out = ta.sma(series, length)
                     if out is None:
                         raise Exception("ta.sma returned None")
-                    if isinstance(out, pd.Series):
-                        s = out
-                    else:
-                        s = pd.Series(out, index=series.index)
-                    if len(s) != len(series):
-                        raise Exception("sma length mismatch")
-                    return s
+                    return out if isinstance(out, pd.Series) else pd.Series(out, index=series.index)
                 except Exception:
-                    # fallback to pandas rolling mean
                     try:
                         return series.rolling(window=length, min_periods=length).mean()
                     except Exception:
                         return None
 
-            if "SMA_50" in df.columns:
-                sma50 = df["SMA_50"]
-            else:
+            # Ensure indicators exist
+            if "SMA_50" not in df.columns:
                 sma50 = safe_sma(df["Close"], 50)
-            if "SMA_200" in df.columns:
-                sma200 = df["SMA_200"]
-            else:
+                if sma50 is not None:
+                    df["SMA_50"] = sma50
+            if "SMA_200" not in df.columns:
                 sma200 = safe_sma(df["Close"], 200)
+                if sma200 is not None:
+                    df["SMA_200"] = sma200
 
-            # Slice the dataframe to the candle count to plot; additionally slice addplot series to match length
-            plot_df = df.tail(self.config.CHART_CANDLE_COUNT)
+            # Slice to chart candle count
+            plot_df = df.tail(self.config.CHART_CANDLE_COUNT).copy()
+
+            # Try enhanced charting first
+            try:
+                from scripts.charting import generate_enhanced_chart, ChartAnnotations
+                
+                # Auto-detect support/resistance from the data
+                annotations = None  # Let the charting module auto-detect
+                
+                meta = generate_enhanced_chart(
+                    df=plot_df,
+                    name=name,
+                    out_path=Path(chart_path),
+                    annotations=annotations,
+                    show_indicators=True,
+                    show_levels=True,
+                    show_trade_setup=False,  # Only show if we have trade setups
+                    figsize=(14, 10),
+                    dpi=150,
+                    style="nightclouds",
+                )
+                
+                if meta.get("success"):
+                    self.logger.info(f"Enhanced chart generated: {chart_path}")
+                    if meta.get("regime"):
+                        self.logger.debug(f"  Regime: {meta['regime']}")
+                    if meta.get("support_levels"):
+                        self.logger.debug(f"  Support: {[f'{l:.2f}' for l in meta['support_levels']]}")
+                    if meta.get("resistance_levels"):
+                        self.logger.debug(f"  Resistance: {[f'{l:.2f}' for l in meta['resistance_levels']]}")
+                    
+                    # Mark as generated
+                    try:
+                        self._generated_charts.add(name)
+                    except Exception:
+                        pass
+                    return
+                else:
+                    self.logger.warning(f"Enhanced charting failed: {meta.get('error', 'unknown')}, falling back")
+                    
+            except ImportError as e:
+                self.logger.debug(f"Enhanced charting not available ({e}), using standard mplfinance")
+            except Exception as e:
+                self.logger.warning(f"Enhanced charting error: {e}, falling back to standard")
+
+            # Fallback to original mplfinance charting
             apds = []
-            sma50_plot = None
-            sma200_plot = None
-            if sma50 is not None:
-                sma50_plot = sma50.reindex(plot_df.index)
-            if sma200 is not None:
-                sma200_plot = sma200.reindex(plot_df.index)
-            # Build addplot dataframes but defer calling `mpf.make_addplot` until
-            # mplfinance is imported (below). This avoids calling into mpf at
-            # module-import time.
+            sma50_plot = plot_df.get("SMA_50")
+            sma200_plot = plot_df.get("SMA_200")
             # `apds` remains an array of mpl addplots after the import stage.
 
             # Ensure mpl/mplfinance are imported with a headless backend
