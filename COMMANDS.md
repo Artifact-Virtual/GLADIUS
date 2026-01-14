@@ -1,4 +1,4 @@
-# Gladius Command Reference
+# Command Reference
 
 > Complete operational command reference for developers and operators
 

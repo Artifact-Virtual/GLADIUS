@@ -1,4 +1,4 @@
-# Gladius Context
+# System Context
 
 > Operational context for the Gladius autonomous enterprise system
 

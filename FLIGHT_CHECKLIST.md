@@ -1,4 +1,4 @@
-# Gladius System Flight Checklist
+# System Checklist
 
 > **Generated**: 2026-01-13T05:46:35Z  
 > **Purpose**: Top-to-bottom system sweep across all modules and departments

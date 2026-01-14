@@ -1,4 +1,4 @@
-# Gladius Architecture
+# System Architecture
 
 > Autonomous Enterprise Operating System with Native AI
 

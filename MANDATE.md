@@ -1,4 +1,4 @@
-# Gladius Operational Mandate
+# Operational Mandate
 
 > Mission, responsibilities, and expectations for the Gladius autonomous enterprise system.
 

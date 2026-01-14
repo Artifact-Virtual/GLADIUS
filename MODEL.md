@@ -1,4 +1,4 @@
-# Gladius Model Technical Specification
+# Model Architectural Mandate
 
 > **Classification**: Agentic Artificial Intelligence System (AAIS)  
 > **Architecture Type**: Hybrid Cognitive Architecture with Native Tool Routing  
