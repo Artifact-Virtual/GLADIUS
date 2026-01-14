@@ -10,8 +10,6 @@
 
 ```
 
-### Autonomous Enterprise Intelligence System
-
 <p>
   <img src="https://img.shields.io/badge/C++-Native-00599C?style=for-the-badge&logo=cplusplus" alt="C++">
   <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
