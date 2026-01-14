@@ -132,7 +132,7 @@
             max-width: 800px;
             max-height: 800px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+            background: radial-gradient(circle, var(--accent-dim) 0%, transparent 70%);
             filter: blur(80px);
             z-index: 1;
             top: 50%;
@@ -599,22 +599,32 @@
         const shard2 = document.getElementById('s2');
         const orb = document.getElementById('orb');
         
+        // Parallax configuration constants
+        const PARALLAX_INTENSITY = 40;
+        const SHARD1_MULTIPLIER_X = -1.2;
+        const SHARD1_MULTIPLIER_Y = -1.2;
+        const SHARD1_ROTATION = -20;
+        const SHARD2_MULTIPLIER_X = 1.5;
+        const SHARD2_MULTIPLIER_Y = 0.8;
+        const SHARD2_ROTATION = 15;
+        const ORB_MULTIPLIER = 0.5;
+        
         let ticking = false;
         
         window.addEventListener('mousemove', (e) => {
             if (!ticking) {
                 requestAnimationFrame(() => {
-                    const x = (e.clientX / window.innerWidth - 0.5) * 40;
-                    const y = (e.clientY / window.innerHeight - 0.5) * 40;
+                    const x = (e.clientX / window.innerWidth - 0.5) * PARALLAX_INTENSITY;
+                    const y = (e.clientY / window.innerHeight - 0.5) * PARALLAX_INTENSITY;
                     
                     if (shard1) {
-                        shard1.style.transform = `translate(${x * -1.2}px, ${y * -1.2}px) rotate(-20deg)`;
+                        shard1.style.transform = `translate(${x * SHARD1_MULTIPLIER_X}px, ${y * SHARD1_MULTIPLIER_Y}px) rotate(${SHARD1_ROTATION}deg)`;
                     }
                     if (shard2) {
-                        shard2.style.transform = `translate(${x * 1.5}px, ${y * 0.8}px) rotate(15deg)`;
+                        shard2.style.transform = `translate(${x * SHARD2_MULTIPLIER_X}px, ${y * SHARD2_MULTIPLIER_Y}px) rotate(${SHARD2_ROTATION}deg)`;
                     }
                     if (orb) {
-                        orb.style.transform = `translate(calc(-50% + ${x * 0.5}px), calc(-50% + ${y * 0.5}px))`;
+                        orb.style.transform = `translate(calc(-50% + ${x * ORB_MULTIPLIER}px), calc(-50% + ${y * ORB_MULTIPLIER}px))`;
                     }
                     
                     ticking = false;
