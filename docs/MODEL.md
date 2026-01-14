@@ -1,6 +1,8 @@
 # Model Architectural Mandate
 
-> **Classification**: Agentic Artificial Intelligence System (AAIS)  
+> Model Name: GLADIUS
+> Type: Hybrid Cognition with Native Tool Routing
+> **Classification**: AI Operating System (AIOS)
 > **Architecture Type**: Hybrid Cognitive Architecture with Native Tool Routing  
 > **Development Status**: Phase 2 Active - Pattern-Based Router Operational  
 

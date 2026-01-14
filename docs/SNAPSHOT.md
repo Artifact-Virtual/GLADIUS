@@ -1,4 +1,4 @@
-# Gladius System Snapshot
+# System Snapshot
 
 **Generated**: 2026-01-14T04:05:00Z  
 **Version**: 2.5.0-enhanced-charts
