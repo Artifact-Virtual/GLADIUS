@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLADIUS | Autonomous Cognitive Agent</title>
+    <meta name="description" content="Agentic AI System with native cognition, SIMD-optimized vector search, and autonomous self-improvement.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #050507;
+            --bg-secondary: #0a0a0e;
+            --bg-tertiary: #101016;
+            --bg-card: #0d0d12;
+            
+            --accent-primary: #6366f1;
+            --accent-secondary: #818cf8;
+            --accent-dim: rgba(99, 102, 241, 0.15);
+            
+            --text-primary: #e4e4e7;
+            --text-secondary: #a1a1aa;
+            --text-muted: #52525b;
+            
+            --border-color: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(99, 102, 241, 0.3);
+            
+            --success: #22c55e;
+            --warning: #f59e0b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container { max-width: 1320px; margin: 0 auto; padding: 0 32px; }
+
+        header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 20px 0;
+            background: rgba(5, 5, 7, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-content { display: flex; justify-content: space-between; align-items: center; }
+
+        .logo {
+            font-size: 18px;
+            font-weight: 300;
+            letter-spacing: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        nav { display: flex; gap: 32px; align-items: center; }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            transition: color 0.2s;
+        }
+
+        nav a:hover { color: var(--text-secondary); }
+
+        .nav-cta {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-secondary) !important;
+            transition: all 0.2s ease;
+        }
+
+        .nav-cta:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-cta-docs {
+            padding: 8px 16px;
+            background: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
+            border-radius: 4px;
+            color: #fff !important;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-cta-docs:hover {
+            background: var(--bg-primary);
+            border-color: var(--accent-primary);
+            color: var(--accent-secondary) !important;
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+            text-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+        }
+
+        .hero {
+            padding: 180px 0 120px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .hero-content h1 {
+            font-size: 52px;
+            font-weight: 300;
+            letter-spacing: -1px;
+            line-height: 1.15;
+            margin-bottom: 24px;
+        }
+
+        .hero-content h1 span { color: var(--accent-secondary); }
+
+        .hero-description {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 40px;
+            max-width: 480px;
+        }
+
+        .classification-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .hero-benchmark {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .benchmark-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .benchmark-title {
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .benchmark-version {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .benchmark-grid { display: grid; grid-template-columns: 1fr 1fr; }
+
+        .metric {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+        }
+
+        .metric:nth-child(2n) { border-right: none; }
+        .metric:nth-last-child(-n+2) { border-bottom: none; }
+
+        .metric-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .metric-value.success { color: var(--success); }
+
+        .metric-target {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .section-header { margin-bottom: 60px; }
+
+        .section-label {
+            font-size: 10px;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 400;
+            letter-spacing: -0.5px;
+        }
+
+        .stats-section {
+            padding: 100px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 600;
+            color: var(--accent-secondary);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .capabilities-section {
+            padding: 100px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .capabilities-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .capability-card {
+            background: var(--bg-card);
+            padding: 32px;
+        }
+
+        .capability-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: var(--accent-secondary);
+        }
+
+        .capability-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .capability-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        footer {
+            padding: 60px 0;
+            text-align: center;
+        }
+
+        .footer-logo {
+            font-size: 14px;
+            font-weight: 300;
+            letter-spacing: 6px;
+            margin-bottom: 16px;
+            color: var(--text-muted);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover { color: var(--text-secondary); }
+
+        .footer-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        @media (max-width: 1024px) {
+            .hero-grid { grid-template-columns: 1fr; gap: 48px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .capabilities-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 0 20px; }
+            nav { display: none; }
+            .hero { padding: 140px 0 80px; }
+            .hero-content h1 { font-size: 36px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo">GLADIUS</a>
+                <nav>
+                    <a href="#stats">Metrics</a>
+                    <a href="#capabilities">Capabilities</a>
+                    <a href="https://github.com/Artifact-Virtual/GLADIUS" class="nav-cta">Repository</a>
+                    <a href="https://artifact-virtual.gitbook.io/gladius" class="nav-cta-docs">Docs</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <div class="hero-grid">
+                    <div class="hero-content">
+                        <div class="classification-badge">
+                            <span class="status-dot"></span>
+                            AGENTIC AI SYSTEM · v1.0
+                        </div>
+                        <h1>Autonomous<br><span>Cognitive Agent</span></h1>
+                        <p class="hero-description">
+                            Hybrid cognitive architecture with native tool routing, SIMD-optimized vector search, 
+                            and recursive self-improvement. Pattern-based inference at 2.17ms with 100% routing accuracy.
+                            Fully autonomous operation with continuous learning.
+                        </p>
+                    </div>
+                    <div class="hero-benchmark">
+                        <div class="benchmark-header">
+                            <span class="benchmark-title">Live Benchmark</span>
+                            <span class="benchmark-version">2026-01-14T04:09:00Z</span>
+                        </div>
+                        <div class="benchmark-grid">
+                            <div class="metric">
+                                <div class="metric-label">Routing Accuracy</div>
+                                <div class="metric-value success">100.0%</div>
+                                <div class="metric-target">target: ≥95%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Avg Latency</div>
+                                <div class="metric-value">2.17ms</div>
+                                <div class="metric-target">target: &lt;10ms</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Win Rate</div>
+                                <div class="metric-value success">100%</div>
+                                <div class="metric-target">2 wins / 0 losses</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Cycle Snapshots</div>
+                                <div class="metric-value">33</div>
+                                <div class="metric-target">continuous</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Active Tools</div>
+                                <div class="metric-value">18</div>
+                                <div class="metric-target">expanding</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Training Examples</div>
+                                <div class="metric-value">118</div>
+                                <div class="metric-target">growing</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="stats" class="stats-section">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-label">System Metrics</div>
+                    <h2 class="section-title">Operational Statistics</h2>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">6</div>
+                        <div class="stat-label">Charts Generated</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Journals Published</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">33</div>
+                        <div class="stat-label">Benchmark Snapshots</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">118</div>
+                        <div class="stat-label">Training Samples</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="capabilities" class="capabilities-section">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-label">Core Modules</div>
+                    <h2 class="section-title">System Capabilities</h2>
+                </div>
+                <div class="capabilities-grid">
+                    <div class="capability-card">
+                        <div class="capability-icon">◉</div>
+                        <div class="capability-title">Native Tool Routing</div>
+                        <div class="capability-desc">Pattern-based selection with 100% accuracy. Sub-3ms inference without external API dependencies.</div>
+                    </div>
+                    <div class="capability-card">
+                        <div class="capability-icon">⬡</div>
+                        <div class="capability-title">Hektor VDB</div>
+                        <div class="capability-desc">C++ vector database with SIMD-optimized HNSW indexing. Hybrid BM25 + semantic search.</div>
+                    </div>
+                    <div class="capability-card">
+                        <div class="capability-icon">⟲</div>
+                        <div class="capability-title">Recursive Learning</div>
+                        <div class="capability-desc">Autonomous training data generation, incremental model updates, and continuous benchmarking.</div>
+                    </div>
+                    <div class="capability-card">
+                        <div class="capability-icon">⧉</div>
+                        <div class="capability-title">Context Management</div>
+                        <div class="capability-desc">4096-token window with automatic summarization, semantic deduplication, and temporal decay.</div>
+                    </div>
+                    <div class="capability-card">
+                        <div class="capability-icon">⊠</div>
+                        <div class="capability-title">Consensus Protocol</div>
+                        <div class="capability-desc">Impact-based routing through Discord voting and email escalation for high-risk proposals.</div>
+                    </div>
+                    <div class="capability-card">
+                        <div class="capability-icon">⊜</div>
+                        <div class="capability-title">Sandboxed Execution</div>
+                        <div class="capability-desc">Isolated runtime with path restrictions, file size limits, and complete audit trails.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-logo">GLADIUS</div>
+            <div class="footer-links">
+                <a href="https://github.com/Artifact-Virtual/GLADIUS">Repository</a>
+                <a href="MODEL.md">Model Spec</a>
+                <a href="ARCHITECTURE.md">Architecture</a>
+                <a href="https://artifactvirtual.com">Artifact Virtual</a>
+            </div>
+            <div class="footer-meta">Agentic AI System · Phase 2 Active · Last benchmark 2026-01-14</div>
+        </div>
+    </footer>
+</body>
+</html>
