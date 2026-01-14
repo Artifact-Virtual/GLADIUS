@@ -178,6 +178,14 @@
             z-index: 2;
             pointer-events: none;
         }
+        
+        /* Disable parallax animations for users who prefer reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            .blur-orb,
+            .glass-shard {
+                transition: none;
+            }
+        }
 
         .hero-content h1 {
             font-size: 52px;
@@ -451,10 +459,10 @@
 
     <main>
         <section class="hero">
-            <div class="blur-orb" id="orb"></div>
-            <div class="hero-line"></div>
-            <div class="glass-shard shard-1" id="s1"></div>
-            <div class="glass-shard shard-2" id="s2"></div>
+            <div class="blur-orb" id="orb" aria-hidden="true"></div>
+            <div class="hero-line" aria-hidden="true"></div>
+            <div class="glass-shard shard-1" id="s1" aria-hidden="true"></div>
+            <div class="glass-shard shard-2" id="s2" aria-hidden="true"></div>
             <div class="container">
                 <div class="hero-grid">
                     <div class="hero-content">
@@ -609,29 +617,35 @@
         const SHARD2_ROTATION = 15;
         const ORB_MULTIPLIER = 0.5;
         
-        let ticking = false;
+        // Check if user prefers reduced motion
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         
-        window.addEventListener('mousemove', (e) => {
-            if (!ticking) {
-                requestAnimationFrame(() => {
-                    const x = (e.clientX / window.innerWidth - 0.5) * PARALLAX_INTENSITY;
-                    const y = (e.clientY / window.innerHeight - 0.5) * PARALLAX_INTENSITY;
-                    
-                    if (shard1) {
-                        shard1.style.transform = `translate(${x * SHARD1_MULTIPLIER_X}px, ${y * SHARD1_MULTIPLIER_Y}px) rotate(${SHARD1_ROTATION}deg)`;
-                    }
-                    if (shard2) {
-                        shard2.style.transform = `translate(${x * SHARD2_MULTIPLIER_X}px, ${y * SHARD2_MULTIPLIER_Y}px) rotate(${SHARD2_ROTATION}deg)`;
-                    }
-                    if (orb) {
-                        orb.style.transform = `translate(calc(-50% + ${x * ORB_MULTIPLIER}px), calc(-50% + ${y * ORB_MULTIPLIER}px))`;
-                    }
-                    
-                    ticking = false;
-                });
-                ticking = true;
-            }
-        });
+        // Only add parallax animation if user hasn't requested reduced motion
+        if (!prefersReducedMotion) {
+            let ticking = false;
+            
+            window.addEventListener('mousemove', (e) => {
+                if (!ticking) {
+                    requestAnimationFrame(() => {
+                        const x = (e.clientX / window.innerWidth - 0.5) * PARALLAX_INTENSITY;
+                        const y = (e.clientY / window.innerHeight - 0.5) * PARALLAX_INTENSITY;
+                        
+                        if (shard1) {
+                            shard1.style.transform = `translate(${x * SHARD1_MULTIPLIER_X}px, ${y * SHARD1_MULTIPLIER_Y}px) rotate(${SHARD1_ROTATION}deg)`;
+                        }
+                        if (shard2) {
+                            shard2.style.transform = `translate(${x * SHARD2_MULTIPLIER_X}px, ${y * SHARD2_MULTIPLIER_Y}px) rotate(${SHARD2_ROTATION}deg)`;
+                        }
+                        if (orb) {
+                            orb.style.transform = `translate(calc(-50% + ${x * ORB_MULTIPLIER}px), calc(-50% + ${y * ORB_MULTIPLIER}px))`;
+                        }
+                        
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+        }
     </script>
 </body>
 </html>
