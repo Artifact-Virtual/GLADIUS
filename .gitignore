@@ -189,3 +189,8 @@ _build/
 !.env.template
 !requirements.txt
 !pyproject.toml
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# COPILOT SHARED BLUEBOARD (DEV NOTES)
+# ─────────────────────────────────────────────────────────────────────────────────
+obsidian_sync/gladius/.dev/todo.md
