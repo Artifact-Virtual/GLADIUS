@@ -623,26 +623,25 @@
         let ticking = false;
         
         function handleParallaxMove(e) {
-            if (!parallaxEnabled || !ticking) return;
-            if (!ticking) {
-                requestAnimationFrame(() => {
-                    const x = (e.clientX / window.innerWidth - 0.5) * PARALLAX_INTENSITY;
-                    const y = (e.clientY / window.innerHeight - 0.5) * PARALLAX_INTENSITY;
-                    
-                    if (shard1) {
-                        shard1.style.transform = `translate(${x * SHARD1_MULTIPLIER_X}px, ${y * SHARD1_MULTIPLIER_Y}px) rotate(${SHARD1_ROTATION}deg)`;
-                    }
-                    if (shard2) {
-                        shard2.style.transform = `translate(${x * SHARD2_MULTIPLIER_X}px, ${y * SHARD2_MULTIPLIER_Y}px) rotate(${SHARD2_ROTATION}deg)`;
-                    }
-                    if (orb) {
-                        orb.style.transform = `translate(calc(-50% + ${x * ORB_MULTIPLIER}px), calc(-50% + ${y * ORB_MULTIPLIER}px))`;
-                    }
-                    
-                    ticking = false;
-                });
-                ticking = true;
-            }
+            if (!parallaxEnabled || ticking) return;
+            
+            ticking = true;
+            requestAnimationFrame(() => {
+                const x = (e.clientX / window.innerWidth - 0.5) * PARALLAX_INTENSITY;
+                const y = (e.clientY / window.innerHeight - 0.5) * PARALLAX_INTENSITY;
+                
+                if (shard1) {
+                    shard1.style.transform = `translate(${x * SHARD1_MULTIPLIER_X}px, ${y * SHARD1_MULTIPLIER_Y}px) rotate(${SHARD1_ROTATION}deg)`;
+                }
+                if (shard2) {
+                    shard2.style.transform = `translate(${x * SHARD2_MULTIPLIER_X}px, ${y * SHARD2_MULTIPLIER_Y}px) rotate(${SHARD2_ROTATION}deg)`;
+                }
+                if (orb) {
+                    orb.style.transform = `translate(calc(-50% + ${x * ORB_MULTIPLIER}px), calc(-50% + ${y * ORB_MULTIPLIER}px))`;
+                }
+                
+                ticking = false;
+            });
         }
         
         // Add event listener if parallax is enabled
