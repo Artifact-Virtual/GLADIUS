@@ -7,7 +7,7 @@
     <meta name="description" content="Agentic AI System with native cognition, SIMD-optimized vector search, and autonomous self-improvement.">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@200;300;400&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -29,6 +29,10 @@
             
             --success: #22c55e;
             --warning: #f59e0b;
+            
+            /* New hero animation variables */
+            --void: #020205;
+            --mercury: rgba(230, 230, 240, 0.9);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -110,6 +114,9 @@
         .hero {
             padding: 180px 0 120px;
             border-bottom: 1px solid var(--border-color);
+            position: relative;
+            perspective: 1000px;
+            overflow: hidden;
         }
 
         .hero-grid {
@@ -117,6 +124,63 @@
             grid-template-columns: 1fr 1fr;
             gap: 80px;
             align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* New hero visual elements */
+        .blur-orb {
+            position: absolute;
+            width: 60vw;
+            height: 60vw;
+            max-width: 800px;
+            max-height: 800px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+            filter: blur(80px);
+            z-index: 1;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            transition: transform 0.1s linear;
+        }
+        
+        .glass-shard {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 2;
+            transition: transform 0.1s linear;
+            pointer-events: none;
+        }
+        
+        .shard-1 {
+            width: 300px;
+            height: 600px;
+            left: 10%;
+            top: -10%;
+            transform: rotate(-20deg);
+        }
+        
+        .shard-2 {
+            width: 400px;
+            height: 200px;
+            right: 5%;
+            bottom: 10%;
+            transform: rotate(15deg);
+        }
+        
+        .hero-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+            z-index: 2;
+            pointer-events: none;
         }
 
         .hero-content h1 {
@@ -391,6 +455,10 @@
 
     <main>
         <section class="hero">
+            <div class="blur-orb" id="orb"></div>
+            <div class="hero-line"></div>
+            <div class="glass-shard shard-1" id="s1"></div>
+            <div class="glass-shard shard-2" id="s2"></div>
             <div class="container">
                 <div class="hero-grid">
                     <div class="hero-content">
@@ -528,5 +596,27 @@
             <div class="footer-meta">Agentic AI System · Phase 2 Active · Last benchmark 2026-01-14</div>
         </div>
     </footer>
+    
+    <script>
+        // Hero parallax animation
+        window.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 40;
+            const y = (e.clientY / window.innerHeight - 0.5) * 40;
+            
+            const shard1 = document.getElementById('s1');
+            const shard2 = document.getElementById('s2');
+            const orb = document.getElementById('orb');
+            
+            if (shard1) {
+                shard1.style.transform = `translate(${x * -1.2}px, ${y * -1.2}px) rotate(-20deg)`;
+            }
+            if (shard2) {
+                shard2.style.transform = `translate(${x * 1.5}px, ${y * 0.8}px) rotate(15deg)`;
+            }
+            if (orb) {
+                orb.style.transform = `translate(calc(-50% + ${x * 0.5}px), calc(-50% + ${y * 0.5}px))`;
+            }
+        });
+    </script>
 </body>
 </html>
