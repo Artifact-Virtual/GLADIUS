@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-01-12T17:21:39.318021",
+  "cycle": 6,
+  "cortex": {
+    "total_wins": 16,
+    "total_losses": 13,
+    "win_streak": 3,
+    "loss_streak": 0,
+    "last_bias": "BULLISH",
+    "last_price_gold": 4608.8,
+    "history_count": 5
+  },
+  "outputs": {
+    "journals": 2,
+    "charts": 6,
+    "catalysts": 2,
+    "analysis": 4,
+    "economic": 2,
+    "institutional": 2
+  },
+  "db_size_kb": 408
+}

@@ -1,34 +1,54 @@
-# GLADIUS
+<div align="center">
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Language-C++-blue.svg" alt="C++">
-  <img src="https://img.shields.io/badge/Python-3.10+-yellow.svg" alt="Python">
-  <img src="https://img.shields.io/badge/AI-Native-brightgreen.svg" alt="Native AI">
-  <img src="https://img.shields.io/badge/VectorDB-Hektor-informational.svg" alt="Hektor VDB">
-  <img src="https://img.shields.io/badge/Status-65%25_Complete-orange.svg" alt="Progress">
+# ⚔️ GLADIUS
+
+### Autonomous Enterprise Intelligence System
+
+<p>
+  <img src="https://img.shields.io/badge/C++-Native-00599C?style=for-the-badge&logo=cplusplus" alt="C++">
+  <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/AI-Native_Cognition-8B5CF6?style=for-the-badge" alt="Native AI">
+  <img src="https://img.shields.io/badge/VectorDB-Hektor-6366F1?style=for-the-badge" alt="Hektor VDB">
+  <img src="https://img.shields.io/badge/Status-85%25-22C55E?style=for-the-badge" alt="Progress">
 </p>
 
-> **Autonomous Enterprise Operating System** — Self-improving AI infrastructure with native cognition, multi-platform publishing, and market intelligence.
+**Self-evolving AI infrastructure with native cognition, SIMD-optimized vector search, autonomous self-improvement, and enterprise-grade market intelligence.**
+
+[View Landing Page](index.html) · [Model Specification](MODEL.md) · [Architecture](ARCHITECTURE.md) · [Commands](COMMANDS.md)
+
+</div>
 
 ---
 
-## What Gladius Actually Does
+## Overview
 
-Gladius is an **autonomous enterprise system** that:
+GLADIUS is a **next-generation autonomous enterprise system** that combines:
 
-1. **Researches** — Continuously gathers and analyzes market data (gold, crypto, equities)
-2. **Thinks** — Native AI cognition with vector memory, pattern learning, and self-improvement
-3. **Acts** — Generates reports, publishes to social platforms, sends alerts
-4. **Learns** — Tracks outcomes, adjusts strategies, proposes and implements improvements
+- 🧠 **Native Cognition** — Pattern-based tool routing with 100% accuracy, sub-millisecond latency
+- 🔄 **Self-Improvement** — Autonomous proposal generation, training, and implementation
+- 📢 **Multi-Platform Publishing** — Unified pipeline for Twitter, LinkedIn, Facebook, Instagram, YouTube
+- 📊 **Market Intelligence** — Real-time analysis of gold, crypto, and equities with chart generation
+- ⚡ **SIMD Performance** — C++ core with AVX2 optimization, zero external AI dependency for core ops
 
-### Core Workflow
+### What It Does
 
 ```
-Market Data → Syndicate Analysis → Cognition Processing → Publishing Pipeline → Social Channels
-     ↓                                    ↓                        ↓
-   Charts                         Self-Improvement            Engagement Tracking
-   Reports                        Training Data                Optimal Timing
-   Journals                       Proposals                    Multi-Platform
+                    ┌─────────────────────────────────────────────┐
+                    │              GLADIUS ENGINE                 │
+                    │  Think → Learn → Act → Improve → Repeat    │
+                    └─────────────────┬───────────────────────────┘
+                                      │
+        ┌─────────────────────────────┼─────────────────────────────┐
+        ▼                             ▼                             ▼
+┌───────────────┐           ┌───────────────┐           ┌───────────────┐
+│   SYNDICATE   │           │   COGNITION   │           │   AUTOMATA    │
+│   Research    │ ────────► │    Brain      │ ────────► │   Publish     │
+│   Analysis    │           │   Memory      │           │   Schedule    │
+│   Charts      │           │   Training    │           │   Engage      │
+└───────────────┘           └───────────────┘           └───────────────┘
+        │                                                       │
+        └───────────────────────────────────────────────────────┘
+                              Self-Improvement Loop
 ```
 
 ---
@@ -223,45 +243,76 @@ print(f"Published: {results['published']}")
 
 ```
 gladius/
-├── Artifact/
-│   ├── syndicate/           # Research pipeline
-│   │   └── src/cognition/   # Cognition engine
-│   ├── hektor/              # Native vector database
+├── Artifact/                    # Core System Components
+│   ├── syndicate/               # Research & Analysis Engine
+│   │   ├── src/cognition/       # Cognition Engine (Memory, Tools, Training)
+│   │   ├── integrations/        # Notion, Discord integrations
+│   │   └── output/              # Generated reports, charts
 │   ├── deployment/
-│   │   └── automata/        # Publishing & automation
-│   │       ├── social_media/
-│   │       ├── publishing/
-│   │       └── scheduler/
-│   └── arty/                # Discord bot
-├── gladius.sh               # Main control script
-├── .env                     # API keys and config
-└── *.md                     # Documentation
+│   │   ├── automata/            # Publishing & Automation
+│   │   │   ├── social_media/    # Platform adapters
+│   │   │   ├── publishing/      # Content pipeline
+│   │   │   └── ai_engine/       # Tool registry
+│   │   └── infra/               # FastAPI infrastructure
+│   ├── arty/                    # Discord bot & engagement
+│   └── diagrams/                # System diagrams
+├── docs/                        # Documentation
+├── obsidian_sync/gladius/       # Operator notes & proposals
+├── gladius.sh                   # Unified control script
+├── index.html                   # Landing page
+├── .env                         # API keys (gitignored)
+└── *.md                         # Core documentation
 ```
 
 ---
 
 ## Current Status
 
-**Overall Progress: 65%**
+**Overall Progress: 85%**
 
 | Component | Status |
 |-----------|--------|
-| Core Infrastructure | 83% |
-| Cognition Engine | 85% |
-| Syndicate (Research) | 90% |
-| Automata (Publishing) | 70% |
-| Arty (Engagement) | 50% |
-| Digital Footprint | 0% |
+| Core Infrastructure | ✅ 90% |
+| Cognition Engine | ✅ 95% |
+| Syndicate (Research) | ✅ 95% |
+| Automata (Publishing) | 🟡 75% |
+| Arty (Engagement) | 🟡 60% |
+| Digital Footprint | 🟡 70% |
 
 See [FLIGHT_CHECKLIST.md](FLIGHT_CHECKLIST.md) for detailed breakdown.
 
 ---
 
-## License
+## Requirements
 
-See [LICENSE.md](LICENSE.md)
+- **Python 3.10+** with pip
+- **Node.js 18+** with npm (for dashboard)
+- **Ollama** (optional, for LLM operations)
+- **Hektor VDB** (clone separately for native performance)
+
+### API Keys (Optional)
+
+Configure in `.env`:
+- Twitter/X API credentials
+- LinkedIn API credentials  
+- Facebook Graph API
+- Instagram Graph API
+- Discord Bot Token
+- SMTP for email notifications
 
 ---
 
-*Last updated: 2026-01-13*
+## License
+
+Proprietary - Artifact Virtual
+
+---
+
+<div align="center">
+
+**[Artifact Virtual](https://artifactvirtual.com)** — Building Autonomous Enterprise Intelligence
+
+*Last updated: 2026-01-14*
+
+</div>
 

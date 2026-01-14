@@ -1,124 +1,191 @@
-# Local ignores for Gladius
-secrets.env
-venv/
-_dev/_build/*
+# ═══════════════════════════════════════════════════════════════════════════════
+# GLADIUS - Autonomous Enterprise Intelligence System
+# Industry-Standard .gitignore
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# Arty bot framework
-arty/.env
-arty/config.json
-arty/node_modules/
-arty/package-lock.json
+# ─────────────────────────────────────────────────────────────────────────────────
+# ENVIRONMENT & SECRETS (CRITICAL - NEVER COMMIT)
+# ─────────────────────────────────────────────────────────────────────────────────
 .env
+.env.*
+!.env.example
+!.env.template
+secrets.env
+*.secret
+*.key
+*.pem
+credentials/
+.credentials/
 
-# Discord bot
-arty/discord/.env
-arty/discord/config.json
-arty/discord/node_modules/
-arty/discord/data/
-arty/discord/logs/
-arty/discord/backups/
-arty/discord/package-lock.json
+# ─────────────────────────────────────────────────────────────────────────────────
+# MODEL WEIGHTS & ARTIFACTS (USE LFS OR EXTERNAL STORAGE)
+# ─────────────────────────────────────────────────────────────────────────────────
+*.gguf
+*.ggml
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.onnx
+*.tflite
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+models/weights/
+models/checkpoints/
+Artifact/syndicate/models/base_models/
+Artifact/syndicate/models/*.gguf
+**/lora_adapters/
+**/finetuned/
 
-# Artifact deployment specifics and local dev artifacts
-Artifact/deployment/.git.nested_backup/
+# ─────────────────────────────────────────────────────────────────────────────────
+# PYTHON
+# ─────────────────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+.eggs/
+*.egg
+*.egg-info/
+dist/
+build/
+pip-wheel-metadata/
+*.manifest
+*.spec
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.ruff_cache/
+.mypy_cache/
+.pytype/
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# NODE.JS
+# ─────────────────────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn/cache
+.pnpm-store/
+*.tgz
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# C/C++ BUILD ARTIFACTS
+# ─────────────────────────────────────────────────────────────────────────────────
+*.o
+*.a
+*.lib
+*.dll
+*.dylib
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+Makefile
+*.cmake
+vendor/
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# DATABASES & DATA
+# ─────────────────────────────────────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+*.mdb
+data/vectors/
+data/*.db
+Artifact/syndicate/data/vectors/
+Artifact/syndicate/data/*.db
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# LOGS & RUNTIME
+# ─────────────────────────────────────────────────────────────────────────────────
+logs/
+*.log
+.pids/
+*.pid
+*.seed
+*.pid.lock
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# IDE & EDITORS
+# ─────────────────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+*~
+.project
+.settings/
+.classpath
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# OS ARTIFACTS
+# ─────────────────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# TEMPORARY & BACKUP
+# ─────────────────────────────────────────────────────────────────────────────────
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+*.lock
+!package-lock.json
+!yarn.lock
+tmp/
+temp/
+.cache/
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# ARTIFACT-SPECIFIC
+# ─────────────────────────────────────────────────────────────────────────────────
+Artifact/hektor/
 Artifact/deployment/**/.env
-Artifact/deployment/**/.env.*
 Artifact/deployment/**/node_modules/
 Artifact/deployment/**/logs/
 Artifact/deployment/**/dist/
 Artifact/deployment/**/build/
 Artifact/deployment/**/.venv/
-Artifact/deployment/**/__pycache__/
-Artifact/deployment/**/*.pyc
-Artifact/deployment/**/.DS_Store
+Artifact/deployment/.git.nested_backup/
 
-# General
-__pycache__/
-*.py[cod]
-*$py.class
-.venv/
-venv/
-env/
-node_modules/
-package-lock.json
-npm-debug.log
-*.tar.gz
-*.log
+# ─────────────────────────────────────────────────────────────────────────────────
+# DOCUMENTATION BUILD
+# ─────────────────────────────────────────────────────────────────────────────────
+site/
+_build/
+*.html.bak
 
-# Data files (do not commit)
-*.json
+# ─────────────────────────────────────────────────────────────────────────────────
+# WHITELISTED FILES (DO COMMIT)
+# ─────────────────────────────────────────────────────────────────────────────────
 !package.json
 !tsconfig.json
 !**/config.example.json
-*.bak
-*.lock
-!package-lock.json
-*.db
-*.sqlite
-*.sqlite3
-
-# Cognition engine data
-Artifact/syndicate/data/vectors/
-Artifact/syndicate/data/*.db
-
-# Build artifacts
-*.o
-*.so
-*.a
-build/
-cmake-build-*/
-
-# Hektor VDB build
-Artifact/hektor/build/
-Artifact/hektor/*.egg-info/
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-Artifact/hektor/
-*.gguf
-Artifact/syndicate/models/base_models/
-
-# Build artifacts
-*.pyc
-__pycache__/
-*.so
-*.o
-build/
-dist/
-*.egg-info/
-
-# Environment
-.venv/
-.env
-*.env.local
-
-# Logs and PIDs
-logs/
-*.log
-.pids/
-*.pid
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Model files (large)
-models/*.gguf
-models/*.bin
-
-# Temporary
-*.tmp
-*.bak
-*.swp
+!.env.example
+!.env.template
+!requirements.txt
+!pyproject.toml

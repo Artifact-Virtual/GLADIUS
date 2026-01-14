@@ -1,0 +1,28 @@
+{
+  "publishing": {
+    "enabled": true,
+    "auto_approve_types": ["market_journal", "catalyst_alert"]
+  },
+  "discord": {
+    "enabled": true,
+    "webhook_url": "",
+    "bot_token": "",
+    "channel_id": "",
+    "arty_path": "Artifact/arty/discord"
+  },
+  "linkedin": {
+    "enabled": false,
+    "access_token": "",
+    "person_urn": "",
+    "arty_path": "Artifact/arty/linkedin"
+  },
+  "twitter": {
+    "enabled": false,
+    "bearer_token": ""
+  },
+  "notion": {
+    "enabled": false,
+    "api_key": "",
+    "database_id": ""
+  }
+}

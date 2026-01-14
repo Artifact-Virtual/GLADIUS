@@ -1,0 +1,9 @@
+{
+  "timestamp": "$(date -Iseconds)",
+  "cortex_state": $(cat data/cortex_memory.json 2>/dev/null || echo '{}'),
+  "total_journals": $(find output/reports/journals -name "*.md" 2>/dev/null | wc -l),
+  "total_charts": $(find output/charts -name "*.png" 2>/dev/null | wc -l),
+  "total_catalysts": $(find output/reports/catalysts -name "*.md" 2>/dev/null | wc -l),
+  "total_analysis": $(find output/reports/analysis -name "*.md" 2>/dev/null | wc -l),
+  "db_size_kb": $(du -k data/syndicate.db 2>/dev/null | cut -f1 || echo 0)
+}

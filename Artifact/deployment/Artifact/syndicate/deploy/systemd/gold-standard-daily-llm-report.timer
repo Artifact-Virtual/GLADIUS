@@ -1,9 +1,0 @@
-[Unit]
-Description=Description=Run Syndicate daily LLM report daily
-
-[Timer]
-OnCalendar=daily
-Persistent=true
-
-[Install]
-WantedBy=timers.target

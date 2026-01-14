@@ -1,9 +1,0 @@
-{
-  "store": "/home/adam/worxpace/gladius/Artifact/arty/store",
-  "dbs": [
-    {
-      "path": "/home/adam/worxpace/gladius/Artifact/arty/store/research.db",
-      "size": 122880
-    }
-  ]
-}
