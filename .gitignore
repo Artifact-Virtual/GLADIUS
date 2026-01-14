@@ -85,3 +85,40 @@ Thumbs.db
 Artifact/hektor/
 *.gguf
 Artifact/syndicate/models/base_models/
+
+# Build artifacts
+*.pyc
+__pycache__/
+*.so
+*.o
+build/
+dist/
+*.egg-info/
+
+# Environment
+.venv/
+.env
+*.env.local
+
+# Logs and PIDs
+logs/
+*.log
+.pids/
+*.pid
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model files (large)
+models/*.gguf
+models/*.bin
+
+# Temporary
+*.tmp
+*.bak
+*.swp
