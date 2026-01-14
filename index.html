@@ -110,6 +110,9 @@
         .hero {
             padding: 180px 0 120px;
             border-bottom: 1px solid var(--border-color);
+            position: relative;
+            perspective: 1000px;
+            overflow: hidden;
         }
 
         .hero-grid {
@@ -117,6 +120,91 @@
             grid-template-columns: 1fr 1fr;
             gap: 80px;
             align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* New hero visual elements */
+        .blur-orb {
+            position: absolute;
+            width: 60vw;
+            height: 60vw;
+            max-width: 800px;
+            max-height: 800px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-dim) 0%, transparent 70%);
+            filter: blur(80px);
+            z-index: 1;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            transition: transform 0.1s linear;
+        }
+        
+        .glass-shard {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 2;
+            transition: transform 0.1s linear;
+            pointer-events: none;
+        }
+        
+        .shard-1 {
+            width: min(300px, 25vw);
+            height: min(600px, 50vh);
+            left: 10%;
+            top: -10%;
+            transform: rotate(-20deg);
+        }
+        
+        .shard-2 {
+            width: min(400px, 35vw);
+            height: min(200px, 20vh);
+            right: 5%;
+            bottom: 10%;
+            transform: rotate(15deg);
+        }
+        
+        .hero-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+            z-index: 2;
+            pointer-events: none;
+        }
+        
+        /* Disable parallax animations for users who prefer reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            .blur-orb,
+            .glass-shard {
+                transition: none;
+            }
+        }
+        
+        /* Stats section blur orb - smaller, more subtle parallax effect for secondary sections */
+        .stats-orb {
+            width: 40vw;
+            height: 40vw;
+            max-width: 600px;
+            max-height: 600px;
+            top: 50%;
+            left: 20%;
+            opacity: 0.6;
+        }
+        
+        /* Third glass shard for capabilities section - adds depth with varied positioning */
+        .shard-3 {
+            width: min(350px, 30vw);
+            height: min(500px, 40vh);
+            right: 15%;
+            top: 20%;
+            transform: rotate(10deg);
         }
 
         .hero-content h1 {
@@ -249,6 +337,8 @@
         .stats-section {
             padding: 100px 0;
             border-bottom: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
         }
 
         .stats-grid {
@@ -282,6 +372,8 @@
         .capabilities-section {
             padding: 100px 0;
             border-bottom: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
         }
 
         .capabilities-grid {
@@ -391,6 +483,10 @@
 
     <main>
         <section class="hero">
+            <div class="blur-orb" id="orb" aria-hidden="true"></div>
+            <div class="hero-line" aria-hidden="true"></div>
+            <div class="glass-shard shard-1" id="s1" aria-hidden="true"></div>
+            <div class="glass-shard shard-2" id="s2" aria-hidden="true"></div>
             <div class="container">
                 <div class="hero-grid">
                     <div class="hero-content">
@@ -448,33 +544,35 @@
         </section>
 
         <section id="stats" class="stats-section">
+            <div class="blur-orb stats-orb" aria-hidden="true"></div>
             <div class="container">
                 <div class="section-header">
-                    <div class="section-label">System Metrics</div>
-                    <h2 class="section-title">Operational Statistics</h2>
+                    <div class="section-label">Model Performance</div>
+                    <h2 class="section-title">Architecture Metrics</h2>
                 </div>
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-value">6</div>
-                        <div class="stat-label">Charts Generated</div>
+                        <div class="stat-value">2.17ms</div>
+                        <div class="stat-label">Inference Latency</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">3</div>
-                        <div class="stat-label">Journals Published</div>
+                        <div class="stat-value">100%</div>
+                        <div class="stat-label">Routing Accuracy</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">33</div>
-                        <div class="stat-label">Benchmark Snapshots</div>
+                        <div class="stat-value">18</div>
+                        <div class="stat-label">Native Tools</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">118</div>
-                        <div class="stat-label">Training Samples</div>
+                        <div class="stat-value">4096</div>
+                        <div class="stat-label">Context Window</div>
                     </div>
                 </div>
             </div>
         </section>
 
         <section id="capabilities" class="capabilities-section">
+            <div class="glass-shard shard-3" id="s3" aria-hidden="true"></div>
             <div class="container">
                 <div class="section-header">
                     <div class="section-label">Core Modules</div>
@@ -528,5 +626,83 @@
             <div class="footer-meta">Agentic AI System · Phase 2 Active · Last benchmark 2026-01-14</div>
         </div>
     </footer>
+    
+    <script>
+        // Parallax animation - cache DOM elements for performance
+        const shard1 = document.getElementById('s1');
+        const shard2 = document.getElementById('s2');
+        const shard3 = document.getElementById('s3');
+        const orb = document.getElementById('orb');
+        const statsOrb = document.querySelector('.stats-orb');
+        
+        // Parallax configuration constants
+        const PARALLAX_INTENSITY = 40;
+        const SHARD1_MULTIPLIER_X = -1.2;
+        const SHARD1_MULTIPLIER_Y = -1.2;
+        const SHARD1_ROTATION = -20;
+        const SHARD2_MULTIPLIER_X = 1.5;
+        const SHARD2_MULTIPLIER_Y = 0.8;
+        const SHARD2_ROTATION = 15;
+        const SHARD3_MULTIPLIER_X = -0.8;
+        const SHARD3_MULTIPLIER_Y = 1.0;
+        const SHARD3_ROTATION = 10;
+        const ORB_MULTIPLIER = 0.5;
+        const STATS_ORB_MULTIPLIER = 0.3;
+        
+        // Set up motion preference detection with dynamic updates
+        const motionMediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let parallaxEnabled = !motionMediaQuery.matches;
+        let ticking = false;
+        
+        function handleParallaxMove(e) {
+            if (!parallaxEnabled || ticking) return;
+            
+            ticking = true;
+            requestAnimationFrame(() => {
+                const x = (e.clientX / window.innerWidth - 0.5) * PARALLAX_INTENSITY;
+                const y = (e.clientY / window.innerHeight - 0.5) * PARALLAX_INTENSITY;
+                
+                if (shard1) {
+                    shard1.style.transform = `translate(${x * SHARD1_MULTIPLIER_X}px, ${y * SHARD1_MULTIPLIER_Y}px) rotate(${SHARD1_ROTATION}deg)`;
+                }
+                if (shard2) {
+                    shard2.style.transform = `translate(${x * SHARD2_MULTIPLIER_X}px, ${y * SHARD2_MULTIPLIER_Y}px) rotate(${SHARD2_ROTATION}deg)`;
+                }
+                if (shard3) {
+                    shard3.style.transform = `translate(${x * SHARD3_MULTIPLIER_X}px, ${y * SHARD3_MULTIPLIER_Y}px) rotate(${SHARD3_ROTATION}deg)`;
+                }
+                if (orb) {
+                    orb.style.transform = `translate(calc(-50% + ${x * ORB_MULTIPLIER}px), calc(-50% + ${y * ORB_MULTIPLIER}px))`;
+                }
+                if (statsOrb) {
+                    statsOrb.style.transform = `translate(calc(-50% + ${x * STATS_ORB_MULTIPLIER}px), calc(-50% + ${y * STATS_ORB_MULTIPLIER}px))`;
+                }
+                
+                ticking = false;
+            });
+        }
+        
+        // Add event listener if parallax is enabled
+        if (parallaxEnabled) {
+            window.addEventListener('mousemove', handleParallaxMove);
+        }
+        
+        // Listen for changes in motion preferences
+        motionMediaQuery.addEventListener('change', (e) => {
+            parallaxEnabled = !e.matches;
+            if (!parallaxEnabled) {
+                // Remove event listener and reset transforms when reduced motion is preferred
+                window.removeEventListener('mousemove', handleParallaxMove);
+                if (shard1) shard1.style.transform = `rotate(${SHARD1_ROTATION}deg)`;
+                if (shard2) shard2.style.transform = `rotate(${SHARD2_ROTATION}deg)`;
+                if (shard3) shard3.style.transform = `rotate(${SHARD3_ROTATION}deg)`;
+                if (orb) orb.style.transform = 'translate(-50%, -50%)';
+                if (statsOrb) statsOrb.style.transform = 'translate(-50%, -50%)';
+            } else {
+                // Re-enable parallax when motion is allowed
+                window.addEventListener('mousemove', handleParallaxMove);
+            }
+        });
+    </script>
 </body>
 </html>
