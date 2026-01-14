@@ -430,13 +430,26 @@ class CognitionLearningLoop:
         
         Returns the proposal if created, None if skipped.
         """
-        # Check if similar proposal already exists
+        # Check if similar proposal already exists or was recently completed
         existing = self.improvement.list_proposals()
+        title_key = title.split("]")[-1].strip()
+        
         for p in existing:
+            # Skip if active proposal exists
             if p.status not in [ProposalStatus.COMPLETED, ProposalStatus.REJECTED, ProposalStatus.ROLLED_BACK]:
-                if title.split("]")[-1].strip() in p.title:
+                if title_key in p.title:
                     self.logger.debug(f"[LEARNING] Skipping duplicate proposal: {title}")
                     return None
+            
+            # Skip if recently completed (within 24 hours)
+            if p.status == ProposalStatus.COMPLETED and title_key in p.title:
+                try:
+                    completed_at = datetime.fromisoformat(p.updated_at)
+                    if (datetime.now() - completed_at).total_seconds() < 86400:
+                        self.logger.debug(f"[LEARNING] Skipping recently completed proposal: {title}")
+                        return None
+                except (ValueError, TypeError):
+                    pass
         
         # Create proposal
         proposal = self.improvement.create_proposal(

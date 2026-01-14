@@ -469,11 +469,13 @@ def run_daemon(no_ai: bool = False, interval_hours: int = 0, interval_minutes: i
 
 def _daemon_cycle(no_ai: bool = False, run_tasks: bool = True):
     """
-    Single daemon cycle:
-    1. Run analysis
+    Single daemon cycle - FULL AUTONOMOUS GLADIUS LOOP:
+    1. Run analysis (journals, reports)
     2. Extract insights
     3. Execute pending tasks
     4. Organize files
+    5. RUN COGNITION LEARNING LOOP (self-improvement, training, vectorization)
+    6. Sync to Obsidian
     """
     print(f"\n[DAEMON] Starting cycle at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
@@ -483,6 +485,87 @@ def _daemon_cycle(no_ai: bool = False, run_tasks: bool = True):
     # Run post-analysis tasks
     if run_tasks:
         _run_post_analysis_tasks()
+    
+    # ==================== COGNITION LEARNING LOOP ====================
+    # This is the core autonomous improvement cycle
+    if not no_ai:
+        _run_cognition_cycle()
+
+
+def _run_cognition_cycle():
+    """
+    Run the cognition learning loop for autonomous self-improvement.
+    
+    Executes:
+    1. Ingest new reports into vector memory
+    2. Generate training data from tool usage
+    3. Analyze patterns and create improvement proposals
+    4. Execute approved low-risk improvements
+    5. Sync proposals to Obsidian
+    6. Update benchmarks
+    """
+    try:
+        from src.cognition import LEARNING_AVAILABLE, CognitionLearningLoop
+        
+        if not LEARNING_AVAILABLE:
+            print("[COGNITION] Learning loop not available, skipping")
+            return
+        
+        print("\n[COGNITION] ═══════════════════════════════════════════════════════")
+        print("[COGNITION]       AUTONOMOUS LEARNING CYCLE")
+        print("[COGNITION] ═══════════════════════════════════════════════════════")
+        
+        # Initialize learning loop
+        loop = CognitionLearningLoop(
+            base_dir=PROJECT_ROOT,
+            data_dir=os.path.join(PROJECT_ROOT, "data"),
+            output_dir=os.path.join(PROJECT_ROOT, "output")
+        )
+        
+        # Get current gold price for prediction evaluation (if available)
+        current_gold_price = _get_current_gold_price()
+        
+        # Run learning cycle
+        result = loop.run_cycle(current_gold_price=current_gold_price)
+        
+        # Report results
+        print(f"\n[COGNITION] Cycle Complete:")
+        print(f"  Reports Ingested:     {result.reports_ingested}")
+        print(f"  Training Examples:    {result.training_examples_generated}")
+        print(f"  Proposals Created:    {result.proposals_created}")
+        print(f"  Proposals Completed:  {result.proposals_completed}")
+        if result.pattern_success_rate is not None:
+            print(f"  Pattern Success Rate: {result.pattern_success_rate:.1f}%")
+        if result.confidence_score is not None:
+            print(f"  Confidence Score:     {result.confidence_score:.2f}")
+        
+        if result.errors:
+            print(f"  ⚠️  Errors: {len(result.errors)}")
+            for err in result.errors[:3]:
+                print(f"      - {err[:100]}")
+        
+        # Close resources
+        loop.close()
+        
+        print("[COGNITION] ═══════════════════════════════════════════════════════\n")
+        
+    except ImportError as e:
+        print(f"[COGNITION] Module import failed: {e}")
+    except Exception as e:
+        print(f"[COGNITION] Learning cycle error: {e}")
+
+
+def _get_current_gold_price() -> float | None:
+    """Get current gold price for prediction evaluation."""
+    try:
+        import yfinance as yf
+        gold = yf.Ticker("GC=F")
+        hist = gold.history(period="1d")
+        if not hist.empty:
+            return float(hist['Close'].iloc[-1])
+    except Exception:
+        pass
+    return None
 
 
 def _run_post_analysis_tasks(

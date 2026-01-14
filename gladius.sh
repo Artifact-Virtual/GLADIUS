@@ -648,6 +648,88 @@ do_logs() {
 }
 
 # =============================================================================
+# COGNITION CYCLE - Single autonomous learning cycle
+# =============================================================================
+
+do_cognition() {
+    print_header
+    echo -e "${BLUE}Running Cognition Learning Cycle...${NC}"
+    echo "─────────────────────────────────────────────────────────────────"
+    
+    cd "$GLADIUS_ROOT/Artifact/syndicate"
+    "$PYTHON" -c "
+import sys
+sys.path.insert(0, '.')
+from src.cognition import LEARNING_AVAILABLE, CognitionLearningLoop
+
+if not LEARNING_AVAILABLE:
+    print('[COGNITION] Learning module not available')
+    sys.exit(1)
+
+print('[COGNITION] Starting autonomous learning cycle...')
+loop = CognitionLearningLoop(base_dir='.', data_dir='./data', output_dir='./output')
+result = loop.run_cycle()
+print(f'[COGNITION] Reports Ingested: {result.reports_ingested}')
+print(f'[COGNITION] Training Examples: {result.training_examples_generated}')
+print(f'[COGNITION] Proposals Created: {result.proposals_created}')
+print(f'[COGNITION] Proposals Completed: {result.proposals_completed}')
+loop.close()
+print('[COGNITION] Cycle complete.')
+"
+    echo ""
+}
+
+# =============================================================================
+# BENCHMARK - Run multiple learning cycles for benchmarking
+# =============================================================================
+
+do_benchmark() {
+    local n_cycles=${1:-5}
+    print_header
+    echo -e "${BLUE}Running Cognition Benchmark (${n_cycles} cycles)...${NC}"
+    echo "─────────────────────────────────────────────────────────────────"
+    
+    cd "$GLADIUS_ROOT/Artifact/syndicate"
+    "$PYTHON" -c "
+import sys
+sys.path.insert(0, '.')
+from src.cognition import LEARNING_AVAILABLE, CognitionLearningLoop
+
+if not LEARNING_AVAILABLE:
+    print('[BENCHMARK] Learning module not available')
+    sys.exit(1)
+
+print('[BENCHMARK] Starting benchmark...')
+loop = CognitionLearningLoop(base_dir='.', data_dir='./data', output_dir='./output')
+result = loop.run_benchmark(n_cycles=$n_cycles)
+print(f'[BENCHMARK] Complete. Results saved.')
+print(f'  Initial win rate: {result[\"initial_metrics\"][\"win_rate\"]}%')
+print(f'  Final win rate: {result[\"final_metrics\"][\"win_rate\"]}%')
+print(f'  Total reports: {result[\"totals\"][\"reports_ingested\"]}')
+print(f'  Total training examples: {result[\"totals\"][\"training_examples\"]}')
+loop.close()
+"
+    echo ""
+}
+
+# =============================================================================
+# CYCLE - Run single full autonomous cycle (daemon mode single iteration)
+# =============================================================================
+
+do_cycle() {
+    print_header
+    echo -e "${BLUE}Running Single Full Autonomous Cycle...${NC}"
+    echo "─────────────────────────────────────────────────────────────────"
+    
+    cd "$GLADIUS_ROOT/Artifact/syndicate"
+    "$PYTHON" run.py --once
+    
+    echo ""
+    echo -e "${GREEN}✅ Single cycle complete!${NC}"
+    echo ""
+}
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
@@ -680,34 +762,51 @@ case "${1:-help}" in
     logs)
         do_logs
         ;;
+    cognition)
+        do_cognition
+        ;;
+    benchmark)
+        do_benchmark "${2:-5}"
+        ;;
+    cycle)
+        do_cycle
+        ;;
     *)
         echo ""
-        echo -e "${BLUE}⚔️  Gladius Control Script${NC}"
+        echo -e "${BLUE}⚔️  GLADIUS Control Script${NC}"
         echo ""
         echo "Usage: ./gladius.sh <command> [options]"
         echo ""
-        echo "Commands:"
+        echo -e "${CYAN}Core Commands:${NC}"
         echo "  start              Start all services + health check"
         echo "  stop [--force]     Stop all services + regression check"
         echo "  restart            Stop then start all services"
-        echo "  status             Quick status check (all 6 services)"
+        echo "  status             Quick status check (all services)"
         echo "  health             Full health check with endpoint tests"
+        echo ""
+        echo -e "${CYAN}Autonomous Cognition:${NC}"
+        echo "  cycle              Run single full autonomous cycle"
+        echo "  cognition          Run cognition learning cycle only"
+        echo "  benchmark [n]      Run n learning cycles for benchmark (default: 5)"
+        echo ""
+        echo -e "${CYAN}Utilities:${NC}"
         echo "  infra              Test Infra API specifically"
         echo "  logs               Tail all log files"
         echo ""
-        echo "Services Started:"
-        echo "  • Infra API (7000)      - Market data, assets, portfolios"
+        echo -e "${CYAN}Services:${NC}"
+        echo "  • Infra API (7000)         - Market data, assets, portfolios"
         echo "  • Dashboard Backend (5000) - Automata control, content"
-        echo "  • Web UI (5002)         - Template-based UI and charts"
-        echo "  • Dashboard Frontend (3000) - React UI"
-        echo "  • Grafana (3001)        - Metrics dashboards (Docker)"
-        echo "  • Prometheus (9090)     - Metrics collection (Docker)"
-        echo "  • Syndicate Daemon      - Market intelligence (background)"
+        echo "  • Web UI (5002)            - Template-based UI and charts"
+        echo "  • Dashboard Frontend (3000)- React UI"
+        echo "  • Grafana (3001)           - Metrics dashboards (Docker)"
+        echo "  • Prometheus (9090)        - Metrics collection (Docker)"
+        echo "  • Syndicate Daemon         - Market intelligence + Cognition"
         echo ""
         echo "Examples:"
-        echo "  ./gladius.sh start      # Start all services"
-        echo "  ./gladius.sh stop       # Stop all services"
-        echo "  ./gladius.sh status     # Quick port check"
+        echo "  ./gladius.sh start         # Start all services"
+        echo "  ./gladius.sh cycle         # Run single autonomous cycle"
+        echo "  ./gladius.sh cognition     # Run learning cycle only"
+        echo "  ./gladius.sh benchmark 10  # Benchmark with 10 cycles"
         echo ""
         ;;
 esac
