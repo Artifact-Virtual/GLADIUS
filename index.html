@@ -7,7 +7,7 @@
     <meta name="description" content="Agentic AI System with native cognition, SIMD-optimized vector search, and autonomous self-improvement.">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@200;300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -599,18 +599,27 @@
         const shard2 = document.getElementById('s2');
         const orb = document.getElementById('orb');
         
+        let ticking = false;
+        
         window.addEventListener('mousemove', (e) => {
-            const x = (e.clientX / window.innerWidth - 0.5) * 40;
-            const y = (e.clientY / window.innerHeight - 0.5) * 40;
-            
-            if (shard1) {
-                shard1.style.transform = `translate(${x * -1.2}px, ${y * -1.2}px) rotate(-20deg)`;
-            }
-            if (shard2) {
-                shard2.style.transform = `translate(${x * 1.5}px, ${y * 0.8}px) rotate(15deg)`;
-            }
-            if (orb) {
-                orb.style.transform = `translate(calc(-50% + ${x * 0.5}px), calc(-50% + ${y * 0.5}px))`;
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    const x = (e.clientX / window.innerWidth - 0.5) * 40;
+                    const y = (e.clientY / window.innerHeight - 0.5) * 40;
+                    
+                    if (shard1) {
+                        shard1.style.transform = `translate(${x * -1.2}px, ${y * -1.2}px) rotate(-20deg)`;
+                    }
+                    if (shard2) {
+                        shard2.style.transform = `translate(${x * 1.5}px, ${y * 0.8}px) rotate(15deg)`;
+                    }
+                    if (orb) {
+                        orb.style.transform = `translate(calc(-50% + ${x * 0.5}px), calc(-50% + ${y * 0.5}px))`;
+                    }
+                    
+                    ticking = false;
+                });
+                ticking = true;
             }
         });
     </script>
