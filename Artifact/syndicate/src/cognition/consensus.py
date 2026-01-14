@@ -216,19 +216,20 @@ class ConsensusSystem:
         
         self.logger = logger or logging.getLogger(__name__)
         
-        # Discord config
-        self.discord_webhook_url = discord_webhook_url or os.getenv("DISCORD_CONSENSUS_WEBHOOK")
-        self.discord_channel_id = discord_channel_id or os.getenv("DISCORD_CONSENSUS_CHANNEL")
+        # Discord config - try consensus-specific first, then fall back to general webhook
+        self.discord_webhook_url = discord_webhook_url or os.getenv("DISCORD_CONSENSUS_WEBHOOK") or os.getenv("DISCORD_WEBHOOK_URL")
+        self.discord_channel_id = discord_channel_id or os.getenv("DISCORD_CONSENSUS_CHANNEL_ID") or os.getenv("DISCORD_CHANNEL_ID")
         
         # Email config
         self.email_config = email_config or {
-            "smtp_host": os.getenv("SMTP_HOST", "smtp.gmail.com"),
-            "smtp_port": int(os.getenv("SMTP_PORT", "587")),
+            "smtp_host": os.getenv("SMTP_HOST", "smtp.hostinger.com"),
+            "smtp_port": int(os.getenv("SMTP_PORT", "465")),
+            "smtp_ssl": os.getenv("SMTP_SSL", "true").lower() == "true",
             "smtp_user": os.getenv("SMTP_USER", ""),
             "smtp_password": os.getenv("SMTP_PASSWORD", ""),
-            "from_email": os.getenv("FROM_EMAIL", "gladius@artifactvirtual.com"),
-            "dev_team_emails": os.getenv("DEV_TEAM_EMAILS", "").split(","),
-            "executive_emails": os.getenv("EXECUTIVE_EMAILS", "").split(","),
+            "from_email": os.getenv("EMAIL_FROM", os.getenv("FROM_EMAIL", "support@artifactvirtual.com")),
+            "dev_team_emails": [e.strip() for e in os.getenv("DEV_TEAM_EMAILS", os.getenv("ESCALATION_EMAIL", "")).split(",") if e.strip()],
+            "executive_emails": [e.strip() for e in os.getenv("EXECUTIVE_EMAILS", os.getenv("ESCALATION_EMAIL", "")).split(",") if e.strip()],
         }
         
         # Load sessions
@@ -558,15 +559,24 @@ class ConsensusSystem:
             smtp_port = self.email_config.get("smtp_port", 587)
             smtp_user = self.email_config.get("smtp_user", "")
             smtp_password = self.email_config.get("smtp_password", "")
+            use_ssl = self.email_config.get("smtp_ssl", smtp_port == 465)
             
             if not smtp_user or not smtp_password:
                 self.logger.warning("SMTP credentials not configured")
                 return {"success": False, "error": "SMTP not configured"}
             
-            with smtplib.SMTP(smtp_host, smtp_port) as server:
-                server.starttls()
-                server.login(smtp_user, smtp_password)
-                server.send_message(msg)
+            # Use SSL for port 465, STARTTLS for 587
+            if use_ssl or smtp_port == 465:
+                import ssl
+                context = ssl.create_default_context()
+                with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context) as server:
+                    server.login(smtp_user, smtp_password)
+                    server.send_message(msg)
+            else:
+                with smtplib.SMTP(smtp_host, smtp_port) as server:
+                    server.starttls()
+                    server.login(smtp_user, smtp_password)
+                    server.send_message(msg)
             
             # Record email sent
             session.emails_sent.append({

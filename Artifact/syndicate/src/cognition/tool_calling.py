@@ -512,6 +512,172 @@ BUILTIN_TOOLS: List[ToolDefinition] = [
             {"args": {"platform": "discord", "original_message": "What's your view on gold?", "tone": "helpful"}, "result": {"reply": "Gold is showing bullish momentum above 2680 support. Key resistance at 2710. See today's journal for full analysis."}},
         ]
     ),
+    
+    # ERP Integration Tools
+    ToolDefinition(
+        name="erp_sync_customers",
+        description="Sync customer data from connected ERP system (SAP, Odoo, NetSuite, Dynamics, Salesforce).",
+        category="erp",
+        parameters=[
+            ToolParameter("system", "string", "ERP system: SAP, Odoo, NetSuite, Dynamics, Salesforce"),
+            ToolParameter("limit", "integer", "Maximum records to sync", required=False, default=1000),
+        ],
+        examples=[
+            {"args": {"system": "SAP"}, "result": {"success": True, "count": 150, "customers": "[...]"}},
+            {"args": {"system": "Odoo", "limit": 500}, "result": {"success": True, "count": 312}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="erp_sync_products",
+        description="Sync product/service catalog from connected ERP system.",
+        category="erp",
+        parameters=[
+            ToolParameter("system", "string", "ERP system: SAP, Odoo, NetSuite, Dynamics, Salesforce"),
+            ToolParameter("limit", "integer", "Maximum records to sync", required=False, default=1000),
+        ],
+        examples=[
+            {"args": {"system": "NetSuite"}, "result": {"success": True, "count": 450, "products": "[...]"}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="erp_sync_orders",
+        description="Sync sales orders/transactions from connected ERP system.",
+        category="erp",
+        parameters=[
+            ToolParameter("system", "string", "ERP system: SAP, Odoo, NetSuite, Dynamics, Salesforce"),
+            ToolParameter("date_from", "string", "Start date for order sync (ISO format)", required=False),
+            ToolParameter("limit", "integer", "Maximum records to sync", required=False, default=1000),
+        ],
+        examples=[
+            {"args": {"system": "Salesforce", "date_from": "2026-01-01"}, "result": {"success": True, "count": 85, "orders": "[...]"}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="erp_sync_inventory",
+        description="Sync inventory/stock levels from connected ERP system.",
+        category="erp",
+        parameters=[
+            ToolParameter("system", "string", "ERP system: SAP, Odoo, NetSuite, Dynamics, Salesforce"),
+            ToolParameter("warehouse", "string", "Specific warehouse to sync", required=False),
+        ],
+        examples=[
+            {"args": {"system": "SAP", "warehouse": "WH001"}, "result": {"success": True, "count": 1200, "inventory": "[...]"}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="erp_get_status",
+        description="Get connection status and sync statistics for all connected ERP systems.",
+        category="erp",
+        parameters=[],
+        examples=[
+            {"args": {}, "result": {"SAP": {"connected": True, "last_sync": "2026-01-14T10:00:00Z"}, "Odoo": {"connected": False}}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="erp_create_customer",
+        description="Create a new customer record in the connected ERP system.",
+        category="erp",
+        parameters=[
+            ToolParameter("system", "string", "ERP system: SAP, Odoo, NetSuite, Dynamics, Salesforce"),
+            ToolParameter("name", "string", "Customer name"),
+            ToolParameter("email", "string", "Customer email", required=False),
+            ToolParameter("phone", "string", "Customer phone", required=False),
+            ToolParameter("address", "object", "Customer address object", required=False),
+        ],
+        examples=[
+            {"args": {"system": "Salesforce", "name": "Acme Corp", "email": "contact@acme.com"}, "result": {"success": True, "customer_id": "CUST-001234"}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="erp_create_order",
+        description="Create a new sales order in the connected ERP system.",
+        category="erp",
+        parameters=[
+            ToolParameter("system", "string", "ERP system: SAP, Odoo, NetSuite, Dynamics, Salesforce"),
+            ToolParameter("customer_id", "string", "Customer identifier"),
+            ToolParameter("items", "array", "Order line items [{product_id, quantity, price}]"),
+            ToolParameter("notes", "string", "Order notes", required=False),
+        ],
+        examples=[
+            {"args": {"system": "NetSuite", "customer_id": "CUST-001", "items": [{"product_id": "PROD-001", "quantity": 5, "price": 100}]}, "result": {"success": True, "order_id": "SO-2026-0001"}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="erp_update_inventory",
+        description="Update inventory levels for a product in the connected ERP system.",
+        category="erp",
+        parameters=[
+            ToolParameter("system", "string", "ERP system: SAP, Odoo, NetSuite, Dynamics, Salesforce"),
+            ToolParameter("product_id", "string", "Product identifier"),
+            ToolParameter("quantity", "integer", "New quantity"),
+            ToolParameter("warehouse", "string", "Warehouse location", required=False),
+        ],
+        examples=[
+            {"args": {"system": "Odoo", "product_id": "PROD-001", "quantity": 500}, "result": {"success": True, "updated": True, "previous_qty": 450}},
+        ]
+    ),
+    
+    # Consensus/Governance Tools
+    ToolDefinition(
+        name="create_proposal",
+        description="Create a new improvement proposal for consensus voting.",
+        category="governance",
+        parameters=[
+            ToolParameter("title", "string", "Proposal title"),
+            ToolParameter("summary", "string", "Proposal summary"),
+            ToolParameter("impact_level", "string", "Impact level: low, medium, high, critical", enum=["low", "medium", "high", "critical"]),
+            ToolParameter("category", "string", "Proposal category: accuracy, performance, architecture, documentation", required=False),
+        ],
+        examples=[
+            {"args": {"title": "Improve prediction accuracy", "summary": "Enhance pattern recognition", "impact_level": "medium"}, "result": {"proposal_id": "prop_001", "status": "pending_review"}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="route_proposal",
+        description="Route a proposal through the consensus system based on impact level.",
+        category="governance",
+        parameters=[
+            ToolParameter("proposal_id", "string", "Proposal ID to route"),
+        ],
+        examples=[
+            {"args": {"proposal_id": "prop_001"}, "result": {"action": "community_vote", "discord_sent": True, "session_id": "session_001"}},
+        ]
+    ),
+    
+    ToolDefinition(
+        name="get_voting_status",
+        description="Get current voting status for open proposals.",
+        category="governance",
+        parameters=[
+            ToolParameter("session_id", "string", "Voting session ID", required=False),
+        ],
+        examples=[
+            {"args": {}, "result": {"open_sessions": 2, "sessions": [{"id": "session_001", "title": "...", "votes": {"approve": 3, "reject": 1}}]}},
+        ]
+    ),
+    
+    # Email Tools
+    ToolDefinition(
+        name="send_escalation_email",
+        description="Send an escalation email to dev team or executives for high-impact proposals.",
+        category="communication",
+        parameters=[
+            ToolParameter("subject", "string", "Email subject"),
+            ToolParameter("body", "string", "Email body (HTML supported)"),
+            ToolParameter("escalation_level", "string", "Level: senior_review, executive", enum=["senior_review", "executive"]),
+        ],
+        examples=[
+            {"args": {"subject": "URGENT: Architecture Change Proposal", "body": "...", "escalation_level": "senior_review"}, "result": {"sent": True, "recipients": 2}},
+        ]
+    ),
 ]
 
 

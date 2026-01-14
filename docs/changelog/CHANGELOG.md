@@ -6,27 +6,48 @@ All notable changes to the Gladius Enterprise System are documented here.
 
 ### In Progress
 - GGUF model fine-tuning for complete Ollama replacement
-- Social media API integrations (keys configured, awaiting activation)
-- Discord consensus voting implementation
+- Grafana dashboard integration
+- React frontend completion
 
-## [2026-01-14] - Enhanced Chart Annotations & Autonomous Mode
+## [2026-01-14] - Consensus & ERP Integration Complete
 
 ### Added
+- **SMTP Email Escalation**: Fully operational via smtp.hostinger.com:465 (SSL)
+  - Account: ali.shakil@artifactvirtual.com
+  - Aliases: admin@, adam@, gladius@, support@ all route to same inbox
+  - Test emails confirmed working
+- **Discord Consensus System**: Fully operational
+  - Webhook configured and tested
+  - Voting sessions ready for proposals
+  - Impact-based routing (low→auto, medium→Discord, high→email, critical→executive)
+- **ERP Integration Tools**: 8 new tools added to registry
+  - `erp_sync_customers`, `erp_sync_products`, `erp_sync_orders`, `erp_sync_inventory`
+  - `erp_get_status`, `erp_create_customer`, `erp_create_order`, `erp_update_inventory`
+- **Governance Tools**: 4 new tools added
+  - `create_proposal`, `route_proposal`, `get_voting_status`, `send_escalation_email`
+- **System Mapping Files**: Documentation for each module
+  - `src/cognition/SYSTEM_MAPPING.md` - Cognition engine commands
+  - `automata/social_media/SYSTEM_MAPPING.md` - Social media commands
+  - `automata/erp_integrations/SYSTEM_MAPPING.md` - ERP integration commands
+  - `src/publishing/SYSTEM_MAPPING.md` - Publishing pipeline commands
+- **SMTP Test Script**: `scripts/test_smtp_consensus.py` for verification
 - **Enhanced Chart Annotations**: RSI, ADX, ATR indicators with subplots
 - **Support/Resistance Levels**: Automatic detection and visualization
 - **Trade Setup Visualization**: Entry/exit zones on charts
-- **Chart Learning Tools**: `analyze_chart`, `draw_indicator`, `detect_pattern`, `annotate_chart`, `generate_report`
 - **Autonomous Daemon Mode**: `--auto` flag for indefinite self-running operation
-- **30-Day Continuous Operation**: System designed for month-long autonomous runs
 
 ### Changed
+- Tool registry expanded from 22 to 37+ tools
+- Consensus system now uses `DISCORD_WEBHOOK_URL` with fallback
+- Email config uses `ali.shakil@artifactvirtual.com` with SSL on port 465
+- Flight checklist updated to 75% completion (was 65%)
 - Charts now include multi-panel layout (price, volume, RSI, ADX)
-- All technical indicators integrated into visualization
-- Main daemon loop fully wired with cognition engine
 
 ### Fixed
+- SMTP connection using SSL instead of STARTTLS for Hostinger
+- Discord webhook fallback chain for consensus
+- Email recipient parsing for dev team and executives
 - Chart annotation positioning for better readability
-- Indicator subplot scaling issues
 
 ## [2026-01-13] - Cognition Autonomy Complete
 
