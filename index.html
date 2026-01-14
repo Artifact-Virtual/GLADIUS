@@ -29,10 +29,6 @@
             
             --success: #22c55e;
             --warning: #f59e0b;
-            
-            /* New hero animation variables */
-            --void: #020205;
-            --mercury: rgba(230, 230, 240, 0.9);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -598,14 +594,14 @@
     </footer>
     
     <script>
-        // Hero parallax animation
+        // Hero parallax animation - cache DOM elements for performance
+        const shard1 = document.getElementById('s1');
+        const shard2 = document.getElementById('s2');
+        const orb = document.getElementById('orb');
+        
         window.addEventListener('mousemove', (e) => {
             const x = (e.clientX / window.innerWidth - 0.5) * 40;
             const y = (e.clientY / window.innerHeight - 0.5) * 40;
-            
-            const shard1 = document.getElementById('s1');
-            const shard2 = document.getElementById('s2');
-            const orb = document.getElementById('orb');
             
             if (shard1) {
                 shard1.style.transform = `translate(${x * -1.2}px, ${y * -1.2}px) rotate(-20deg)`;
