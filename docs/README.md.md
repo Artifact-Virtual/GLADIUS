@@ -1,4 +1,5 @@
-# GLADIUS ENTERPRISE SYSTEM - MASTER DOCUMENTATION
+# ARTIFACT VIRTUAL ENTERPRISE
+> Autonomous AI Infrastructure
 
 > **Version**: 1.0.0  
 > **Last Updated**: 2026-01-14  
