@@ -126,8 +126,8 @@ do_health_check() {
     fi
     
     # Syndicate Daemon
-    if pgrep -f "run.py.*--daemon" > /dev/null 2>&1; then
-        local pid=$(pgrep -f "run.py.*--daemon")
+    if pgrep -f "run.py.*--interval-min" > /dev/null 2>&1; then
+        local pid=$(pgrep -f "run.py.*--interval-min")
         echo -e "  ${GREEN}✅${NC} Syndicate Daemon     ${GREEN}OK${NC}  [PID: $pid]"
     else
         echo -e "  ${YELLOW}⚠️${NC}  Syndicate Daemon     ${YELLOW}NOT RUNNING${NC}"
@@ -361,12 +361,14 @@ do_start() {
     
     # 6. Start Syndicate Daemon (market intelligence - runs in background)
     echo -e "${CYAN}[6/6] Syndicate Daemon${NC}"
-    if pgrep -f "run.py.*--daemon" > /dev/null 2>&1; then
+    if pgrep -f "run.py.*--interval-min" > /dev/null 2>&1; then
         echo -e "  ${YELLOW}⚠️${NC}  Already running"
     else
         echo -e "  ${BLUE}→${NC} Starting Syndicate Daemon..."
         cd "$GLADIUS_ROOT/Artifact/syndicate"
-        nohup env PREFER_OLLAMA=1 "$PYTHON" run.py --daemon > "$LOG_DIR/syndicate_daemon.log" 2>&1 &
+        # Note: run.py without arguments runs in daemon mode (default)
+        # Using --interval-min 60 for 1-hour cycles
+        nohup env PREFER_OLLAMA=1 "$PYTHON" run.py --interval-min 60 > "$LOG_DIR/syndicate_daemon.log" 2>&1 &
         echo $! > "$PID_DIR/syndicate_daemon.pid"
         sleep 2
         echo -e "  ${GREEN}✅${NC} Daemon started"
@@ -476,7 +478,7 @@ do_stop() {
     
     # Stop Syndicate Daemon
     echo -e "${CYAN}[6/6] Syndicate Daemon${NC}"
-    pid=$(pgrep -f "run.py.*--daemon" 2>/dev/null)
+    pid=$(pgrep -f "run.py.*--interval-min" 2>/dev/null)
     if [ -n "$pid" ]; then
         if [ "$force" = true ]; then kill -9 $pid 2>/dev/null; else kill $pid 2>/dev/null; fi
         echo -e "  ${GREEN}✅${NC} Stopped (PID: $pid)"
@@ -523,7 +525,7 @@ do_stop() {
         echo -e "  ${GREEN}✓${NC} Port 5002 clear"
     fi
     
-    if pgrep -f "run.py.*--daemon" > /dev/null 2>&1; then
+    if pgrep -f "run.py.*--interval-min" > /dev/null 2>&1; then
         echo -e "  ${RED}⚠️${NC}  Syndicate daemon still running"
         remaining=$((remaining + 1))
     else
@@ -559,7 +561,7 @@ do_status() {
     check_port 5002 && echo -e "  ${GREEN}●${NC} Web UI (5002)" || echo -e "  ${YELLOW}○${NC} Web UI (5002)"
     check_port 3001 && echo -e "  ${GREEN}●${NC} Grafana (3001)" || echo -e "  ${YELLOW}○${NC} Grafana (3001)"
     check_port 9090 && echo -e "  ${GREEN}●${NC} Prometheus (9090)" || echo -e "  ${YELLOW}○${NC} Prometheus (9090)"
-    pgrep -f "run.py.*--daemon" > /dev/null 2>&1 && echo -e "  ${GREEN}●${NC} Syndicate Daemon" || echo -e "  ${YELLOW}○${NC} Syndicate Daemon"
+    pgrep -f "run.py.*--interval-min" > /dev/null 2>&1 && echo -e "  ${GREEN}●${NC} Syndicate Daemon" || echo -e "  ${YELLOW}○${NC} Syndicate Daemon"
     
     echo ""
 }

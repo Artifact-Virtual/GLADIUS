@@ -3,40 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GLADIUS | Autonomous Enterprise Intelligence</title>
-    <meta name="description" content="Self-evolving AI infrastructure with native cognition, autonomous operations, and enterprise-grade intelligence.">
+    <title>GLADIUS | Autonomous Cognitive Agent</title>
+    <meta name="description" content="Agentic AI System with native cognition, SIMD-optimized vector search, and autonomous self-improvement.">
     
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            /* Steel Black Purple Theme */
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #12121a;
-            --bg-tertiary: #1a1a28;
+            --bg-primary: #050507;
+            --bg-secondary: #0a0a0e;
+            --bg-tertiary: #101016;
+            --bg-card: #0d0d12;
             
-            /* Deep Vivid Indigo Accents */
             --accent-primary: #6366f1;
-            --accent-secondary: #8b5cf6;
-            --accent-tertiary: #a855f7;
-            --accent-glow: rgba(99, 102, 241, 0.4);
+            --accent-secondary: #818cf8;
+            --accent-dim: rgba(99, 102, 241, 0.15);
             
-            /* Text */
-            --text-primary: #ffffff;
+            --text-primary: #e4e4e7;
             --text-secondary: #a1a1aa;
-            --text-muted: #71717a;
+            --text-muted: #52525b;
             
-            /* Gradients */
-            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
-            --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%);
-            --gradient-radial: radial-gradient(ellipse at 50% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --border-hover: rgba(99, 102, 241, 0.3);
             
-            /* Glass Morphism */
-            --glass-bg: rgba(26, 26, 40, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --glass-blur: 20px;
+            --success: #22c55e;
+            --warning: #f59e0b;
         }
 
         * {
@@ -50,112 +42,26 @@
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
-            overflow-x: hidden;
             line-height: 1.6;
         }
 
-        /* Animated Background */
-        .bg-effects {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
-        }
-
-        .bg-effects::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: var(--gradient-radial);
-            animation: rotate 30s linear infinite;
-        }
-
-        .bg-grid {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
-            background-size: 60px 60px;
-        }
-
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.3;
-            animation: float 20s ease-in-out infinite;
-        }
-
-        .orb-1 {
-            top: 10%;
-            left: 20%;
-            width: 400px;
-            height: 400px;
-            background: var(--accent-primary);
-            animation-delay: -5s;
-        }
-
-        .orb-2 {
-            top: 60%;
-            right: 10%;
-            width: 300px;
-            height: 300px;
-            background: var(--accent-secondary);
-            animation-delay: -10s;
-        }
-
-        .orb-3 {
-            bottom: 20%;
-            left: 40%;
-            width: 250px;
-            height: 250px;
-            background: var(--accent-tertiary);
-            animation-delay: -15s;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0) translateX(0); }
-            25% { transform: translateY(-30px) translateX(20px); }
-            50% { transform: translateY(-10px) translateX(-20px); }
-            75% { transform: translateY(-40px) translateX(10px); }
-        }
-
-        /* Container */
         .container {
-            max-width: 1400px;
+            max-width: 1320px;
             margin: 0 auto;
-            padding: 0 40px;
-            position: relative;
-            z-index: 1;
+            padding: 0 32px;
         }
 
         /* Header */
         header {
-            padding: 30px 0;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 100;
-            backdrop-filter: blur(var(--glass-blur));
-            background: rgba(10, 10, 15, 0.8);
-            border-bottom: 1px solid var(--glass-border);
+            padding: 20px 0;
+            background: rgba(5, 5, 7, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
         }
 
         .header-content {
@@ -165,490 +71,601 @@
         }
 
         .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--gradient-primary);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
             font-size: 18px;
-        }
-
-        .logo-text {
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: 4px;
+            font-weight: 300;
+            letter-spacing: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
         }
 
         nav {
             display: flex;
-            gap: 40px;
+            gap: 32px;
+            align-items: center;
         }
 
         nav a {
-            color: var(--text-secondary);
+            color: var(--text-muted);
             text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            transition: color 0.3s;
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            transition: color 0.2s;
         }
 
         nav a:hover {
-            color: var(--text-primary);
+            color: var(--text-secondary);
         }
 
         .nav-cta {
-            padding: 10px 20px;
-            background: var(--gradient-primary);
-            border-radius: 8px;
-            color: white !important;
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-secondary) !important;
+            transition: all 0.2s ease;
+        }
+
+        .nav-cta:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-cta-docs {
+            padding: 8px 16px;
+            background: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
+            border-radius: 4px;
+            color: #fff !important;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-cta-docs:hover {
+            background: var(--bg-primary);
+            border-color: var(--accent-primary);
+            color: var(--accent-secondary) !important;
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+            text-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
         }
 
         /* Hero */
         .hero {
-            min-height: 100vh;
-            display: flex;
+            padding: 180px 0 120px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
             align-items: center;
-            padding: 140px 0 80px;
         }
 
-        .hero-content {
-            max-width: 800px;
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 50px;
-            font-size: 13px;
-            color: var(--accent-primary);
-            backdrop-filter: blur(10px);
-            margin-bottom: 30px;
-        }
-
-        .hero-badge::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            background: #22c55e;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        h1 {
-            font-size: clamp(48px, 8vw, 80px);
-            font-weight: 900;
-            line-height: 1.1;
+        .hero-content h1 {
+            font-size: 52px;
+            font-weight: 300;
+            letter-spacing: -1px;
+            line-height: 1.15;
             margin-bottom: 24px;
-            letter-spacing: -2px;
         }
 
-        .gradient-text {
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .hero-content h1 span {
+            color: var(--accent-secondary);
         }
 
         .hero-description {
-            font-size: 20px;
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin-bottom: 40px;
-            line-height: 1.7;
-        }
-
-        .hero-actions {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 60px;
-        }
-
-        .btn {
-            padding: 16px 32px;
-            border-radius: 10px;
             font-size: 15px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 40px;
+            max-width: 480px;
+        }
+
+        .classification-badge {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-        }
-
-        .btn-primary {
-            background: var(--gradient-primary);
-            color: white;
-            border: none;
-            box-shadow: 0 10px 40px var(--accent-glow);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 60px var(--accent-glow);
-        }
-
-        .btn-secondary {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            color: var(--text-primary);
-            backdrop-filter: blur(10px);
-        }
-
-        .btn-secondary:hover {
-            border-color: var(--accent-primary);
-            background: rgba(99, 102, 241, 0.1);
-        }
-
-        /* Stats */
-        .hero-stats {
-            display: flex;
-            gap: 60px;
-        }
-
-        .stat {
-            text-align: left;
-        }
-
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .stat-label {
-            font-size: 13px;
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
             color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
         }
 
-        /* Architecture Diagram */
-        .architecture {
-            padding: 100px 0;
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
         }
 
-        .section-header {
-            text-align: center;
-            margin-bottom: 60px;
-        }
-
-        .section-header h2 {
-            font-size: 40px;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-
-        .section-header p {
-            color: var(--text-secondary);
-            font-size: 18px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .arch-diagram {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 60px;
-            backdrop-filter: blur(var(--glass-blur));
-            position: relative;
+        /* Benchmark Card Hero */
+        .hero-benchmark {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             overflow: hidden;
         }
 
-        .arch-diagram::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: var(--gradient-primary);
-        }
-
-        .arch-flow {
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
-        }
-
-        .arch-row {
-            display: flex;
-            justify-content: center;
-            gap: 24px;
-            flex-wrap: wrap;
-        }
-
-        .arch-node {
-            background: var(--bg-secondary);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 24px 32px;
-            min-width: 180px;
-            text-align: center;
-            transition: all 0.3s;
-            position: relative;
-        }
-
-        .arch-node:hover {
-            border-color: var(--accent-primary);
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
-        }
-
-        .arch-node.core {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%);
-            border-color: var(--accent-primary);
-        }
-
-        .node-icon {
-            font-size: 24px;
-            margin-bottom: 12px;
-        }
-
-        .node-title {
-            font-weight: 600;
-            font-size: 16px;
-            margin-bottom: 4px;
-        }
-
-        .node-desc {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .arch-arrow {
-            display: flex;
-            justify-content: center;
-            color: var(--accent-primary);
-            font-size: 24px;
-        }
-
-        /* Features Grid */
-        .features {
-            padding: 100px 0;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 24px;
-        }
-
-        .feature-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 40px;
-            backdrop-filter: blur(var(--glass-blur));
-            transition: all 0.3s;
-        }
-
-        .feature-card:hover {
-            border-color: var(--accent-primary);
-            transform: translateY(-4px);
-        }
-
-        .feature-icon {
-            width: 56px;
-            height: 56px;
-            background: var(--gradient-primary);
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-bottom: 24px;
-        }
-
-        .feature-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .feature-desc {
-            color: var(--text-secondary);
-            font-size: 15px;
-            line-height: 1.7;
-        }
-
-        /* Benchmark Card */
-        .benchmark {
-            padding: 100px 0;
-        }
-
-        .benchmark-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 60px;
-            backdrop-filter: blur(var(--glass-blur));
-        }
-
         .benchmark-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
-            gap: 20px;
         }
 
-        .benchmark-header h3 {
-            font-size: 28px;
-            font-weight: 700;
+        .benchmark-title {
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
-        .benchmark-status {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 20px;
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.3);
-            border-radius: 50px;
-            color: #22c55e;
-            font-size: 14px;
-            font-weight: 500;
+        .benchmark-version {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
         }
 
         .benchmark-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 24px;
+            grid-template-columns: 1fr 1fr;
         }
 
-        .metric-card {
-            background: var(--bg-secondary);
-            border-radius: 16px;
-            padding: 24px;
-            text-align: center;
+        .metric {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
         }
 
-        .metric-value {
-            font-size: 36px;
-            font-weight: 700;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
+        .metric:nth-child(2n) {
+            border-right: none;
+        }
+
+        .metric:nth-last-child(-n+2) {
+            border-bottom: none;
         }
 
         .metric-label {
-            font-size: 14px;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .metric-value.success {
+            color: var(--success);
+        }
+
+        .metric-target {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* System Topology */
+        .topology-section {
+            padding: 100px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-header {
+            margin-bottom: 60px;
+        }
+
+        .section-label {
+            font-size: 10px;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 400;
+            letter-spacing: -0.5px;
+        }
+
+        .topology-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 48px;
+            position: relative;
+        }
+
+        .topology-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            position: relative;
+        }
+
+        .topology-layer {
+            display: contents;
+        }
+
+        .topology-node {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .topology-node:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .topology-node.core {
+            border-color: var(--accent-primary);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, transparent 100%);
+            grid-column: span 1;
+        }
+
+        .topology-node.wide {
+            grid-column: span 2;
+        }
+
+        .topology-node.full {
+            grid-column: span 5;
+        }
+
+        .node-icon {
+            font-size: 16px;
+            margin-bottom: 8px;
             color: var(--text-muted);
         }
 
-        /* Code Block */
-        .code-section {
-            padding: 100px 0;
+        .node-name {
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 4px;
         }
 
-        .code-block {
-            background: var(--bg-secondary);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
+        .node-detail {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .layer-label {
+            grid-column: span 5;
+            padding: 24px 0 8px;
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'JetBrains Mono', monospace;
+            border-top: 1px dashed var(--border-color);
+            margin-top: 8px;
+        }
+
+        .layer-label:first-child {
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+        /* Parameters Section */
+        .params-section {
+            padding: 100px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .params-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .param-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .param-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .param-card-title {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .param-card-badge {
+            font-size: 9px;
+            padding: 4px 8px;
+            background: var(--accent-dim);
+            color: var(--accent-secondary);
+            border-radius: 3px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .param-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .param-row:last-child {
+            border-bottom: none;
+        }
+
+        .param-name {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .param-value {
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
+        }
+
+        /* Comparison Section */
+        .comparison-section {
+            padding: 100px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comparison-table {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             overflow: hidden;
         }
 
-        .code-header {
+        .comparison-row {
+            display: grid;
+            grid-template-columns: 200px repeat(4, 1fr);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comparison-row:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-row.header {
+            background: var(--bg-tertiary);
+        }
+
+        .comparison-cell {
+            padding: 16px 20px;
+            font-size: 12px;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .comparison-cell:last-child {
+            border-right: none;
+        }
+
+        .comparison-cell.header {
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 10px;
+        }
+
+        .comparison-cell.metric-name {
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .comparison-cell.highlight {
+            background: rgba(99, 102, 241, 0.05);
+            color: var(--accent-secondary);
+            font-weight: 500;
+        }
+
+        .comparison-cell .check {
+            color: var(--success);
+        }
+
+        .comparison-cell .cross {
+            color: var(--text-muted);
+        }
+
+        /* Capabilities */
+        .capabilities-section {
+            padding: 100px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .capabilities-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .capability-card {
+            background: var(--bg-card);
+            padding: 32px;
+        }
+
+        .capability-icon {
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 16px 24px;
+            justify-content: center;
             background: var(--bg-tertiary);
-            border-bottom: 1px solid var(--glass-border);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: var(--accent-secondary);
         }
 
-        .code-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
+        .capability-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
         }
 
-        .code-dot.red { background: #ff5f56; }
-        .code-dot.yellow { background: #ffbd2e; }
-        .code-dot.green { background: #27c93f; }
-
-        .code-title {
-            margin-left: 12px;
+        .capability-desc {
             font-size: 13px;
             color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Tools Registry */
+        .tools-section {
+            padding: 100px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tools-table {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .tools-row {
+            display: grid;
+            grid-template-columns: 160px 120px 100px 100px 1fr;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tools-row:last-child {
+            border-bottom: none;
+        }
+
+        .tools-row.header {
+            background: var(--bg-tertiary);
+        }
+
+        .tools-cell {
+            padding: 12px 16px;
+            font-size: 12px;
+            border-right: 1px solid var(--border-color);
             font-family: 'JetBrains Mono', monospace;
         }
 
-        pre {
-            padding: 24px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 14px;
-            line-height: 1.8;
-            overflow-x: auto;
+        .tools-cell:last-child {
+            border-right: none;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-muted);
         }
 
-        .code-comment { color: #6b7280; }
-        .code-keyword { color: #a855f7; }
-        .code-string { color: #22c55e; }
-        .code-function { color: #6366f1; }
-        .code-variable { color: #f59e0b; }
+        .tools-cell.header {
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 10px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .tools-cell .success {
+            color: var(--success);
+        }
 
         /* Footer */
         footer {
             padding: 60px 0;
-            border-top: 1px solid var(--glass-border);
             text-align: center;
         }
 
         .footer-logo {
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 14px;
+            font-weight: 300;
             letter-spacing: 6px;
             margin-bottom: 16px;
-        }
-
-        .footer-desc {
             color: var(--text-muted);
-            font-size: 14px;
-            margin-bottom: 24px;
         }
 
         .footer-links {
             display: flex;
             justify-content: center;
-            gap: 32px;
+            gap: 24px;
+            margin-bottom: 24px;
         }
 
         .footer-links a {
-            color: var(--text-secondary);
+            color: var(--text-muted);
             text-decoration: none;
-            font-size: 14px;
-            transition: color 0.3s;
+            font-size: 12px;
+            transition: color 0.2s;
         }
 
         .footer-links a:hover {
-            color: var(--accent-primary);
+            color: var(--text-secondary);
+        }
+
+        .footer-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
         }
 
         /* Responsive */
+        @media (max-width: 1024px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+                gap: 48px;
+            }
+
+            .topology-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .topology-node.wide {
+                grid-column: span 1;
+            }
+
+            .topology-node.full {
+                grid-column: span 3;
+            }
+
+            .layer-label {
+                grid-column: span 3;
+            }
+
+            .params-grid,
+            .capabilities-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-row {
+                grid-template-columns: 140px repeat(4, 1fr);
+            }
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 0 20px;
@@ -658,41 +675,57 @@
                 display: none;
             }
 
-            .hero-stats {
-                flex-direction: column;
-                gap: 24px;
+            .hero {
+                padding: 140px 0 80px;
             }
 
-            .hero-actions {
-                flex-direction: column;
+            .hero-content h1 {
+                font-size: 36px;
             }
 
-            .arch-diagram {
-                padding: 30px;
+            .topology-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .topology-node.full {
+                grid-column: span 2;
+            }
+
+            .layer-label {
+                grid-column: span 2;
+            }
+
+            .comparison-row {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-cell {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .tools-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .tools-row.header .tools-cell:nth-child(n+3) {
+                display: none;
             }
         }
     </style>
 </head>
 <body>
-    <div class="bg-effects">
-        <div class="bg-grid"></div>
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-    </div>
-
     <header>
         <div class="container">
             <div class="header-content">
-                <div class="logo">
-                    <div class="logo-icon">G</div>
-                    <span class="logo-text">GLADIUS</span>
-                </div>
+                <a href="#" class="logo">GLADIUS</a>
                 <nav>
-                    <a href="#architecture">Architecture</a>
-                    <a href="#features">Features</a>
-                    <a href="#benchmark">Benchmarks</a>
-                    <a href="https://github.com/Artifact-Virtual/GLADIUS" class="nav-cta">GitHub</a>
+                    <a href="#topology">Architecture</a>
+                    <a href="#parameters">Parameters</a>
+                    <a href="#comparison">Comparison</a>
+                    <a href="#tools">Tools</a>
+                    <a href="https://github.com/Artifact-Virtual/GLADIUS" class="nav-cta">Repository</a>
+                    <a href="https://artifact-virtual.gitbook.io/gladius" class="nav-cta-docs">Docs</a>
                 </nav>
             </div>
         </div>
@@ -701,246 +734,476 @@
     <main>
         <section class="hero">
             <div class="container">
-                <div class="hero-content">
-                    <div class="hero-badge">
-                        <span>Autonomous Enterprise OS • v1.0</span>
+                <div class="hero-grid">
+                    <div class="hero-content">
+                        <div class="classification-badge">
+                            <span class="status-dot"></span>
+                            AGENTIC AI SYSTEM · v1.0
+                        </div>
+                        <h1>Autonomous<br><span>Cognitive Agent</span></h1>
+                        <p class="hero-description">
+                            Hybrid cognitive architecture with native tool routing, SIMD-optimized vector search, 
+                            and recursive self-improvement. Pattern-based inference at 2.17ms with 100% routing accuracy.
+                        </p>
                     </div>
-                    <h1>
-                        Self-Evolving<br>
-                        <span class="gradient-text">AI Intelligence</span>
-                    </h1>
-                    <p class="hero-description">
-                        Native cognition engine with SIMD-optimized vector search, autonomous self-improvement, 
-                        multi-platform publishing, and enterprise-grade market intelligence. Think. Learn. Act.
-                    </p>
-                    <div class="hero-actions">
-                        <a href="#" class="btn btn-primary">
-                            <span>⚡</span> Quick Start
-                        </a>
-                        <a href="MODEL.md" class="btn btn-secondary">
-                            <span>📄</span> Model Specification
-                        </a>
-                    </div>
-                    <div class="hero-stats">
-                        <div class="stat">
-                            <div class="stat-value">100%</div>
-                            <div class="stat-label">Tool Accuracy</div>
+                    <div class="hero-benchmark">
+                        <div class="benchmark-header">
+                            <span class="benchmark-title">Live Benchmark</span>
+                            <span class="benchmark-version">2026-01-13T10:48:00Z</span>
                         </div>
-                        <div class="stat">
-                            <div class="stat-value">&lt;1ms</div>
-                            <div class="stat-label">Routing Latency</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-value">16</div>
-                            <div class="stat-label">Native Tools</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-value">5</div>
-                            <div class="stat-label">Platforms</div>
+                        <div class="benchmark-grid">
+                            <div class="metric">
+                                <div class="metric-label">Routing Accuracy</div>
+                                <div class="metric-value success">100.0%</div>
+                                <div class="metric-target">target: ≥95%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Avg Latency</div>
+                                <div class="metric-value">2.17ms</div>
+                                <div class="metric-target">target: &lt;10ms</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">P99 Latency</div>
+                                <div class="metric-value">3.67ms</div>
+                                <div class="metric-target">target: &lt;20ms</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Model Size</div>
+                                <div class="metric-value">5.4MB</div>
+                                <div class="metric-target">target: &lt;100MB</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Active Tools</div>
+                                <div class="metric-value">18</div>
+                                <div class="metric-target">expanding to 50+</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Training Examples</div>
+                                <div class="metric-value">914</div>
+                                <div class="metric-target">target: 1000+</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="architecture" class="architecture">
+        <section id="topology" class="topology-section">
             <div class="container">
                 <div class="section-header">
-                    <h2>System <span class="gradient-text">Architecture</span></h2>
-                    <p>A multi-layered autonomous system designed for continuous learning and enterprise operations</p>
+                    <div class="section-label">System Architecture</div>
+                    <h2 class="section-title">Cognitive Processing Topology</h2>
                 </div>
-                <div class="arch-diagram">
-                    <div class="arch-flow">
-                        <div class="arch-row">
-                            <div class="arch-node">
-                                <div class="node-icon">📊</div>
-                                <div class="node-title">Data Sources</div>
-                                <div class="node-desc">yfinance • FRED • APIs</div>
-                            </div>
+                <div class="topology-container">
+                    <div class="topology-grid">
+                        <div class="layer-label">Input Layer</div>
+                        <div class="topology-node">
+                            <div class="node-icon">⊕</div>
+                            <div class="node-name">Data Ingestion</div>
+                            <div class="node-detail">yfinance · FRED</div>
                         </div>
-                        <div class="arch-arrow">↓</div>
-                        <div class="arch-row">
-                            <div class="arch-node">
-                                <div class="node-icon">🔬</div>
-                                <div class="node-title">Syndicate</div>
-                                <div class="node-desc">Research Engine</div>
-                            </div>
-                            <div class="arch-node core">
-                                <div class="node-icon">🧠</div>
-                                <div class="node-title">Cognition</div>
-                                <div class="node-desc">Hektor VDB • Tools</div>
-                            </div>
-                            <div class="arch-node">
-                                <div class="node-icon">⚙️</div>
-                                <div class="node-title">Automata</div>
-                                <div class="node-desc">Publishing Pipeline</div>
-                            </div>
+                        <div class="topology-node">
+                            <div class="node-icon">⟳</div>
+                            <div class="node-name">Event Bus</div>
+                            <div class="node-detail">async queue</div>
                         </div>
-                        <div class="arch-arrow">↓</div>
-                        <div class="arch-row">
-                            <div class="arch-node">
-                                <div class="node-icon">🐦</div>
-                                <div class="node-title">Twitter/X</div>
-                                <div class="node-desc">Threads • Analytics</div>
-                            </div>
-                            <div class="arch-node">
-                                <div class="node-icon">💼</div>
-                                <div class="node-title">LinkedIn</div>
-                                <div class="node-desc">Articles • Company</div>
-                            </div>
-                            <div class="arch-node">
-                                <div class="node-icon">📘</div>
-                                <div class="node-title">Facebook</div>
-                                <div class="node-desc">Posts • Pages</div>
-                            </div>
-                            <div class="arch-node">
-                                <div class="node-icon">📸</div>
-                                <div class="node-title">Instagram</div>
-                                <div class="node-desc">Visual • Stories</div>
-                            </div>
+                        <div class="topology-node">
+                            <div class="node-icon">⌘</div>
+                            <div class="node-name">Query Parser</div>
+                            <div class="node-detail">intent detection</div>
                         </div>
-                        <div class="arch-arrow">↓</div>
-                        <div class="arch-row">
-                            <div class="arch-node">
-                                <div class="node-icon">🔄</div>
-                                <div class="node-title">Self-Improvement</div>
-                                <div class="node-desc">Proposals • Training • Optimization</div>
-                            </div>
+                        <div class="topology-node">
+                            <div class="node-icon">◈</div>
+                            <div class="node-name">Syndicate</div>
+                            <div class="node-detail">research engine</div>
+                        </div>
+                        <div class="topology-node">
+                            <div class="node-icon">⊘</div>
+                            <div class="node-name">Filters</div>
+                            <div class="node-detail">validation</div>
+                        </div>
+
+                        <div class="layer-label">Cognition Engine</div>
+                        <div class="topology-node core">
+                            <div class="node-icon">◉</div>
+                            <div class="node-name">Native Router</div>
+                            <div class="node-detail">2.17ms · 100%</div>
+                        </div>
+                        <div class="topology-node core">
+                            <div class="node-icon">⬡</div>
+                            <div class="node-name">Hektor VDB</div>
+                            <div class="node-detail">SIMD HNSW</div>
+                        </div>
+                        <div class="topology-node core">
+                            <div class="node-icon">⧉</div>
+                            <div class="node-name">Context Manager</div>
+                            <div class="node-detail">4096 tokens</div>
+                        </div>
+                        <div class="topology-node">
+                            <div class="node-icon">⊞</div>
+                            <div class="node-name">Memory Module</div>
+                            <div class="node-detail">multi-db</div>
+                        </div>
+                        <div class="topology-node">
+                            <div class="node-icon">⟐</div>
+                            <div class="node-name">Ollama Fallback</div>
+                            <div class="node-detail">llama3.2</div>
+                        </div>
+
+                        <div class="layer-label">Learning Layer</div>
+                        <div class="topology-node">
+                            <div class="node-icon">⊛</div>
+                            <div class="node-name">Training Generator</div>
+                            <div class="node-detail">914 examples</div>
+                        </div>
+                        <div class="topology-node">
+                            <div class="node-icon">⟲</div>
+                            <div class="node-name">Self-Improve</div>
+                            <div class="node-detail">proposals</div>
+                        </div>
+                        <div class="topology-node">
+                            <div class="node-icon">⊡</div>
+                            <div class="node-name">Benchmark</div>
+                            <div class="node-detail">continuous</div>
+                        </div>
+                        <div class="topology-node">
+                            <div class="node-icon">⊠</div>
+                            <div class="node-name">Consensus</div>
+                            <div class="node-detail">discord · email</div>
+                        </div>
+                        <div class="topology-node">
+                            <div class="node-icon">⊟</div>
+                            <div class="node-name">Snapshots</div>
+                            <div class="node-detail">rollback</div>
+                        </div>
+
+                        <div class="layer-label">Execution Layer</div>
+                        <div class="topology-node wide">
+                            <div class="node-icon">⎔</div>
+                            <div class="node-name">Tool Registry</div>
+                            <div class="node-detail">18 active tools</div>
+                        </div>
+                        <div class="topology-node">
+                            <div class="node-icon">⏱</div>
+                            <div class="node-name">Scheduler</div>
+                            <div class="node-detail">cron + event</div>
+                        </div>
+                        <div class="topology-node wide">
+                            <div class="node-icon">⊜</div>
+                            <div class="node-name">Sandboxed Executor</div>
+                            <div class="node-detail">isolated runtime</div>
+                        </div>
+
+                        <div class="layer-label">Output Layer</div>
+                        <div class="topology-node">
+                            <div class="node-icon">⊏</div>
+                            <div class="node-name">Reports</div>
+                            <div class="node-detail">journals</div>
+                        </div>
+                        <div class="topology-node">
+                            <div class="node-icon">⊐</div>
+                            <div class="node-name">Formatter</div>
+                            <div class="node-detail">multi-platform</div>
+                        </div>
+                        <div class="topology-node">
+                            <div class="node-icon">◇</div>
+                            <div class="node-name">Discord</div>
+                            <div class="node-detail">arty bot</div>
+                        </div>
+                        <div class="topology-node">
+                            <div class="node-icon">◆</div>
+                            <div class="node-name">LinkedIn</div>
+                            <div class="node-detail">arty</div>
+                        </div>
+                        <div class="topology-node">
+                            <div class="node-icon">◈</div>
+                            <div class="node-name">Notion</div>
+                            <div class="node-detail">api</div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="features" class="features">
+        <section id="parameters" class="params-section">
             <div class="container">
                 <div class="section-header">
-                    <h2>Core <span class="gradient-text">Capabilities</span></h2>
-                    <p>Enterprise-grade intelligence with native performance</p>
+                    <div class="section-label">Technical Specifications</div>
+                    <h2 class="section-title">Model Parameters</h2>
                 </div>
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">🧠</div>
-                        <div class="feature-title">Native Cognition</div>
-                        <div class="feature-desc">
-                            Pattern-based tool routing with 100% accuracy. Hektor VDB with SIMD-optimized 
-                            vector search. Sub-millisecond response times.
+                <div class="params-grid">
+                    <div class="param-card">
+                        <div class="param-card-header">
+                            <span class="param-card-title">Pattern Router</span>
+                            <span class="param-card-badge">PRODUCTION</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Model Type</span>
+                            <span class="param-value">TF-IDF + LR</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Vocabulary</span>
+                            <span class="param-value">~5,000</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Dimensions</span>
+                            <span class="param-value">384</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">File Size</span>
+                            <span class="param-value">5.4MB</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Pattern Count</span>
+                            <span class="param-value">914</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Memory</span>
+                            <span class="param-value">~20MB</span>
                         </div>
                     </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🔄</div>
-                        <div class="feature-title">Self-Improvement</div>
-                        <div class="feature-desc">
-                            Autonomous proposal generation, review, and implementation. Continuous learning 
-                            from outcomes. Automatic tool discovery and training.
+                    <div class="param-card">
+                        <div class="param-card-header">
+                            <span class="param-card-title">Hektor VDB</span>
+                            <span class="param-card-badge">ACTIVE</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Index Type</span>
+                            <span class="param-value">HNSW</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Dimensions</span>
+                            <span class="param-value">384</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">M Connections</span>
+                            <span class="param-value">16</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">EF Construction</span>
+                            <span class="param-value">200</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Distance Metric</span>
+                            <span class="param-value">Cosine</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Query Latency</span>
+                            <span class="param-value">&lt;1ms</span>
                         </div>
                     </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">📢</div>
-                        <div class="feature-title">Multi-Platform Publishing</div>
-                        <div class="feature-desc">
-                            Unified content pipeline for Twitter, LinkedIn, Facebook, Instagram, and YouTube. 
-                            Optimal scheduling and engagement tracking.
+                    <div class="param-card">
+                        <div class="param-card-header">
+                            <span class="param-card-title">GGUF Target</span>
+                            <span class="param-card-badge">PHASE 3</span>
                         </div>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">📊</div>
-                        <div class="feature-title">Market Intelligence</div>
-                        <div class="feature-desc">
-                            Real-time analysis of gold, crypto, and equities. Chart generation, catalyst 
-                            tracking, and institutional matrix analysis.
+                        <div class="param-row">
+                            <span class="param-name">Architecture</span>
+                            <span class="param-value">LLaMA/Qwen</span>
                         </div>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🛡️</div>
-                        <div class="feature-title">Enterprise Grade</div>
-                        <div class="feature-desc">
-                            Sandboxed operations, complete audit trails, and risk-based proposal routing. 
-                            Discord consensus and email escalation for high-impact changes.
+                        <div class="param-row">
+                            <span class="param-name">Parameters</span>
+                            <span class="param-value">135M-500M</span>
                         </div>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">⚡</div>
-                        <div class="feature-title">Native Performance</div>
-                        <div class="feature-desc">
-                            C++ core with AVX2/SIMD optimization. Flash attention support. Zero dependency 
-                            on external AI services for core operations.
+                        <div class="param-row">
+                            <span class="param-name">Quantization</span>
+                            <span class="param-value">Q4_K_M</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Context Window</span>
+                            <span class="param-value">512</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Target Size</span>
+                            <span class="param-value">80-300MB</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Target Latency</span>
+                            <span class="param-value">&lt;10ms</span>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="benchmark" class="benchmark">
-            <div class="container">
-                <div class="benchmark-card">
-                    <div class="benchmark-header">
-                        <h3>System <span class="gradient-text">Benchmarks</span></h3>
-                        <div class="benchmark-status">
-                            <span>●</span> All Systems Operational
-                        </div>
-                    </div>
-                    <div class="benchmark-grid">
-                        <div class="metric-card">
-                            <div class="metric-value">100%</div>
-                            <div class="metric-label">Tool Routing Accuracy</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-value">0.8ms</div>
-                            <div class="metric-label">Avg Routing Latency</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-value">16</div>
-                            <div class="metric-label">Native Tools</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-value">100%</div>
-                            <div class="metric-label">Memory Module Tests</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-value">5</div>
-                            <div class="metric-label">Social Platforms</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-value">85%</div>
-                            <div class="metric-label">System Completion</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="code-section">
+        <section id="comparison" class="comparison-section">
             <div class="container">
                 <div class="section-header">
-                    <h2>Quick <span class="gradient-text">Start</span></h2>
-                    <p>Get running in seconds</p>
+                    <div class="section-label">Framework Analysis</div>
+                    <h2 class="section-title">Competitive Comparison</h2>
                 </div>
-                <div class="code-block">
-                    <div class="code-header">
-                        <div class="code-dot red"></div>
-                        <div class="code-dot yellow"></div>
-                        <div class="code-dot green"></div>
-                        <span class="code-title">terminal</span>
+                <div class="comparison-table">
+                    <div class="comparison-row header">
+                        <div class="comparison-cell header">Metric</div>
+                        <div class="comparison-cell header">GLADIUS</div>
+                        <div class="comparison-cell header">LangChain</div>
+                        <div class="comparison-cell header">AutoGPT</div>
+                        <div class="comparison-cell header">CrewAI</div>
                     </div>
-                    <pre>
-<span class="code-comment"># Clone the repository</span>
-<span class="code-keyword">git</span> clone https://github.com/Artifact-Virtual/GLADIUS.git
-<span class="code-keyword">cd</span> GLADIUS
+                    <div class="comparison-row">
+                        <div class="comparison-cell metric-name">Tool Routing Latency</div>
+                        <div class="comparison-cell highlight">2.17ms</div>
+                        <div class="comparison-cell">50-200ms</div>
+                        <div class="comparison-cell">100-500ms</div>
+                        <div class="comparison-cell">80-300ms</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-cell metric-name">Routing Accuracy</div>
+                        <div class="comparison-cell highlight">100%</div>
+                        <div class="comparison-cell">85-95%</div>
+                        <div class="comparison-cell">70-85%</div>
+                        <div class="comparison-cell">80-90%</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-cell metric-name">Offline Capable</div>
+                        <div class="comparison-cell highlight"><span class="check">✓</span></div>
+                        <div class="comparison-cell"><span class="cross">—</span></div>
+                        <div class="comparison-cell"><span class="cross">—</span></div>
+                        <div class="comparison-cell"><span class="cross">—</span></div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-cell metric-name">Self-Improvement</div>
+                        <div class="comparison-cell highlight"><span class="check">✓</span></div>
+                        <div class="comparison-cell"><span class="cross">—</span></div>
+                        <div class="comparison-cell">Partial</div>
+                        <div class="comparison-cell"><span class="cross">—</span></div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-cell metric-name">Native Vector DB</div>
+                        <div class="comparison-cell highlight"><span class="check">✓</span> SIMD</div>
+                        <div class="comparison-cell">External</div>
+                        <div class="comparison-cell">External</div>
+                        <div class="comparison-cell">External</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-cell metric-name">Model Size</div>
+                        <div class="comparison-cell highlight">5.4MB</div>
+                        <div class="comparison-cell">API-based</div>
+                        <div class="comparison-cell">API-based</div>
+                        <div class="comparison-cell">API-based</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-cell metric-name">Memory Footprint</div>
+                        <div class="comparison-cell highlight">~35MB</div>
+                        <div class="comparison-cell">200MB+</div>
+                        <div class="comparison-cell">500MB+</div>
+                        <div class="comparison-cell">150MB+</div>
+                    </div>
+                    <div class="comparison-row">
+                        <div class="comparison-cell metric-name">Consensus System</div>
+                        <div class="comparison-cell highlight"><span class="check">✓</span></div>
+                        <div class="comparison-cell"><span class="cross">—</span></div>
+                        <div class="comparison-cell"><span class="cross">—</span></div>
+                        <div class="comparison-cell"><span class="cross">—</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-<span class="code-comment"># Configure your API keys</span>
-<span class="code-keyword">cp</span> .env.example .env
-<span class="code-keyword">nano</span> .env
+        <section id="capabilities" class="capabilities-section">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-label">Core Modules</div>
+                    <h2 class="section-title">System Capabilities</h2>
+                </div>
+                <div class="capabilities-grid">
+                    <div class="capability-card">
+                        <div class="capability-icon">◉</div>
+                        <div class="capability-title">Native Tool Routing</div>
+                        <div class="capability-desc">Pattern-based selection with 100% accuracy. Sub-3ms inference without external API dependencies.</div>
+                    </div>
+                    <div class="capability-card">
+                        <div class="capability-icon">⬡</div>
+                        <div class="capability-title">Hektor VDB</div>
+                        <div class="capability-desc">C++ vector database with SIMD-optimized HNSW indexing. Hybrid BM25 + semantic search.</div>
+                    </div>
+                    <div class="capability-card">
+                        <div class="capability-icon">⟲</div>
+                        <div class="capability-title">Recursive Learning</div>
+                        <div class="capability-desc">Autonomous training data generation, incremental model updates, and continuous benchmarking.</div>
+                    </div>
+                    <div class="capability-card">
+                        <div class="capability-icon">⧉</div>
+                        <div class="capability-title">Context Management</div>
+                        <div class="capability-desc">4096-token window with automatic summarization, semantic deduplication, and temporal decay.</div>
+                    </div>
+                    <div class="capability-card">
+                        <div class="capability-icon">⊠</div>
+                        <div class="capability-title">Consensus Protocol</div>
+                        <div class="capability-desc">Impact-based routing through Discord voting and email escalation for high-risk proposals.</div>
+                    </div>
+                    <div class="capability-card">
+                        <div class="capability-icon">⊜</div>
+                        <div class="capability-title">Sandboxed Execution</div>
+                        <div class="capability-desc">Isolated runtime with path restrictions, file size limits, and complete audit trails.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-<span class="code-comment"># Start all services</span>
-<span class="code-keyword">./gladius.sh</span> <span class="code-function">start</span>
-
-<span class="code-comment"># Run a complete autonomous cycle</span>
-<span class="code-keyword">./gladius.sh</span> <span class="code-function">cycle</span>
-
-<span class="code-comment"># Check system health</span>
-<span class="code-keyword">./gladius.sh</span> <span class="code-function">health</span>
-                    </pre>
+        <section id="tools" class="tools-section">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-label">Tool Inventory</div>
+                    <h2 class="section-title">Active Tool Registry</h2>
+                </div>
+                <div class="tools-table">
+                    <div class="tools-row header">
+                        <div class="tools-cell header">Tool</div>
+                        <div class="tools-cell header">Category</div>
+                        <div class="tools-cell header">Tier</div>
+                        <div class="tools-cell header">Latency</div>
+                        <div class="tools-cell header">Description</div>
+                    </div>
+                    <div class="tools-row">
+                        <div class="tools-cell">list_databases</div>
+                        <div class="tools-cell">introspection</div>
+                        <div class="tools-cell">1</div>
+                        <div class="tools-cell"><span class="success">0.8ms</span></div>
+                        <div class="tools-cell">Enumerate available data sources</div>
+                    </div>
+                    <div class="tools-row">
+                        <div class="tools-cell">hybrid_search</div>
+                        <div class="tools-cell">search</div>
+                        <div class="tools-cell">3</div>
+                        <div class="tools-cell"><span class="success">3.8ms</span></div>
+                        <div class="tools-cell">Combined BM25 + vector search</div>
+                    </div>
+                    <div class="tools-row">
+                        <div class="tools-cell">get_context</div>
+                        <div class="tools-cell">search</div>
+                        <div class="tools-cell">3</div>
+                        <div class="tools-cell"><span class="success">4.2ms</span></div>
+                        <div class="tools-cell">Retrieve relevant context window</div>
+                    </div>
+                    <div class="tools-row">
+                        <div class="tools-cell">read_db</div>
+                        <div class="tools-cell">database</div>
+                        <div class="tools-cell">3</div>
+                        <div class="tools-cell"><span class="success">5.1ms</span></div>
+                        <div class="tools-cell">Query structured data stores</div>
+                    </div>
+                    <div class="tools-row">
+                        <div class="tools-cell">remember</div>
+                        <div class="tools-cell">memory</div>
+                        <div class="tools-cell">4</div>
+                        <div class="tools-cell"><span class="success">4.8ms</span></div>
+                        <div class="tools-cell">Store episodic memory entries</div>
+                    </div>
+                    <div class="tools-row">
+                        <div class="tools-cell">recall</div>
+                        <div class="tools-cell">memory</div>
+                        <div class="tools-cell">4</div>
+                        <div class="tools-cell"><span class="success">3.2ms</span></div>
+                        <div class="tools-cell">Retrieve from long-term memory</div>
+                    </div>
+                    <div class="tools-row">
+                        <div class="tools-cell">write_file</div>
+                        <div class="tools-cell">workspace</div>
+                        <div class="tools-cell">4</div>
+                        <div class="tools-cell"><span class="success">3.5ms</span></div>
+                        <div class="tools-cell">Sandboxed file operations</div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -949,13 +1212,13 @@
     <footer>
         <div class="container">
             <div class="footer-logo">GLADIUS</div>
-            <p class="footer-desc">Autonomous Enterprise Intelligence System</p>
             <div class="footer-links">
-                <a href="https://github.com/Artifact-Virtual/GLADIUS">GitHub</a>
+                <a href="https://github.com/Artifact-Virtual/GLADIUS">Repository</a>
                 <a href="MODEL.md">Model Spec</a>
                 <a href="ARCHITECTURE.md">Architecture</a>
                 <a href="https://artifactvirtual.com">Artifact Virtual</a>
             </div>
+            <div class="footer-meta">Agentic AI System · Phase 2 Active · Last benchmark 2026-01-13</div>
         </div>
     </footer>
 </body>
