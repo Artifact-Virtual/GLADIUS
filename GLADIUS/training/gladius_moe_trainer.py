@@ -119,18 +119,18 @@ EXPERT_TEACHERS = [
 @dataclass
 class GladiusArchitecture:
     """Custom GLADIUS model architecture configuration"""
-    # Target: 1B parameters
-    hidden_size: int = 2048
-    intermediate_size: int = 5632  # ~2.75x hidden
-    num_hidden_layers: int = 24
+    # CPU-optimized: ~350M parameters (fits in 16GB RAM with expert models)
+    hidden_size: int = 1024
+    intermediate_size: int = 2816  # ~2.75x hidden
+    num_hidden_layers: int = 16
     num_attention_heads: int = 16
     num_key_value_heads: int = 4  # GQA for efficiency
-    vocab_size: int = 32000
-    max_position_embeddings: int = 8192
+    vocab_size: int = 151665  # Match Qwen tokenizer
+    max_position_embeddings: int = 2048  # Reduced for memory
     rope_theta: float = 10000.0
     rms_norm_eps: float = 1e-6
     initializer_range: float = 0.02
-    use_cache: bool = True
+    use_cache: bool = False  # Disabled during training
     tie_word_embeddings: bool = False
     
     @property
@@ -618,7 +618,7 @@ class MultiExpertDistiller:
                 }
         
         dataset = DistillDataset(all_data, tokenizer)
-        dataloader = DataLoader(dataset, batch_size=2 if self.device == "cpu" else 4, shuffle=True)
+        dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
         
         # Distillation training
         student_model.train()
@@ -650,6 +650,11 @@ class MultiExpertDistiller:
             )
             student_logits = student_outputs.logits
             
+            # Handle vocab size mismatch - truncate to smaller vocab
+            min_vocab = min(student_logits.size(-1), teacher_logits.size(-1))
+            student_logits = student_logits[..., :min_vocab]
+            teacher_logits = teacher_logits[..., :min_vocab]
+            
             # KL divergence loss (distillation)
             temperature = 2.0
             kl_loss = torch.nn.functional.kl_div(
@@ -672,12 +677,23 @@ class MultiExpertDistiller:
             steps += 1
             
             if steps % 50 == 0:
-                logger.info(f"  Step {steps}: Loss = {loss.item():.4f}")
+                avg = total_loss / steps
+                logger.info(f"  Step {steps}: Loss = {loss.item():.4f} (avg: {avg:.4f})")
+                # Update state for dashboard
+                self.state.step = steps
+                self.state.current_expert = expert.name
+                self.state.loss_history.append(loss.item())
+                self._save_checkpoint("step")
         
-        # Cleanup teacher
+        # Cleanup teacher - IMPORTANT for memory
         del teacher_model
+        del teacher_tokenizer
+        import gc
+        gc.collect()
         if self.device == "cuda":
             torch.cuda.empty_cache()
+        
+        logger.info(f"Unloaded {expert.name} to free memory")
         
         avg_loss = total_loss / max(steps, 1)
         logger.info(f"Distillation from {expert.name} complete. Avg loss: {avg_loss:.4f}")
@@ -790,7 +806,7 @@ class MultiExpertDistiller:
                         }
                 
                 dataset = FinalDataset(all_data, self.tokenizer)
-                dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
+                dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
                 
                 self.student_model.train()
                 optimizer = torch.optim.AdamW(self.student_model.parameters(), lr=5e-5)

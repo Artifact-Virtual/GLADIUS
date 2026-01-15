@@ -28,10 +28,10 @@ SCRIPT_DIR = Path(__file__).parent.resolve()
 GLADIUS_DIR = SCRIPT_DIR.parent.resolve()
 PROJECT_ROOT = GLADIUS_DIR.parent.resolve()
 
-# ML Workspace for heavy files (matches training scripts)
-ML_WORKSPACE = Path.home() / "gladius_workspace"
-CHECKPOINTS_DIR = ML_WORKSPACE / "checkpoints"
-LOGS_DIR = PROJECT_ROOT / "logs" / "training"
+# Use local tmp directory for all training files
+TMP_BASE = GLADIUS_DIR / "tmp"
+CHECKPOINTS_DIR = TMP_BASE / "checkpoints"
+LOGS_DIR = TMP_BASE / "logs"
 GROWTH_DATA_FILE = SCRIPT_DIR / "growth_history.json"
 
 
@@ -96,6 +96,13 @@ class GrowthHistory:
 
 def get_training_state() -> Dict[str, Any]:
     """Get current training state"""
+    # Try lightweight trainer state first
+    state_file = CHECKPOINTS_DIR / "lightweight_state.json"
+    if state_file.exists():
+        with open(state_file) as f:
+            return json.load(f)
+    
+    # Try MoE trainer state
     state_file = CHECKPOINTS_DIR / "moe_training_state.json"
     if state_file.exists():
         with open(state_file) as f:
@@ -169,11 +176,12 @@ def render_dashboard():
     print(f"{BOLD}▌ Model Status{RESET}")
     print(f"  ├─ Status:     {status_color}{status.upper()}{RESET}")
     print(f"  ├─ Phase:      {phase}/6")
-    print(f"  ├─ Parameters: {format_number(current_params)}")
+    print(f"  ├─ Step:       {state.get('step', 0)}")
+    print(f"  ├─ Expert:     {state.get('current_expert', 'N/A')}")
     print(f"  └─ Target:     {format_number(target_params)}")
     print()
     
-    # Parameter Progress
+    # Parameter Progress Bar
     print(f"{BOLD}▌ Parameter Growth{RESET}")
     progress_pct = (current_params / target_params * 100) if target_params > 0 else 0
     bar = create_progress_bar(current_params, target_params, 50)
@@ -182,20 +190,33 @@ def render_dashboard():
     print()
     
     # Expert Distillation Progress
-    experts_distilled = state.get("experts_distilled", [])
-    capability_scores = state.get("capability_scores", {})
+    experts_completed = state.get("experts_completed", state.get("experts_distilled", []))
     
-    all_experts = ["qwen", "llama", "phi", "gemma", "mistral", "tinyllama"]
+    # All experts from main trainer
+    all_experts = ["qwen", "llama", "phi", "tinyllama"]
     
     print(f"{BOLD}▌ Expert Distillation{RESET}")
     for expert in all_experts:
-        done = expert in experts_distilled
-        score = capability_scores.get(expert, 0)
-        status_icon = f"{GREEN}✓{RESET}" if done else f"{DIM}○{RESET}"
-        score_bar = create_progress_bar(score, 1.0, 20) if done else f"{DIM}{'░' * 20}{RESET}"
+        done = expert in experts_completed
+        current = state.get("current_expert", "") == expert
+        if done:
+            status_icon = f"{GREEN}✓{RESET}"
+            bar = f"{GREEN}{'█' * 20}{RESET}"
+            pct = "100%"
+        elif current:
+            step = state.get("step", 0)
+            pct_val = min(step / 500 * 100, 100)  # ~500 steps per expert
+            filled = int(pct_val / 5)
+            bar = f"{YELLOW}{'█' * filled}{'░' * (20-filled)}{RESET}"
+            status_icon = f"{YELLOW}◆{RESET}"
+            pct = f"{pct_val:.0f}%"
+        else:
+            status_icon = f"{DIM}○{RESET}"
+            bar = f"{DIM}{'░' * 20}{RESET}"
+            pct = "0%"
         
-        expert_name = expert.upper().ljust(8)
-        print(f"  {status_icon} {expert_name} {score_bar} {score*100:.0f}%")
+        expert_name = expert.upper().ljust(10)
+        print(f"  {status_icon} {expert_name} {bar} {pct}")
     print()
     
     # Training Time
