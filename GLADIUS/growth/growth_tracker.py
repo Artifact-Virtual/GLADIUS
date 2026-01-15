@@ -27,7 +27,10 @@ from typing import Dict, List, Any, Optional
 SCRIPT_DIR = Path(__file__).parent.resolve()
 GLADIUS_DIR = SCRIPT_DIR.parent.resolve()
 PROJECT_ROOT = GLADIUS_DIR.parent.resolve()
-CHECKPOINTS_DIR = GLADIUS_DIR / "models" / "checkpoints"
+
+# ML Workspace for heavy files (matches training scripts)
+ML_WORKSPACE = Path.home() / "gladius_workspace"
+CHECKPOINTS_DIR = ML_WORKSPACE / "checkpoints"
 LOGS_DIR = PROJECT_ROOT / "logs" / "training"
 GROWTH_DATA_FILE = SCRIPT_DIR / "growth_history.json"
 
@@ -182,7 +185,7 @@ def render_dashboard():
     experts_distilled = state.get("experts_distilled", [])
     capability_scores = state.get("capability_scores", {})
     
-    all_experts = ["qwen", "llama", "phi", "gemma"]
+    all_experts = ["qwen", "llama", "phi", "gemma", "mistral", "tinyllama"]
     
     print(f"{BOLD}▌ Expert Distillation{RESET}")
     for expert in all_experts:

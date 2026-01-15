@@ -1,20 +1,37 @@
 # GLADIUS Native AI Model
 
 > **Module**: `/GLADIUS/`  
-> **Version**: 0.1.0  
-> **Last Updated**: 2026-01-14  
-> **Status**: Training Phase
+> **Version**: 0.2.0  
+> **Last Updated**: 2026-01-15  
+> **Status**: Multi-Expert Training Active
 
 ---
 
 ## Overview
 
-GLADIUS is the **native AI model** that powers Artifact Virtual's autonomous operations. It is a custom GGUF model trained for:
+GLADIUS is the **native AI model** built from scratch with custom weights via multi-expert knowledge distillation. It is designed for:
 
 1. **Tool Routing** - 100% accuracy at selecting the right tool for any query (<2ms)
 2. **Task Execution** - Understanding and executing complex multi-step operations
 3. **Self-Improvement** - Generating training data from its own operations
 4. **Research Analysis** - Market intelligence and business development
+
+**Key Differentiator**: GLADIUS is trained FROM SCRATCH with OUR OWN WEIGHTS, not fine-tuned from existing models.
+
+---
+
+## Multi-Expert Knowledge Distillation
+
+GLADIUS absorbs capabilities from 6 expert models:
+
+| Expert | Model | Strengths | Weight |
+|--------|-------|-----------|--------|
+| **Qwen** | Qwen2.5-1.5B-Instruct | Tool-calling, JSON, multilingual | 1.5 |
+| **Llama** | Llama-3.2-1B-Instruct | Reasoning, English fluency | 1.3 |
+| **Phi** | Phi-2 | Math, code, logic | 1.2 |
+| **Gemma** | Gemma-2-2b-it | Safety, web knowledge | 1.0 |
+| **Mistral** | Mistral-7B-Instruct | Speed, sliding window | 0.8 |
+| **TinyLlama** | TinyLlama-1.1B | Fast inference | 0.6 |
 
 ---
 
@@ -22,8 +39,17 @@ GLADIUS is the **native AI model** that powers Artifact Virtual's autonomous ope
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                        GLADIUS MODEL STACK                               │
+│                     GLADIUS 1B ARCHITECTURE                             │
 ├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  Hidden Size:       2048                                                │
+│  Intermediate:      5632 (~2.75x hidden)                               │
+│  Layers:           24                                                   │
+│  Attention Heads:   16 (with GQA: 4 KV heads)                          │
+│  Vocab Size:        32000                                               │
+│  Max Context:       8192 tokens                                         │
+│  RoPE Theta:        10000                                               │
+│  Total Params:      ~1 billion                                          │
 │                                                                         │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
 │  │                     INFERENCE LAYER                               │   │
@@ -37,16 +63,8 @@ GLADIUS is the **native AI model** that powers Artifact Virtual's autonomous ope
 │  ┌─────────────────────────────────────────────────────────────────┐   │
 │  │                     TRAINING LAYER                                │   │
 │  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │   │
-│  │  │ Harness      │  │ Generator    │  │ Progressive  │          │   │
-│  │  │ (isolated)   │  │ (synthetic)  │  │ Trainer      │          │   │
-│  │  └──────────────┘  └──────────────┘  └──────────────┘          │   │
-│  └─────────────────────────────────────────────────────────────────┘   │
-│                                                                         │
-│  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │                     MODEL VERSIONS                                │   │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │   │
-│  │  │ Base         │  │ Staging      │  │ Production   │          │   │
-│  │  │ (Qwen 0.5B)  │  │ (Testing)    │  │ (Live)       │          │   │
+│  │  │ MoE Trainer  │  │ Distillation │  │ Growth       │          │   │
+│  │  │ (6 experts)  │  │ (KL + CE)    │  │ Tracker      │          │   │
 │  │  └──────────────┘  └──────────────┘  └──────────────┘          │   │
 │  └─────────────────────────────────────────────────────────────────┘   │
 │                                                                         │

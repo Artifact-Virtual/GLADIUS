@@ -43,20 +43,17 @@ SCRIPT_DIR = Path(__file__).parent.resolve()
 GLADIUS_DIR = SCRIPT_DIR.parent.resolve()
 PROJECT_ROOT = GLADIUS_DIR.parent.resolve()
 
-# ML Workspace for large files (separate from repo)
-ML_WORKSPACE = Path.home() / "gladius_workspace"
-if not ML_WORKSPACE.exists():
-    ML_WORKSPACE.mkdir(parents=True, exist_ok=True)
-
-# Use ML workspace for heavy files, repo for configs
-MODELS_DIR = ML_WORKSPACE / "models"
+# ALL files stay within GLADIUS directory - fully contained
+# tmp/ directory for large cache/checkpoint files
+TMP_BASE = GLADIUS_DIR / "tmp"
+MODELS_DIR = GLADIUS_DIR / "models"
 PRIMARY_DIR = MODELS_DIR / "gladius_primary"
-CHECKPOINTS_DIR = ML_WORKSPACE / "checkpoints"
-EXPERTS_DIR = ML_WORKSPACE / "experts_cache"
-DATA_DIR = SCRIPT_DIR / "data"  # Keep data in repo for versioning
-LOGS_DIR = PROJECT_ROOT / "logs" / "training"
-CACHE_DIR = ML_WORKSPACE / "cache"  # HuggingFace cache
-TMP_DIR = ML_WORKSPACE / "tmp"  # Temp files during training
+CHECKPOINTS_DIR = TMP_BASE / "checkpoints"
+EXPERTS_DIR = TMP_BASE / "experts_cache"
+DATA_DIR = SCRIPT_DIR / "data"
+LOGS_DIR = TMP_BASE / "logs"
+CACHE_DIR = TMP_BASE / "cache"
+TMP_DIR = TMP_BASE / "downloads"
 
 # Ensure directories exist
 for d in [MODELS_DIR, PRIMARY_DIR, CHECKPOINTS_DIR, EXPERTS_DIR, DATA_DIR, LOGS_DIR, CACHE_DIR, TMP_DIR]:
@@ -89,31 +86,44 @@ class ExpertModel:
     loaded: bool = False
 
 
-# Expert teacher definitions
+# Expert teacher definitions - Diverse models for maximum edge
+# Each expert brings unique architectural patterns and capabilities
 EXPERT_TEACHERS = [
     ExpertModel(
         name="qwen",
         hf_id="Qwen/Qwen2.5-1.5B-Instruct",
         strengths=["tool_calling", "structured_output", "multilingual", "json_generation"],
-        weight=1.5  # Primary for tool-calling
+        weight=1.5  # Primary for tool-calling - best in class
     ),
     ExpertModel(
         name="llama",
         hf_id="meta-llama/Llama-3.2-1B-Instruct",
-        strengths=["reasoning", "fluency", "instruction_following", "conversation"],
-        weight=1.2
+        strengths=["reasoning", "fluency", "english_excellence", "conversation"],
+        weight=1.3  # Strong reasoning backbone
     ),
     ExpertModel(
         name="phi",
-        hf_id="microsoft/Phi-3-mini-4k-instruct",
-        strengths=["mathematics", "code_generation", "logic", "step_by_step"],
-        weight=1.0
+        hf_id="microsoft/phi-2",
+        strengths=["mathematics", "code_generation", "logic", "step_by_step", "compression"],
+        weight=1.2  # Exceptional reasoning density
     ),
     ExpertModel(
         name="gemma",
         hf_id="google/gemma-2-2b-it",
-        strengths=["safety", "instruction_following", "general_knowledge"],
-        weight=0.8
+        strengths=["safety", "web_knowledge", "instruction_following", "general_knowledge"],
+        weight=1.0  # Strong for web/search context
+    ),
+    ExpertModel(
+        name="mistral",
+        hf_id="mistralai/Mistral-7B-Instruct-v0.2",
+        strengths=["speed", "efficiency", "sliding_window", "long_context"],
+        weight=0.8  # Architectural patterns for efficiency
+    ),
+    ExpertModel(
+        name="tinyllama",
+        hf_id="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+        strengths=["fast_inference", "conversation", "lightweight"],
+        weight=0.6  # Speed patterns
     ),
 ]
 
@@ -690,10 +700,10 @@ class MultiExpertDistiller:
             self.student_model = self.create_student_model()
             self.student_model.to(self.device)
             
-            # Load tokenizer (use Llama's)
+            # Load tokenizer (use Qwen's - open and excellent for tool-calling)
             from transformers import AutoTokenizer
             self.tokenizer = AutoTokenizer.from_pretrained(
-                "meta-llama/Llama-3.2-1B-Instruct",
+                "Qwen/Qwen2.5-1.5B-Instruct",
                 cache_dir=CACHE_DIR,
                 trust_remote_code=True
             )

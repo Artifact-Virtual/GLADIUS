@@ -50,28 +50,25 @@ from dataclasses import dataclass, field, asdict
 import threading
 import traceback
 
-# Setup paths - Use ML workspace for heavy files
-SCRIPT_DIR = Path(__file__).parent
-GLADIUS_ROOT = SCRIPT_DIR.parent.parent.parent
+# Setup paths - ALL files stay within GLADIUS directory
+SCRIPT_DIR = Path(__file__).parent.resolve()
+GLADIUS_DIR = SCRIPT_DIR.parent.resolve()
+PROJECT_ROOT = GLADIUS_DIR.parent.resolve()
 
-# ML Workspace for large model files (separate from repo)
-ML_WORKSPACE = Path.home() / "gladius_workspace"
-if not ML_WORKSPACE.exists():
-    ML_WORKSPACE.mkdir(parents=True, exist_ok=True)
-
-# Use ML workspace for models/checkpoints, repo for data/logs
-MODELS_DIR = ML_WORKSPACE / "models"
-CHECKPOINTS_DIR = ML_WORKSPACE / "checkpoints"
-CACHE_DIR = ML_WORKSPACE / "cache"
-TMP_DIR = ML_WORKSPACE / "tmp"
-DATA_DIR = SCRIPT_DIR / "data"  # Keep in repo for versioning
-LOGS_DIR = GLADIUS_ROOT / "logs" / "training"
+# ALL files contained within GLADIUS/tmp - fully portable
+TMP_BASE = GLADIUS_DIR / "tmp"
+MODELS_DIR = GLADIUS_DIR / "models"
+CHECKPOINTS_DIR = TMP_BASE / "checkpoints"
+CACHE_DIR = TMP_BASE / "cache"
+TMP_DIR = TMP_BASE / "downloads"
+DATA_DIR = SCRIPT_DIR / "data"
+LOGS_DIR = TMP_BASE / "logs"
 
 # Ensure directories exist
-for d in [MODELS_DIR, CHECKPOINTS_DIR, CACHE_DIR, TMP_DIR, DATA_DIR, LOGS_DIR]:
+for d in [TMP_BASE, MODELS_DIR, CHECKPOINTS_DIR, CACHE_DIR, TMP_DIR, DATA_DIR, LOGS_DIR]:
     d.mkdir(parents=True, exist_ok=True)
 
-# Set environment for HuggingFace
+# Set environment for HuggingFace to use our contained cache
 os.environ['HF_HOME'] = str(CACHE_DIR)
 os.environ['TRANSFORMERS_CACHE'] = str(CACHE_DIR)
 os.environ['TMPDIR'] = str(TMP_DIR)
