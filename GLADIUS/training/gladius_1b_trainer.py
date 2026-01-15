@@ -94,7 +94,7 @@ class TrainingState:
     total_steps: int = 0
     current_params: int = 0
     target_params: int = 1_000_000_000  # 1B
-    base_model: str = "Qwen/Qwen2.5-1.5B"
+    base_model: str = ""  # Set dynamically
     learning_rate: float = 2e-5
     batch_size: int = 4
     gradient_accumulation: int = 8
@@ -125,7 +125,8 @@ class TrainingState:
 class TrainingConfig:
     """Training configuration"""
     # Model selection - Qwen2.5-1.5B is best for tool-calling
-    base_model: str = "Qwen/Qwen2.5-1.5B"
+    # Use local model if available, otherwise download from HuggingFace
+    base_model: str = str(TMP_BASE / "models" / "Qwen2.5-1.5B") if (TMP_BASE / "models" / "Qwen2.5-1.5B").exists() else "Qwen/Qwen2.5-1.5B"
     model_name: str = "gladius-1b"
     
     # Target parameters

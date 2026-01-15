@@ -14,7 +14,7 @@ model-index:
   results: []
 ---
 
-# GLADIUS - Native Enterprise AI
+# GLADIUS: NATIVE
 
 <div align="center">
 
@@ -22,7 +22,7 @@ model-index:
 
 *A **1 billion** parameter model trained via multi-expert knowledge distillation*
 
-[![Artifact Virtual](https://img.shields.io/badge/Artifact-ML-indigo)](https://github.com/Artifact-ML)
+[![Artifact Virtual](https://img.shields.io/badge/ARTIFACT-ML-indigo)](https://github.com/Artifact-ML)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
 </div>

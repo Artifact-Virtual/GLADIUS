@@ -14,16 +14,16 @@ model-index:
   results: []
 ---
 
-# GLADIUS - Native Enterprise AI
+# GLADIUS: NATIVE
 
 <div align="center">
 
-**⚔️ Built from Scratch with Custom Weights ⚔️**
+**⚔️ Built from Ground Up ⚔️**
 
-*A 1 billion parameter model trained via multi-expert knowledge distillation*
+*A **1 billion** parameter model trained via multi-expert knowledge distillation*
 
-[![Artifact Virtual](https://img.shields.io/badge/Artifact-Virtual-gold)](https://github.com/Artifact-Virtual)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Artifact Virtual](https://img.shields.io/badge/Artifact-ML-indigo)](https://github.com/Artifact-ML)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
 </div>
 
@@ -185,7 +185,7 @@ GLADIUS is developed by [Artifact Virtual](https://github.com/Artifact-Virtual),
 - **GLADIUS** - Native AI model (this repository)
 - **SENTINEL** - Guardian monitoring and security
 - **LEGION** - Enterprise orchestration
-- **Syndicate** - Asset research pipeline
+- **SYNDICATE** - Asset research pipeline
 
 ---
 
