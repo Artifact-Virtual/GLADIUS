@@ -6,125 +6,83 @@ tags:
 - gladius
 - artifact-virtual
 - tool-routing
-- enterprise-ai
 - custom-weights
+- knowledge-distillation
 pipeline_tag: text-generation
 model-index:
 - name: Gladius
   results: []
 ---
 
-# GLADIUS: NATIVE
+# GLADIUS
 
-<div align="center">
+## Model Description
 
-**⚔️ Built from Ground Up ⚔️**
+GLADIUS is a decoder-only transformer language model trained via knowledge distillation from multiple expert teacher models. The model uses randomly initialized weights (not fine-tuned from a pretrained model) and learns from Qwen and TinyLlama teachers.
 
-*A **1 billion** parameter model trained via multi-expert knowledge distillation*
-
-[![Artifact Virtual](https://img.shields.io/badge/ARTIFACT-ML-indigo)](https://github.com/Artifact-ML)
-[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
-
-</div>
+**Current Build:** Development (incomplete training)
 
 ---
 
-## Overview
+## Technical Specifications
 
-GLADIUS is the native AI model powering Artifact Virtual's enterprise infrastructure. Unlike fine-tuned models, GLADIUS is **built from scratch with our own initialized weights** using knowledge distillation from multiple expert teachers.
-
-### Key Differentiators
-
-| Feature | GLADIUS | Typical Fine-tuned Models |
-|---------|---------|---------------------------|
-| Weight Initialization | **Random (Ours)** | Pretrained weights |
-| Architecture | **Custom 1B design** | Fixed from base model |
-| Training Method | **Multi-expert distillation** | Single-model fine-tuning |
-| Capabilities | **Hybrid strengths** | Single-model characteristics |
+| Parameter | Value |
+|-----------|-------|
+| Architecture | LlamaForCausalLM |
+| Parameters | 124,668,672 |
+| Hidden Size | 768 |
+| Intermediate Size | 2048 |
+| Layers | 12 |
+| Attention Heads | 12 |
+| KV Heads | 4 (GQA) |
+| Vocabulary | 32,000 |
+| Max Position | 2,048 |
+| Precision | float32 |
+| File Format | SafeTensors |
+| File Size | 475.57 MB |
 
 ---
 
-## Model Architecture
+## Architecture Details
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                     GLADIUS 1B ARCHITECTURE                     │
-├─────────────────────────────────────────────────────────────────┤
-│  Hidden Size:           2048                                    │
-│  Intermediate Size:     5632 (~2.75x hidden)                   │
-│  Layers:               24                                       │
-│  Attention Heads:       16 (with GQA: 4 KV heads)              │
-│  Vocab Size:            32000                                   │
-│  Max Context:           8192 tokens                             │
-│  RoPE Theta:            10000                                   │
-│  Total Parameters:      ~1,000,000,000                          │
-└─────────────────────────────────────────────────────────────────┘
+Embedding:        32,000 × 768 = 24,576,000 params
+LM Head:          768 × 32,000 = 24,576,000 params
+12 Layers × 6.29M = 75,516,672 params
+Total:            124,668,672 params
 ```
 
----
+**Per-Layer Components:**
+- Self-Attention: Q (768×768), K (256×768), V (256×768), O (768×768)
+- MLP: Gate (2048×768), Up (2048×768), Down (768×2048)
+- Normalization: Pre-attention RMSNorm, Post-attention RMSNorm
 
-## Expert Teachers
-
-GLADIUS absorbs capabilities from 6 diverse expert models:
-
-| Expert | Model | Strengths | Contribution Weight |
-|--------|-------|-----------|---------------------|
-| **Qwen** | Qwen2.5-1.5B-Instruct | Tool-calling, JSON, multilingual | 1.5 |
-| **Llama** | Llama-3.2-1B-Instruct | Reasoning, English fluency | 1.3 |
-| **Phi** | Phi-2 | Math, code, logic | 1.2 |
-| **Gemma** | Gemma-2-2b-it | Safety, web knowledge | 1.0 |
-| **Mistral** | Mistral-7B-Instruct | Speed, sliding window | 0.8 |
-| **TinyLlama** | TinyLlama-1.1B | Fast inference | 0.6 |
+**Features:**
+- Grouped Query Attention (3:1 ratio)
+- SwiGLU activation (SiLU)
+- RoPE positional embeddings (θ=10000)
+- RMSNorm (ε=1e-6)
 
 ---
 
-## Training Methodology
+## Training Status
 
-### Phase 1: Architecture Initialization
-- Custom LlamaForCausalLM configuration
-- Random weight initialization (our weights)
-- Grouped Query Attention (GQA) for efficiency
+| Metric | Value |
+|--------|-------|
+| Status | In Progress |
+| Phase | 2 of 4 |
+| Steps Completed | 380 |
+| Current Loss | 61.39 |
+| Initial Loss | 128.58 |
+| Loss Reduction | 52.3% |
 
-### Phase 2: Expert Distillation
-- Each expert teaches specific capabilities
-- KL-divergence loss for soft-label learning
-- Weighted ensemble combining
-
-### Phase 3: Progressive Scaling
-- Gradual capability expansion
-- Continuous evaluation against benchmarks
-- Self-improvement loops
-
-### Phase 4: GGUF Export
-- Quantization for deployment (Q4_K_M, Q8_0)
-- Optimized for llama.cpp inference
-- <5ms routing latency target
-
----
-
-## Primary Use Cases
-
-1. **Tool Routing** - Selecting the right tool for any query (<2ms)
-2. **Task Execution** - Complex multi-step operations
-3. **Research Analysis** - Market intelligence and synthesis
-4. **Enterprise Integration** - ERP, CRM, database operations
-
----
-
-## Current Status
-
-| Metric | Value | Target |
-|--------|-------|--------|
-| Parameter Count | Training... | 1B |
-| Tool Routing Accuracy | 100% (pattern) | 100% |
-| Average Latency | 0.93ms | <5ms |
-| Training Data | 914+ examples | 100K+ |
+**Expert Teachers:**
+1. Qwen/Qwen2.5-1.5B-Instruct (in progress)
+2. TinyLlama/TinyLlama-1.1B-Chat-v1.0 (pending)
 
 ---
 
 ## Usage
-
-### With Transformers
 
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -132,60 +90,48 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 model = AutoModelForCausalLM.from_pretrained("amuzetnoM/Gladius")
 tokenizer = AutoTokenizer.from_pretrained("amuzetnoM/Gladius")
 
-prompt = "Route this to the correct tool: Search for gold price analysis"
-inputs = tokenizer(prompt, return_tensors="pt")
+inputs = tokenizer("Hello, how are you?", return_tensors="pt")
 outputs = model.generate(**inputs, max_new_tokens=50)
-print(tokenizer.decode(outputs[0]))
-```
-
-### With llama.cpp (GGUF)
-
-```bash
-./main -m gladius-1b-q4_k_m.gguf -p "Your prompt here" -n 256
+print(tokenizer.decode(outputs[0], skip_special_tokens=True))
 ```
 
 ---
 
-## Repository Structure
+## Limitations
 
-```
-Gladius/
-├── models/                  # Trained model weights
-│   ├── gladius_primary/    # Primary 1B model
-│   └── checkpoints/        # Training checkpoints
-├── training/               # Training infrastructure
-│   ├── data/               # Training datasets
-│   └── scripts/            # Training scripts
-├── router/                 # Inference routing
-└── docs/                   # Documentation
-```
+1. Training is incomplete (380/2000 steps)
+2. Output quality is limited due to early training stage
+3. No safety fine-tuning or RLHF applied
+4. Not suitable for production use
+5. May produce incoherent or repetitive output
 
 ---
 
-## Training Requirements
+## Files
 
-- **GPU**: NVIDIA GPU with 16GB+ VRAM (24GB recommended)
-- **CPU Fallback**: Available but significantly slower
-- **Storage**: 100GB+ for model cache and checkpoints
-- **RAM**: 32GB+ recommended
+| File | Size | Description |
+|------|------|-------------|
+| model.safetensors | 475.57 MB | Model weights |
+| config.json | 668 B | Architecture configuration |
+| tokenizer.json | 3.6 MB | Tokenizer vocabulary |
+| tokenizer_config.json | 951 B | Tokenizer settings |
+| special_tokens_map.json | 551 B | Special token definitions |
+| generation_config.json | 133 B | Generation defaults |
+
+---
+
+## Checksum
+
+```
+model.safetensors SHA-256:
+9f54bcd00193a6c4d340d2ba0857092856730814b60c305842a3c878bb572ade
+```
 
 ---
 
 ## License
 
-Apache 2.0 - See [LICENSE](LICENSE) for details.
-
----
-
-## About Artifact Virtual
-
-GLADIUS is developed by [Artifact Virtual](https://github.com/Artifact-Virtual), an enterprise AI infrastructure company building autonomous business systems.
-
-**Core Components:**
-- **GLADIUS** - Native AI model (this repository)
-- **SENTINEL** - Guardian monitoring and security
-- **LEGION** - Enterprise orchestration
-- **Syndicate** - Asset research pipeline
+Apache 2.0
 
 ---
 
@@ -193,7 +139,7 @@ GLADIUS is developed by [Artifact Virtual](https://github.com/Artifact-Virtual),
 
 ```bibtex
 @misc{gladius2026,
-  title={GLADIUS: Multi-Expert Knowledge Distillation for Enterprise AI},
+  title={GLADIUS: Multi-Expert Knowledge Distillation Model},
   author={Artifact Virtual},
   year={2026},
   publisher={HuggingFace},

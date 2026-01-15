@@ -18,6 +18,8 @@
 
 **Native AI-powered enterprise system with recursive self-improvement, autonomous research, and multi-platform publishing.**
 
+> HuggingFace: https://huggingface.co/amuzetnoM/Gladius
+
 [Architecture](docs/ARCHITECTURE_MASTER.md) · [Commands](docs/COMMAND_REFERENCE.md) · [Model](docs/MODEL.md) · [Checklist](docs/FLIGHT_CHECKLIST.md)
 
 </div>
