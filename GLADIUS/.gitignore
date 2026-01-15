@@ -1,0 +1,92 @@
+# ============================================
+# GLADIUS .gitignore
+# ============================================
+
+# === TEMPORARY & CACHE FILES (24GB+) ===
+tmp/
+*.tmp
+*.temp
+
+# === MODEL FILES (large binaries) ===
+*.safetensors
+*.bin
+*.pth
+*.pt
+*.onnx
+*.gguf
+*.ggml
+
+# === TRAINING STATE & CHECKPOINTS ===
+**/checkpoints/
+*_state.json
+training_state*.json
+moe_training_state.json
+lightweight_state.json
+
+# === CACHED MODELS & DATASETS ===
+**/cache/
+**/models--*/
+*.lock
+
+# === LOGS ===
+logs/
+*.log
+*.log.*
+
+# === PYTHON ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# === ENVIRONMENT & SECRETS ===
+.env
+.env.*
+*.env
+secrets/
+credentials/
+*.key
+*.pem
+*.crt
+
+# === IDE & EDITOR ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# === JUPYTER ===
+.ipynb_checkpoints/
+*.ipynb
+
+# === TEST & COVERAGE ===
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# === HUGGINGFACE ===
+.huggingface/
+hub/
+
+# === GROWTH DATA (regenerated) ===
+growth/growth_history.json
+
+# === TRAINING RESULTS (large) ===
+models/training_results/*.json
+
+# === PRODUCTION MODELS (handled separately) ===
+# Keep structure but not weights
+models/production/*.safetensors
+models/production/*.bin
+models/gladius_primary/*/model.safetensors
+models/gladius_primary/*/pytorch_model.bin
