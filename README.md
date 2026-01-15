@@ -5,7 +5,7 @@
   ██╔════╝ ██║     ██╔══██╗██╔══██╗██║██║   ██║██╔════╝
   ██║  ███╗██║     ███████║██║  ██║██║██║   ██║███████╗
   ██║   ██║██║     ██╔══██║██║  ██║██║██║   ██║╚════██║
-  ╚██████╔╝███████╗██║  ██║██████╔╝██║╚██████╔╝███████║
+  ██████╔╝███████╗██║  ██║██████╔╝██║╚██████╔╝██████║
    ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═════╝ ╚═╝ ╚═════╝ ╚══════╝
 ```
 
@@ -22,21 +22,7 @@
 
 </div>
 
----
-
-## 🎯 What is GLADIUS?
-
-**GLADIUS** is the **Native AI brain** of Artifact Virtual. It's a self-evolving autonomous system that:
-
-- 🧠 **Thinks** — Native GGUF model with pattern-based tool routing (100% accuracy, <2ms)
-- 📚 **Learns** — Continuous background learning from web research (arXiv, MIT, GitHub)
-- 🛠️ **Acts** — 94 commands across 4 subsystems with 37+ tools
-- 🔄 **Improves** — Autonomous self-improvement with consensus governance
-- 🛡️ **Survives** — Turing-safe watchdog that only dies on power loss or password
-
----
-
-## 🏗️ System Architecture
+## System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -74,7 +60,7 @@
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # Start everything
@@ -115,7 +101,7 @@
 
 ---
 
-## 📊 Current Status
+## Current Status
 
 **Overall Progress: 75%**
 
@@ -133,7 +119,7 @@
 
 ---
 
-## 📁 Directory Structure
+## Directory Structure
 
 ```
 gladius/
@@ -165,7 +151,7 @@ gladius/
 
 ---
 
-## 🔧 Configuration
+## Configuration
 
 Edit `.env` for credentials:
 
@@ -197,7 +183,7 @@ LINKEDIN_ENABLED=true
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 | Document | Purpose |
 |----------|---------|
@@ -233,7 +219,7 @@ SENTINEL runs a continuous background process:
 
 ---
 
-## 📈 Tool Registry (37+ Tools)
+## Tool Registry (37+ Tools)
 
 | Category | Tools | Count |
 |----------|-------|-------|
@@ -249,7 +235,7 @@ SENTINEL runs a continuous background process:
 
 ---
 
-## 🛡️ Security & Governance
+## Security & Governance
 
 ### Consensus System
 - **Low impact**: Auto-approved
@@ -264,7 +250,7 @@ SENTINEL runs a continuous background process:
 
 ---
 
-## 📋 Requirements
+## Requirements
 
 - Python 3.10+
 - Node.js 18+ (for dashboards)
@@ -273,7 +259,7 @@ SENTINEL runs a continuous background process:
 
 ---
 
-## 📄 License
+## License
 
 Proprietary - Artifact Virtual
 
