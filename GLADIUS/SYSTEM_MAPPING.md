@@ -1,8 +1,26 @@
 # GLADIUS System Mapping
 
 > **Module**: `/GLADIUS/`  
-> **Last Updated**: 2026-01-14  
+> **Last Updated**: 2026-01-14T23:55:00Z  
 > **Purpose**: Native AI Model - The Brain of Artifact Virtual
+
+---
+
+## ⚠️ IMPORTANT: GLADIUS vs Qwen Operational
+
+| System | Purpose | Location |
+|--------|---------|----------|
+| **GLADIUS** | Native AI model (custom weights) | `/GLADIUS/` |
+| **Qwen Operational** | Artifact infrastructure AI | `/Artifact/qwen_operational.py` |
+
+**GLADIUS** is the native model we are building from scratch with custom weights.
+**Qwen Operational** is the operational AI that runs Artifact infrastructure NOW.
+
+They are **completely separate**:
+- Train GLADIUS: `./train_gladius_1b.ps1`
+- Train Qwen: `./Artifact/train_qwen.ps1`
+
+When GLADIUS reaches maturity, it will replace Qwen Operational.
 
 ---
 
@@ -10,157 +28,242 @@
 
 GLADIUS is the **native AI model** that powers all intelligent operations within Artifact Virtual. It provides:
 
-1. **Tool Routing** - Pattern-based routing with 100% accuracy
-2. **Inference** - GGUF model for task execution
-3. **Training** - Continuous learning from operations
-4. **Self-Improvement** - Autonomous model upgrades
+1. **Native Model** - Custom architecture with own weights (target: 1B params)
+2. **Tool Routing** - Pattern-based routing with 100% accuracy
+3. **Training Pipeline** - Automated model training and validation
+4. **Continuous Mode** - Autonomous operation with learning cycles
+5. **Direct Interface** - Speak directly to GLADIUS
 
 ---
 
 ## Components
 
-| File | Class/Function | Purpose | Status |
-|------|----------------|---------|--------|
-| `router/pattern_router.py` | `PatternRouter` | TF-IDF tool routing | ✅ Production |
-| `router/gguf_router.py` | `GGUFRouter` | GGUF inference | 📋 To Implement |
-| `training/harness.py` | `CognitionSandbox` | Isolated training | ✅ Production |
-| `training/generator.py` | `TrainingGenerator` | Data generation | ✅ Production |
-| `training/scripts/trainer.py` | `ModelTrainer` | LoRA fine-tuning | ✅ Production |
-| `training/scripts/progressive_trainer.py` | `ProgressiveTrainer` | Multi-stage training | ✅ Production |
+| File | Purpose | Status |
+|------|---------|--------|
+| `speak.py` | Direct GLADIUS conversation interface | ✅ Production |
+| `interactive.py` | Tool routing interface | ✅ Production |
+| `continuous.py` | Autonomous operation mode | ✅ Production |
+| `training/train_pipeline.py` | Model training pipeline | ✅ Production |
+| `training/harness.py` | Isolated training sandbox | ✅ Production |
+| `training/generator.py` | Training data generation | ✅ Production |
+| `router/pattern_router.py` | TF-IDF tool routing | ✅ Production |
+| `models/production/` | Production model storage | ✅ gladius:latest |
+| `models/staging/` | Staging model storage | ✅ Available |
+
+---
+
+## Model Information
+
+### Current Production Model
+| Property | Value |
+|----------|-------|
+| **Model Name** | gladius:latest |
+| **Base Model** | Qwen2.5-0.5B |
+| **Size** | 397 MB |
+| **Accuracy** | 80% (tool-calling) |
+| **Latency** | ~12s average (CPU) |
+| **Version** | 0.1.0 |
+
+### 1B Training Target
+| Property | Value |
+|----------|-------|
+| **Target Model** | gladius:1b |
+| **Base Model** | Qwen2.5-1.5B |
+| **Target Params** | 1,000,000,000 |
+| **Method** | LoRA + Progressive Training |
+| **Trainer** | `./train_gladius_1b.ps1` or `.sh` |
 
 ---
 
 ## CLI Commands
 
-Namespace: `./gladius.sh gladius <command>`
-
-### Model Operations
+### Direct AI Interaction
 ```bash
-# Check model status
-./gladius.sh gladius status
+# Speak directly to GLADIUS (conversational)
+./gladius.sh speak
 
-# Show model info
-./gladius.sh gladius info
+# Single query
+./gladius.sh speak "What can you do?"
 
-# Run benchmark
-./gladius.sh gladius benchmark [--cycles N]
+# Interactive tool routing
+./gladius.sh interact
+
+# Check GLADIUS status
+./gladius.sh speak --status
 ```
 
-### Training Operations
+### Model Training
 ```bash
-# Start training
-./gladius.sh gladius train [--data PATH] [--epochs N]
+# Run full training pipeline
+./gladius.sh train
 
-# Generate training data
-./gladius.sh gladius generate-training [--categories LIST]
+# Train with specific base model
+./gladius.sh train --base-model qwen2.5:0.5b
 
-# Validate staged model
-./gladius.sh gladius validate
+# Train specific version
+./gladius.sh train --version 0.2.0
+
+# Skip validation
+./gladius.sh train --no-validate
 ```
 
-### Deployment Operations
+### 1B Parameter Training (NEW)
 ```bash
-# Deploy staging to production
-./gladius.sh gladius deploy [--version VERSION]
+# PowerShell (Windows/Cross-platform)
+cd GLADIUS/training
+./train_gladius_1b.ps1 start              # Start continuous training
+./train_gladius_1b.ps1 status             # Check training progress
+./train_gladius_1b.ps1 stop               # Stop with checkpoint
+./train_gladius_1b.ps1 resume             # Resume from checkpoint
+./train_gladius_1b.ps1 export             # Export to GGUF
+./train_gladius_1b.ps1 -Hours 48 start    # Train for 48 hours
 
-# Rollback to previous version
-./gladius.sh gladius rollback [--to VERSION]
+# Bash (Linux/Mac)
+./train_gladius_1b.sh start               # Start training
+./train_gladius_1b.sh --hours 72 start    # Train for 72 hours
+./train_gladius_1b.sh status              # Check progress
 
-# List model versions
-./gladius.sh gladius versions
+# Python Direct
+python3 gladius_1b_trainer.py --hours 168 --batch-size 4
+python3 gladius_1b_trainer.py --status
+python3 gladius_1b_trainer.py --export-only
 ```
 
-### Routing Operations
+### Continuous Autonomous Mode
 ```bash
-# Test tool routing
-./gladius.sh gladius route "<query>"
+# Run continuous mode (default: 30 days, 60min intervals)
+./gladius.sh continuous
 
-# List available tools
-./gladius.sh gladius tools [--category CAT]
+# Custom duration and interval
+./gladius.sh continuous --days 7 --interval 30
 
-# Export tool schemas
-./gladius.sh gladius export-tools [--format json|openai]
+# Run single cycle
+./gladius.sh continuous --single-cycle
+
+# Disable training during sleep
+./gladius.sh continuous --no-training
 ```
 
-### Cognition Operations
+### Legacy Commands
 ```bash
-# Run single cognition cycle
-./gladius.sh gladius cognition
+# Pattern-based routing test
+python3 GLADIUS/interactive.py --query "search for gold"
 
-# Run autonomous mode
-./gladius.sh gladius autonomous [--hours N]
+# Full benchmark
+./gladius.sh benchmark
 
-# Check cognition health
-./gladius.sh gladius health
+# Cognition cycle
+./gladius.sh cognition
 ```
 
 ---
 
 ## API Reference
 
+### Direct Interface (speak.py)
+
+```python
+from GLADIUS.speak import GladiusInterface
+
+interface = GladiusInterface()
+
+# Get status
+status = interface.get_status()
+# {
+#     "model": "gladius:latest",
+#     "is_native": True,
+#     "available": True,
+#     "messages_exchanged": 0
+# }
+
+# Query GLADIUS
+response = interface.query("What tools can you use?")
+# {
+#     "success": True,
+#     "response": "{"tool": "get_tools", "args": {}}",
+#     "model": "gladius:latest",
+#     "latency_ms": 12000
+# }
+```
+
+### Training Pipeline (train_pipeline.py)
+
+```python
+from GLADIUS.training.train_pipeline import TrainingPipeline
+
+pipeline = TrainingPipeline()
+
+# Run complete training
+results = pipeline.run(validate=True, promote=True)
+# {
+#     "success": True,
+#     "steps": {
+#         "ollama_check": "passed",
+#         "build": "success",
+#         "validation": {"accuracy": 80.0},
+#         "promotion": "success"
+#     }
+# }
+```
+
+### Continuous Mode (continuous.py)
+
+```python
+from GLADIUS.continuous import AutonomousOperator, AutonomousConfig
+import asyncio
+
+config = AutonomousConfig(
+    duration_hours=168,  # 7 days
+    interval_minutes=30,
+    training_every_n_cycles=6
+)
+
+operator = AutonomousOperator(config)
+results = asyncio.run(operator.run())
+```
+
 ### Pattern Router
 
 ```python
-from GLADIUS.router.pattern_router import PatternRouter
+from GLADIUS.router.pattern_router import NativeToolRouter
 
-router = PatternRouter()
+router = NativeToolRouter()
 
 # Route a query
 result = router.route("Search for gold analysis")
-print(result)
+# RouteResult(
+#     tool_name="search",
+#     arguments={"query": "gold analysis", "k": 5},
+#     confidence=0.98,
+#     latency_ms=0.87,
+#     source="pattern"
+# )
+
+# Get statistics
+stats = router.stats()
 # {
-#     "tool": "search",
-#     "confidence": 0.98,
-#     "latency_ms": 0.87,
-#     "alternatives": [
-#         {"tool": "hybrid_search", "confidence": 0.72}
-#     ]
+#     "pattern_calls": 145,
+#     "ollama_calls": 12,
+#     "total_calls": 157,
+#     "avg_latency_ms": 1.2
 # }
-
-# Get all tools
-tools = router.get_tools()
-
-# Export OpenAI schema
-schema = router.export_openai_schema()
 ```
 
-### Training Harness
+---
 
-```python
-from GLADIUS.training.harness import CognitionSandbox
+## Autonomous Cycle Flow
 
-# Create sandbox
-sandbox = CognitionSandbox(base_path="./run_001")
-
-# Run training
-result = await sandbox.run_training_cycle(
-    data_path="./training/data/combined.json",
-    epochs=3
-)
-
-# Promote if successful
-if result.accuracy >= 0.99:
-    sandbox.promote_to_staging()
 ```
-
-### Data Generator
-
-```python
-from GLADIUS.training.generator import TrainingGenerator
-
-gen = TrainingGenerator()
-
-# Generate from tool history
-data = gen.generate_from_history(memory_module)
-
-# Generate synthetic
-data = gen.generate_synthetic(
-    categories=["charting", "erp"],
-    count=1000
-)
-
-# Export
-gen.export_llama_format("./output.jsonl")
+┌─────────────────────────────────────────────────────────────┐
+│                    AUTONOMOUS CYCLE                          │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐        │
+│  │ OPERATE │→│ COGNIZE │→│  TRAIN  │→│  SLEEP  │→ REPEAT  │
+│  └─────────┘  └─────────┘  └─────────┘  └─────────┘        │
+│       │            │            │            │              │
+│  Artifact     Self-review   Model       SENTINEL           │
+│  operations   & planning    training    learning           │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -196,6 +299,19 @@ gen.export_llama_format("./output.jsonl")
 | `recall` | Retrieve from memory |
 | `forget` | Remove from memory |
 
+### Communication (3)
+| Tool | Description |
+|------|-------------|
+| `send_discord` | Send Discord message |
+| `send_email` | Send email via SMTP |
+| `post_social` | Post to social media |
+
+### Syndicate (2)
+| Tool | Description |
+|------|-------------|
+| `run_syndicate` | Run market analysis |
+| `get_syndicate_status` | Check Syndicate status |
+
 ### Charting (7)
 | Tool | Description |
 |------|-------------|
@@ -206,13 +322,6 @@ gen.export_llama_format("./output.jsonl")
 | `determine_regime` | Market regime |
 | `annotate_chart` | Add annotations |
 | `create_trade_setup` | Trade visualization |
-
-### Publishing (3)
-| Tool | Description |
-|------|-------------|
-| `create_content` | Generate content |
-| `schedule_post` | Schedule publishing |
-| `publish_content` | Publish to platforms |
 
 ### ERP (8)
 | Tool | Description |
@@ -226,34 +335,11 @@ gen.export_llama_format("./output.jsonl")
 | `erp_create_order` | Create order |
 | `erp_update_inventory` | Update inventory |
 
-### Governance (3)
+### System (2)
 | Tool | Description |
 |------|-------------|
-| `create_proposal` | Create proposal |
-| `route_proposal` | Route for approval |
-| `get_voting_status` | Check vote status |
-
-### Reasoning (3)
-| Tool | Description |
-|------|-------------|
-| `contextualize_content` | Add context |
-| `reason_about_audience` | Audience analysis |
-| `think_about_timing` | Optimal timing |
-
-### Engagement (1)
-| Tool | Description |
-|------|-------------|
-| `engage_with_reply` | Generate replies |
-
-### Analytics (1)
-| Tool | Description |
-|------|-------------|
-| `get_engagement` | Engagement metrics |
-
-### Communication (1)
-| Tool | Description |
-|------|-------------|
-| `send_escalation_email` | Send escalation |
+| `get_tools` | List available tools |
+| `get_history` | Get operation history |
 
 ---
 
@@ -261,11 +347,11 @@ gen.export_llama_format("./output.jsonl")
 
 | Metric | Value |
 |--------|-------|
-| Routing Accuracy | 100% |
-| Avg Latency | 0.93ms |
-| P99 Latency | 2.28ms |
-| Training Samples | 914+ |
-| Categories | 13 |
+| Model Accuracy | 80% |
+| Pattern Routing | 100% |
+| Pattern Latency | <3ms |
+| Model Latency | ~12s (CPU) |
+| Training Samples | 75+ |
 | Total Tools | 37+ |
 
 ---
@@ -274,31 +360,71 @@ gen.export_llama_format("./output.jsonl")
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `AI_PROVIDER` | AI provider (ollama) | `ollama` |
+| `OLLAMA_HOST` | Ollama server | `http://localhost:11434` |
+| `OLLAMA_MODEL` | Default model | `llama3.2` |
 | `GLADIUS_ENABLED` | Enable GLADIUS | `true` |
-| `GLADIUS_MODEL_PATH` | Production model path | `./models/production` |
-| `GLADIUS_STAGING_PATH` | Staging model path | `./models/staging` |
-| `GLADIUS_TRAINING_DATA` | Training data path | `./training/data` |
-| `GLADIUS_FALLBACK` | Enable Ollama fallback | `true` |
 
 ---
 
-## CLI Quick Reference
+## Quick Reference
 
 ```bash
-# Model
-gladius status|info|benchmark|versions
+# Speak to GLADIUS
+./gladius.sh speak
 
-# Training
-gladius train|generate-training|validate
+# Train model
+./gladius.sh train
 
-# Deployment
-gladius deploy|rollback
+# 1B Training (PowerShell)
+cd GLADIUS/training && ./train_gladius_1b.ps1 start
 
-# Routing
-gladius route|tools|export-tools
+# 1B Training (Bash)
+cd GLADIUS/training && ./train_gladius_1b.sh start
 
-# Cognition
-gladius cognition|autonomous|health
+# Continuous mode
+./gladius.sh continuous
+
+# Interactive routing
+./gladius.sh interact
+
+# Status
+./gladius.sh speak --status
+```
+
+---
+
+## Training Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 GLADIUS 1B TRAINING PIPELINE                 │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐  │
+│  │   Phase 1    │ → │   Phase 2    │ → │   Phase 3    │  │
+│  │ Base Fine-   │    │ Extended     │    │ LoRA Stack   │  │
+│  │ tuning       │    │ Training     │    │ Expansion    │  │
+│  └──────────────┘    └──────────────┘    └──────────────┘  │
+│         ↓                                       ↓           │
+│  ┌──────────────┐                       ┌──────────────┐   │
+│  │ Checkpoints  │                       │   Phase 4    │   │
+│  │ (Recovery)   │                       │ GGUF Export  │   │
+│  └──────────────┘                       └──────────────┘   │
+│                                                ↓            │
+│                                         ┌──────────────┐   │
+│                                         │ gladius:1b   │   │
+│                                         │ (Ollama)     │   │
+│                                         └──────────────┘   │
+│                                                             │
+│  Features:                                                  │
+│  • LoRA-based parameter efficient training                  │
+│  • 4-bit quantization for memory efficiency                 │
+│  • Automatic checkpoint recovery                            │
+│  • GGUF export for Ollama deployment                        │
+│  • Target: 1 billion parameters                             │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---

@@ -1,0 +1,56 @@
+{
+  "started_at": "2026-01-14T16:26:51.805538",
+  "config": {
+    "base_model": "qwen2.5:0.5b",
+    "model_name": "gladius",
+    "version": "0.1.0"
+  },
+  "steps": {
+    "ollama_check": "passed",
+    "data_preparation": "/home/adam/worxpace/gladius/GLADIUS/training/data/gladius_training_complete.json",
+    "modelfile": "/home/adam/worxpace/gladius/GLADIUS/models/staging/Modelfile",
+    "build": "success",
+    "validation": {
+      "model": "gladius:0.1.0",
+      "tests": [
+        {
+          "query": "Search for gold price analysis",
+          "response": "{\"tool\": \"search\", \"args\": {\"query\": \"gold price analysis\"}}",
+          "valid": true,
+          "latency_ms": 14702.691555023193
+        },
+        {
+          "query": "Read the config file",
+          "response": "{\"tool\": \"read_file\", \"args\": {\"path\": \"/config/config.yml\"}}",
+          "valid": true,
+          "latency_ms": 4814.115047454834
+        },
+        {
+          "query": "What tools can you use?",
+          "response": "I can use the following tools:\n- read_db(name, query)\n- write_db(name, data, table)\n- search(query, k)\n- hybrid_search(query, k)\n- get_context(query, k)\n- read_file(path)\n- write_file(path, content)\n-",
+          "valid": false,
+          "latency_ms": 27273.028135299683
+        },
+        {
+          "query": "Remember that the market is bullish",
+          "response": "{\"tool\": \"remember\", \"args\": {\"key\": \"market\", \"value\": \"bullish\"}}",
+          "valid": true,
+          "latency_ms": 7401.806592941284
+        },
+        {
+          "query": "Send a message to Discord",
+          "response": "{\"tool\": \"send_discord\", \"args\": {\"message\": \"Hello, this is a test message.\", \"channel\": \"#general\"}}",
+          "valid": true,
+          "latency_ms": 6511.68155670166
+        }
+      ],
+      "passed": 4,
+      "failed": 1,
+      "avg_latency_ms": 12140.66457748413,
+      "accuracy": 80.0
+    },
+    "promotion": "success"
+  },
+  "success": true,
+  "completed_at": "2026-01-14T16:27:52.791805"
+}

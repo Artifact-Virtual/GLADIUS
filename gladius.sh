@@ -73,7 +73,11 @@ wait_for_http() {
 print_header() {
     echo ""
     echo -e "${BLUE}╔═══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║           ⚔️  GLADIUS CONTROL CENTER                          ║${NC}"
+    echo -e "${BLUE}║                                                               ║${NC}"
+    echo -e "${BLUE}║              G L A D I U S   C O N T R O L   S Y S T E M S    ║${NC}"
+    echo -e "${BLUE}║                                                               ║${NC}"
+    echo -e "${BLUE}║       Native AI  ·  Artifact Virtual  ·  Enterprise          ║${NC}"
+    echo -e "${BLUE}║                                                               ║${NC}"
     echo -e "${BLUE}╚═══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 }
@@ -87,6 +91,30 @@ do_health_check() {
     local all_ok=true
     
     echo -e "${CYAN}Timestamp: $(date)${NC}"
+    echo ""
+    
+    # SENTINEL Status (Guardian)
+    echo -e "${BLUE}SENTINEL Guardian${NC}"
+    echo "─────────────────────────────────────────────────────────────────"
+    
+    if [ -f "$GLADIUS_ROOT/SENTINEL/sentinel.pid" ]; then
+        local spid=$(cat "$GLADIUS_ROOT/SENTINEL/sentinel.pid" 2>/dev/null)
+        if kill -0 "$spid" 2>/dev/null; then
+            echo -e "  ${GREEN}✅${NC} Watchdog            ${GREEN}OK${NC}  [PID: $spid]"
+        else
+            echo -e "  ${RED}❌${NC} Watchdog            ${RED}DEAD${NC}"
+            all_ok=false
+        fi
+    else
+        echo -e "  ${YELLOW}⚠️${NC}  Watchdog            ${YELLOW}NOT STARTED${NC}"
+    fi
+    
+    if pgrep -f "learning_daemon.py" > /dev/null 2>&1; then
+        echo -e "  ${GREEN}✅${NC} Learning Daemon      ${GREEN}OK${NC}"
+    else
+        echo -e "  ${YELLOW}⚠️${NC}  Learning Daemon      ${YELLOW}NOT RUNNING${NC}"
+    fi
+    
     echo ""
     echo -e "${BLUE}Service Status${NC}"
     echo "─────────────────────────────────────────────────────────────────"
@@ -115,7 +143,6 @@ do_health_check() {
         echo -e "  ${GREEN}✅${NC} Web UI (5002)       ${GREEN}OK${NC}  [${time}s]"
     else
         echo -e "  ${YELLOW}⚠️${NC}  Web UI (5002)       ${YELLOW}NOT RUNNING${NC}"
-        all_ok=false
     fi
     
     # Frontend (3000) - optional
@@ -145,6 +172,25 @@ do_health_check() {
         echo -e "  ${GREEN}✅${NC} Prometheus (9090)    ${GREEN}OK${NC}"
     else
         echo -e "  ${YELLOW}⚠️${NC}  Prometheus (9090)    ${YELLOW}NOT RUNNING${NC}"
+    fi
+    
+    echo ""
+    echo -e "${BLUE}LEGION Enterprise${NC}"
+    echo "─────────────────────────────────────────────────────────────────"
+    
+    # LEGION Orchestrator
+    if pgrep -f "continuous_operation.py" > /dev/null 2>&1; then
+        local lpid=$(pgrep -f "continuous_operation.py")
+        echo -e "  ${GREEN}✅${NC} Orchestrator         ${GREEN}OK${NC}  [PID: $lpid]"
+    else
+        echo -e "  ${YELLOW}⚠️${NC}  Orchestrator         ${YELLOW}NOT RUNNING${NC}"
+    fi
+    
+    # Check Artifact Bridge connectivity
+    if [ -f "$GLADIUS_ROOT/LEGION/legion/artifact_bridge.py" ]; then
+        echo -e "  ${GREEN}✅${NC} Artifact Bridge      ${GREEN}AVAILABLE${NC}"
+    else
+        echo -e "  ${YELLOW}⚠️${NC}  Artifact Bridge      ${YELLOW}NOT FOUND${NC}"
     fi
     
     echo ""
@@ -196,6 +242,98 @@ do_start() {
     mkdir -p "$LOG_DIR"
     mkdir -p "$PID_DIR"
     
+    # Load environment (safely handle special characters)
+    if [ -f "$GLADIUS_ROOT/.env" ]; then
+        set -a
+        source <(grep -v '^#' "$GLADIUS_ROOT/.env" | grep -E '^[A-Z_][A-Z0-9_]*=' | sed 's/=\(.*\)/="\1"/')
+        set +a
+    fi
+    
+    # ═══════════════════════════════════════════════════════════════════════
+    # PHASE 0: SENTINEL (Guardian Process - MUST START FIRST)
+    # ═══════════════════════════════════════════════════════════════════════
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${CYAN}PHASE 0: SENTINEL Guardian System${NC}"
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+    echo ""
+    
+    local sentinel_ok=true
+    
+    # Check if SENTINEL is already running
+    if [ -f "$GLADIUS_ROOT/SENTINEL/sentinel.pid" ]; then
+        local sentinel_pid=$(cat "$GLADIUS_ROOT/SENTINEL/sentinel.pid" 2>/dev/null)
+        if kill -0 "$sentinel_pid" 2>/dev/null; then
+            echo -e "  ${GREEN}✅${NC} SENTINEL already running (PID: $sentinel_pid)"
+        else
+            echo -e "  ${YELLOW}⚠️${NC}  Stale PID file found, starting SENTINEL..."
+            rm -f "$GLADIUS_ROOT/SENTINEL/sentinel.pid"
+            "$GLADIUS_ROOT/scripts/start_sentinel.sh" detached
+            sleep 3
+        fi
+    else
+        echo -e "  ${BLUE}→${NC} Starting SENTINEL Guardian..."
+        "$GLADIUS_ROOT/scripts/start_sentinel.sh" detached
+        sleep 3
+    fi
+    
+    # Verify SENTINEL health checks
+    echo ""
+    echo -e "  ${BLUE}Running SENTINEL Health Checks...${NC}"
+    
+    # Check 1: Watchdog running
+    if [ -f "$GLADIUS_ROOT/SENTINEL/sentinel.pid" ]; then
+        local wpid=$(cat "$GLADIUS_ROOT/SENTINEL/sentinel.pid" 2>/dev/null)
+        if kill -0 "$wpid" 2>/dev/null; then
+            echo -e "    ${GREEN}✓${NC} Watchdog:        RUNNING (PID: $wpid)"
+        else
+            echo -e "    ${RED}✗${NC} Watchdog:        NOT RUNNING"
+            sentinel_ok=false
+        fi
+    else
+        echo -e "    ${RED}✗${NC} Watchdog:        NOT STARTED"
+        sentinel_ok=false
+    fi
+    
+    # Check 2: Learning daemon started (may take a moment)
+    if pgrep -f "learning_daemon.py" > /dev/null 2>&1; then
+        echo -e "    ${GREEN}✓${NC} Learning Daemon: RUNNING"
+    else
+        echo -e "    ${YELLOW}○${NC} Learning Daemon: STARTING (async)"
+    fi
+    
+    # Check 3: Kill password configured
+    if [ -n "$SENTINEL_KILL_PASSWORD" ]; then
+        echo -e "    ${GREEN}✓${NC} Kill Password:   CONFIGURED"
+    else
+        echo -e "    ${YELLOW}○${NC} Kill Password:   NOT SET (using default)"
+    fi
+    
+    # Check 4: State database exists
+    if [ -f "$GLADIUS_ROOT/SENTINEL/services/learning_state.db" ]; then
+        echo -e "    ${GREEN}✓${NC} State Database:  READY"
+    else
+        echo -e "    ${YELLOW}○${NC} State Database:  WILL BE CREATED"
+    fi
+    
+    echo ""
+    
+    if [ "$sentinel_ok" = true ]; then
+        echo -e "  ${GREEN}🛡️  SENTINEL OPERATIONAL - Proceeding with system startup${NC}"
+    else
+        echo -e "  ${RED}❌ SENTINEL FAILED - Aborting startup${NC}"
+        echo ""
+        echo "  To manually start SENTINEL:"
+        echo "  ./scripts/start_sentinel.sh detached"
+        echo ""
+        return 1
+    fi
+    
+    echo ""
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${CYAN}PHASE 1: Core Services${NC}"
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+    echo ""
+    
     # 1. Start Infra API (most important - market data layer)
     echo -e "${CYAN}[1/6] Infra API${NC}"
     if check_port 7000; then
@@ -214,7 +352,7 @@ do_start() {
     fi
     
     # 2. Start Dashboard Backend (Flask + SocketIO)
-    echo -e "${CYAN}[2/7] Dashboard Backend${NC}"
+    echo -e "${CYAN}[2/6] Dashboard Backend${NC}"
     if check_port 5000; then
         echo -e "  ${YELLOW}⚠️${NC}  Already running on port 5000"
     else
@@ -237,7 +375,7 @@ do_start() {
     fi
 
     # 3. Start Web UI (template server)
-    echo -e "${CYAN}[3/7] Web UI${NC}"
+    echo -e "${CYAN}[3/6] Web UI${NC}"
     WEB_UI_PORT=${WEB_UI_PORT:-5002}
     if check_port "$WEB_UI_PORT"; then
         echo -e "  ${YELLOW}⚠️${NC}  Web UI already running on port $WEB_UI_PORT"
@@ -255,67 +393,6 @@ do_start() {
     fi
 
     # 4. Start Grafana (via Docker)
-    echo -e "${CYAN}[4/7] Grafana${NC}"
-    if check_port 3001; then
-        echo -e "  ${YELLOW}⚠️${NC}  Already running on port 3001"
-    elif ! command -v docker &> /dev/null; then
-        echo -e "  ${YELLOW}⚠️${NC}  Docker not available - skipping Grafana"
-    else
-        echo -e "  ${BLUE}→${NC} Starting Grafana via Docker..."
-        cd "$GLADIUS_ROOT/Artifact/syndicate/docker"
-        # Modify grafana to use port 3001 to avoid conflict with frontend
-        docker run -d --name gold_grafana \
-            -p 3001:3000 \
-            -e GF_SECURITY_ADMIN_PASSWORD=admin \
-            -v "$(pwd)/grafana:/var/lib/grafana" \
-            grafana/grafana:9.5.0 > /dev/null 2>&1 || true
-        sleep 2
-        if check_port 3001; then
-            echo -e "  ${GREEN}✅${NC} Started on port 3001"
-        else
-            echo -e "  ${YELLOW}⚠️${NC}  May take a moment to start"
-        fi
-    fi
-
-    # 5. Start Prometheus (via Docker - for Grafana metrics)
-    echo -e "${CYAN}[5/7] Prometheus${NC}"
-    if check_port 9090; then
-        echo -e "  ${YELLOW}⚠️${NC}  Already running on port 9090"
-    elif ! command -v docker &> /dev/null; then
-        echo -e "  ${YELLOW}⚠️${NC}  Docker not available - skipping Prometheus"
-    else
-        echo -e "  ${BLUE}→${NC} Starting Prometheus via Docker..."
-        cd "$GLADIUS_ROOT/Artifact/syndicate/docker"
-        docker run -d --name gold_prometheus \
-            -p 9090:9090 \
-            -v "$(pwd)/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro" \
-            prom/prometheus:latest > /dev/null 2>&1 || true
-        sleep 2
-        if check_port 9090; then
-            echo -e "  ${GREEN}✅${NC} Started on port 9090"
-        else
-            echo -e "  ${YELLOW}⚠️${NC}  May take a moment to start"
-        fi
-    fi
-
-    # 6. Start Dashboard Frontend (React)
-    echo -e "${CYAN}[6/7] Dashboard Frontend${NC}"
-    if check_port 3000; then
-        echo -e "  ${YELLOW}⚠️${NC}  Already running on port 3000"
-    else
-        echo -e "  ${BLUE}→${NC} Starting React Dashboard..."
-        cd "$GLADIUS_ROOT/Artifact/deployment/automata/dashboard/frontend"
-        nohup npm run dev > "$LOG_DIR/frontend_dev.log" 2>&1 &
-        echo $! > "$PID_DIR/frontend_dev.pid"
-        sleep 3
-        if check_port 3000; then
-            echo -e "  ${GREEN}✅${NC} Started on port 3000"
-        else
-            echo -e "  ${YELLOW}⚠️${NC}  May take a moment to start (check logs)"
-        fi
-    fi
-    
-    # 4. Start Grafana (via Docker)
     echo -e "${CYAN}[4/6] Grafana${NC}"
     if check_port 3001; then
         echo -e "  ${YELLOW}⚠️${NC}  Already running on port 3001"
@@ -324,7 +401,6 @@ do_start() {
     else
         echo -e "  ${BLUE}→${NC} Starting Grafana via Docker..."
         cd "$GLADIUS_ROOT/Artifact/syndicate/docker"
-        # Modify grafana to use port 3001 to avoid conflict with frontend
         docker run -d --name gold_grafana \
             -p 3001:3000 \
             -e GF_SECURITY_ADMIN_PASSWORD=admin \
@@ -360,14 +436,12 @@ do_start() {
     fi
     
     # 6. Start Syndicate Daemon (market intelligence - runs in background)
-    echo -e "${CYAN}[6/6] Syndicate Daemon${NC}"
+    echo -e "${CYAN}[6/7] Syndicate Daemon${NC}"
     if pgrep -f "run.py.*--interval-min" > /dev/null 2>&1; then
         echo -e "  ${YELLOW}⚠️${NC}  Already running"
     else
         echo -e "  ${BLUE}→${NC} Starting Syndicate Daemon..."
         cd "$GLADIUS_ROOT/Artifact/syndicate"
-        # Note: run.py without arguments runs in daemon mode (default)
-        # Using --interval-min 60 for 1-hour cycles
         nohup env PREFER_OLLAMA=1 "$PYTHON" run.py --interval-min 60 > "$LOG_DIR/syndicate_daemon.log" 2>&1 &
         echo $! > "$PID_DIR/syndicate_daemon.pid"
         sleep 2
@@ -376,31 +450,77 @@ do_start() {
     
     echo ""
     echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${CYAN}PHASE 2: LEGION Enterprise Orchestrator${NC}"
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+    echo ""
+    
+    # 7. Start LEGION Enterprise Orchestrator
+    echo -e "${CYAN}[7/7] LEGION Orchestrator${NC}"
+    if pgrep -f "continuous_operation.py" > /dev/null 2>&1; then
+        local lpid=$(pgrep -f "continuous_operation.py")
+        echo -e "  ${GREEN}✅${NC} Already running (PID: $lpid)"
+    else
+        if [ -f "$GLADIUS_ROOT/LEGION/legion/continuous_operation.py" ]; then
+            echo -e "  ${BLUE}→${NC} Starting LEGION Continuous Orchestrator..."
+            cd "$GLADIUS_ROOT/LEGION/legion"
+            nohup "$PYTHON" continuous_operation.py > "$LOG_DIR/legion.log" 2>&1 &
+            echo $! > "$PID_DIR/legion.pid"
+            sleep 3
+            if pgrep -f "continuous_operation.py" > /dev/null 2>&1; then
+                echo -e "  ${GREEN}✅${NC} LEGION Orchestrator started"
+                echo -e "  ${GREEN}✅${NC} AI Agents: ACTIVE"
+                echo -e "  ${GREEN}✅${NC} Artifact Bridge: CONNECTED"
+            else
+                echo -e "  ${RED}❌${NC} Failed to start LEGION"
+            fi
+        else
+            echo -e "  ${YELLOW}⚠️${NC}  LEGION not found at $GLADIUS_ROOT/LEGION"
+        fi
+    fi
+    
+    echo ""
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
     echo ""
     
     # Run health check
-    echo -e "${BLUE}Running Health Check...${NC}"
+    echo -e "${BLUE}System Health Check${NC}"
     echo "─────────────────────────────────────────────────────────────────"
     sleep 2
     do_health_check
+    local health_status=$?
     
     echo ""
-    echo -e "${GREEN}🚀 Gladius Ready!${NC}"
+    
+    # Only show OPERATIONAL if health check passed
+    if [ $health_status -eq 0 ]; then
+        echo -e "${GREEN}╔═══════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${GREEN}║                    GLADIUS SYSTEM OPERATIONAL                 ║${NC}"
+        echo -e "${GREEN}╚═══════════════════════════════════════════════════════════════╝${NC}"
+    else
+        echo -e "${RED}╔═══════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${RED}║                    GLADIUS SYSTEM DEGRADED                    ║${NC}"
+        echo -e "${RED}╚═══════════════════════════════════════════════════════════════╝${NC}"
+    fi
     echo ""
-    echo "   Access Points:"
-    echo "   ─────────────────────────────────────────────"
-    echo -e "   ${GREEN}Dashboard UI${NC}:     http://localhost:3000     (React)"
-    echo -e "   ${GREEN}Web UI${NC}:           http://localhost:5002     (Flask templates)"
-    echo -e "   ${GREEN}Infra API Docs${NC}:  http://localhost:7000/docs (FastAPI)"
-    echo -e "   ${GREEN}Dashboard API${NC}:   http://localhost:5000      (Flask)"
+    echo -e "  ${BLUE}▌ ACCESS POINTS${NC}"
+    echo -e "    ${CYAN}Web UI${NC}           http://localhost:5002"
+    echo -e "    ${CYAN}Infra API${NC}        http://localhost:7000/docs"
+    echo -e "    ${CYAN}Dashboard API${NC}    http://localhost:5000"
     if check_port 3001; then
-        echo -e "   ${GREEN}Grafana${NC}:         http://localhost:3001      (admin/gladius)"
+        echo -e "    ${CYAN}Grafana${NC}          http://localhost:3001"
     fi
     if check_port 9090; then
-        echo -e "   ${GREEN}Prometheus${NC}:      http://localhost:9090"
+        echo -e "    ${CYAN}Prometheus${NC}       http://localhost:9090"
     fi
     echo ""
-    echo "   Logs: tail -f $LOG_DIR/*.log"
+    echo -e "  ${BLUE}▌ COMMANDS${NC}"
+    echo -e "    ${CYAN}Status${NC}           ./gladius.sh status"
+    echo -e "    ${CYAN}Health${NC}           ./gladius.sh health"
+    echo -e "    ${CYAN}Logs${NC}             ./gladius.sh logs"
+    echo -e "    ${CYAN}Stop${NC}             ./gladius.sh stop"
+    echo ""
+    echo -e "  ${BLUE}▌ LOGS${NC}"
+    echo -e "    tail -f $LOG_DIR/*.log"
     echo ""
 }
 
@@ -477,13 +597,23 @@ do_stop() {
     fi
     
     # Stop Syndicate Daemon
-    echo -e "${CYAN}[6/6] Syndicate Daemon${NC}"
+    echo -e "${CYAN}[6/7] Syndicate Daemon${NC}"
     pid=$(pgrep -f "run.py.*--interval-min" 2>/dev/null)
     if [ -n "$pid" ]; then
         if [ "$force" = true ]; then kill -9 $pid 2>/dev/null; else kill $pid 2>/dev/null; fi
         echo -e "  ${GREEN}✅${NC} Stopped (PID: $pid)"
     else
         echo -e "  ${YELLOW}─${NC}  Syndicate Daemon was not running"
+    fi
+    
+    # Stop LEGION Orchestrator
+    echo -e "${CYAN}[7/7] LEGION Orchestrator${NC}"
+    pid=$(pgrep -f "continuous_operation.py" 2>/dev/null)
+    if [ -n "$pid" ]; then
+        if [ "$force" = true ]; then kill -9 $pid 2>/dev/null; else kill $pid 2>/dev/null; fi
+        echo -e "  ${GREEN}✅${NC} Stopped (PID: $pid)"
+    else
+        echo -e "  ${YELLOW}─${NC}  LEGION was not running"
     fi
     
     # Clean up PID files
@@ -532,6 +662,13 @@ do_stop() {
         echo -e "  ${GREEN}✓${NC} Syndicate daemon stopped"
     fi
     
+    if pgrep -f "continuous_operation.py" > /dev/null 2>&1; then
+        echo -e "  ${RED}⚠️${NC}  LEGION still running"
+        remaining=$((remaining + 1))
+    else
+        echo -e "  ${GREEN}✓${NC} LEGION stopped"
+    fi
+    
     echo ""
     
     if [ $remaining -eq 0 ]; then
@@ -551,18 +688,54 @@ do_stop() {
 
 do_status() {
     echo ""
-    echo -e "${CYAN}Gladius Quick Status - $(date)${NC}"
-    echo "─────────────────────────────────────────────────────────────────"
+    echo -e "${CYAN}╔═══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║                   GLADIUS STATUS                              ║${NC}"
+    echo -e "${CYAN}╚═══════════════════════════════════════════════════════════════╝${NC}"
+    echo -e "  ${BLUE}Timestamp:${NC} $(date)"
+    echo ""
     
-    # Quick port checks
-    check_port 7000 && echo -e "  ${GREEN}●${NC} Infra API (7000)" || echo -e "  ${RED}○${NC} Infra API (7000)"
-    check_port 5000 && echo -e "  ${GREEN}●${NC} Dashboard API (5000)" || echo -e "  ${RED}○${NC} Dashboard API (5000)"
-    check_port 3000 && echo -e "  ${GREEN}●${NC} Dashboard UI (3000)" || echo -e "  ${YELLOW}○${NC} Dashboard UI (3000)"
-    check_port 5002 && echo -e "  ${GREEN}●${NC} Web UI (5002)" || echo -e "  ${YELLOW}○${NC} Web UI (5002)"
-    check_port 3001 && echo -e "  ${GREEN}●${NC} Grafana (3001)" || echo -e "  ${YELLOW}○${NC} Grafana (3001)"
-    check_port 9090 && echo -e "  ${GREEN}●${NC} Prometheus (9090)" || echo -e "  ${YELLOW}○${NC} Prometheus (9090)"
-    pgrep -f "run.py.*--interval-min" > /dev/null 2>&1 && echo -e "  ${GREEN}●${NC} Syndicate Daemon" || echo -e "  ${YELLOW}○${NC} Syndicate Daemon"
+    echo -e "  ${BLUE}▌ SENTINEL${NC}"
+    # SENTINEL status
+    if [ -f "$GLADIUS_ROOT/SENTINEL/sentinel.pid" ]; then
+        local spid=$(cat "$GLADIUS_ROOT/SENTINEL/sentinel.pid" 2>/dev/null)
+        if kill -0 "$spid" 2>/dev/null; then
+            echo -e "    ${GREEN}●${NC} Watchdog         [PID: $spid]"
+        else
+            echo -e "    ${RED}○${NC} Watchdog"
+        fi
+    else
+        echo -e "    ${RED}○${NC} Watchdog"
+    fi
+    pgrep -f "learning_daemon.py" > /dev/null 2>&1 && echo -e "    ${GREEN}●${NC} Learning Daemon" || echo -e "    ${YELLOW}○${NC} Learning Daemon"
     
+    echo ""
+    echo -e "  ${BLUE}▌ CORE SERVICES${NC}"
+    check_port 7000 && echo -e "    ${GREEN}●${NC} Infra API        :7000" || echo -e "    ${RED}○${NC} Infra API        :7000"
+    check_port 5000 && echo -e "    ${GREEN}●${NC} Dashboard API    :5000" || echo -e "    ${RED}○${NC} Dashboard API    :5000"
+    check_port 5002 && echo -e "    ${GREEN}●${NC} Web UI           :5002" || echo -e "    ${YELLOW}○${NC} Web UI           :5002"
+    check_port 3000 && echo -e "    ${GREEN}●${NC} Frontend         :3000" || echo -e "    ${YELLOW}○${NC} Frontend         :3000"
+    
+    echo ""
+    echo -e "  ${BLUE}▌ MONITORING${NC}"
+    check_port 3001 && echo -e "    ${GREEN}●${NC} Grafana          :3001" || echo -e "    ${YELLOW}○${NC} Grafana          :3001"
+    check_port 9090 && echo -e "    ${GREEN}●${NC} Prometheus       :9090" || echo -e "    ${YELLOW}○${NC} Prometheus       :9090"
+    
+    echo ""
+    echo -e "  ${BLUE}▌ DAEMONS${NC}"
+    pgrep -f "run.py.*--interval-min" > /dev/null 2>&1 && echo -e "    ${GREEN}●${NC} Syndicate" || echo -e "    ${YELLOW}○${NC} Syndicate"
+    
+    echo ""
+    echo -e "  ${BLUE}▌ LEGION ENTERPRISE${NC}"
+    if pgrep -f "continuous_operation.py" > /dev/null 2>&1; then
+        local lpid=$(pgrep -f "continuous_operation.py")
+        echo -e "    ${GREEN}●${NC} Orchestrator     [PID: $lpid]"
+    else
+        echo -e "    ${YELLOW}○${NC} Orchestrator"
+    fi
+    [ -f "$GLADIUS_ROOT/LEGION/legion/artifact_bridge.py" ] && echo -e "    ${GREEN}●${NC} Artifact Bridge" || echo -e "    ${YELLOW}○${NC} Artifact Bridge"
+    
+    echo ""
+    echo -e "  ${BLUE}───────────────────────────────────────────────────────────${NC}"
     echo ""
 }
 
@@ -740,7 +913,7 @@ do_autonomous() {
     
     print_header
     echo -e "${BLUE}╔═══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║           🤖 GLADIUS AUTONOMOUS MODE                          ║${NC}"
+    echo -e "${BLUE}║               GLADIUS AUTONOMOUS MODE                         ║${NC}"
     echo -e "${BLUE}╚═══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
     echo -e "  ${CYAN}Duration:${NC}       $days days"
@@ -858,9 +1031,17 @@ except Exception as e:
             echo ""
         fi
         
+        # Run GLADIUS model training every 6 cycles (during sleep)
+        if [ $((cycle % 6)) -eq 0 ]; then
+            echo -e "  ${BLUE}→ Running GLADIUS model training (LoRA)...${NC}"
+            local train_result=$("$PYTHON" "$GLADIUS_ROOT/GLADIUS/training/dual_trainer.py" --qwen-only 2>&1 | tail -5)
+            echo -e "  ${GREEN}✓ Training cycle complete${NC}"
+        fi
+        
         # Wait for next cycle
         if [ $cycle -lt $max_cycles ]; then
             echo -e "  ${YELLOW}⏱ Sleeping $interval_min minutes until next cycle...${NC}"
+            echo -e "  ${CYAN}   (SENTINEL learning active during sleep)${NC}"
             sleep $((interval_min * 60))
         fi
     done
@@ -946,9 +1127,54 @@ case "${1:-help}" in
         interval=${3:-60}
         do_autonomous "$days" "$interval"
         ;;
+    interact|chat|gladius)
+        # Interactive GLADIUS session
+        print_header
+        echo -e "${CYAN}Starting GLADIUS Interactive Mode...${NC}"
+        echo ""
+        "$PYTHON" "$GLADIUS_ROOT/GLADIUS/interactive.py" "${@:2}"
+        ;;
+    speak)
+        # Direct GLADIUS conversation
+        print_header
+        echo -e "${CYAN}Starting GLADIUS Direct Interface...${NC}"
+        echo ""
+        "$PYTHON" "$GLADIUS_ROOT/GLADIUS/speak.py" "${@:2}"
+        ;;
+    train)
+        # Run GLADIUS training pipeline
+        print_header
+        echo -e "${CYAN}Running GLADIUS Training Pipeline...${NC}"
+        echo "─────────────────────────────────────────────────────────────────"
+        "$PYTHON" "$GLADIUS_ROOT/GLADIUS/training/train_pipeline.py" "${@:2}"
+        ;;
+    train-dual)
+        # Run dual training (Qwen LoRA + Primary)
+        print_header
+        echo -e "${CYAN}Running GLADIUS Dual Training System...${NC}"
+        echo "─────────────────────────────────────────────────────────────────"
+        echo -e "  ${BLUE}Track 1:${NC} Qwen2.5-1.5B + LoRA (Operational)"
+        echo -e "  ${BLUE}Track 2:${NC} GLADIUS Primary (Custom Architecture)"
+        echo ""
+        "$PYTHON" "$GLADIUS_ROOT/GLADIUS/training/dual_trainer.py" "${@:2}"
+        ;;
+    train-1b)
+        # Run 1B parameter training
+        print_header
+        echo -e "${CYAN}Running GLADIUS 1B Training...${NC}"
+        echo "─────────────────────────────────────────────────────────────────"
+        "$PYTHON" "$GLADIUS_ROOT/GLADIUS/training/gladius_1b_trainer.py" "${@:2}"
+        ;;
+    continuous)
+        # Run GLADIUS continuous autonomous mode
+        print_header
+        echo -e "${CYAN}Starting GLADIUS Continuous Autonomous Mode...${NC}"
+        echo ""
+        "$PYTHON" "$GLADIUS_ROOT/GLADIUS/continuous.py" "${@:2}"
+        ;;
     *)
         echo ""
-        echo -e "${BLUE}⚔️  GLADIUS Control Script${NC}"
+        echo -e "${BLUE}GLADIUS Control Script${NC}"
         echo ""
         echo "Usage: ./gladius.sh <command> [options]"
         echo ""
@@ -958,6 +1184,14 @@ case "${1:-help}" in
         echo "  restart            Stop then start all services"
         echo "  status             Quick status check (all services)"
         echo "  health             Full health check with endpoint tests"
+        echo ""
+        echo -e "${CYAN}GLADIUS AI:${NC}"
+        echo "  interact           Interactive GLADIUS session (tool routing)"
+        echo "  speak              Direct GLADIUS conversation interface"
+        echo "  train              Run GLADIUS model training pipeline"
+        echo "  train-dual         Run dual training (Qwen LoRA + Primary)"
+        echo "  train-1b           Run 1B parameter training"
+        echo "  continuous         Run GLADIUS continuous autonomous mode"
         echo ""
         echo -e "${CYAN}Autonomous Cognition:${NC}"
         echo "  cycle              Run single full autonomous cycle"
@@ -971,16 +1205,17 @@ case "${1:-help}" in
         echo "  logs               Tail all log files"
         echo ""
         echo -e "${CYAN}Services:${NC}"
-        echo "  • Infra API (7000)         - Market data, assets, portfolios"
-        echo "  • Dashboard Backend (5000) - Automata control, content"
-        echo "  • Web UI (5002)            - Template-based UI and charts"
-        echo "  • Dashboard Frontend (3000)- React UI"
-        echo "  • Grafana (3001)           - Metrics dashboards (Docker)"
-        echo "  • Prometheus (9090)        - Metrics collection (Docker)"
-        echo "  • Syndicate Daemon         - Market intelligence + Cognition"
+        echo "  * Infra API (7000)         - Market data, assets, portfolios"
+        echo "  * Dashboard Backend (5000) - Automata control, content"
+        echo "  * Web UI (5002)            - Template-based UI and charts"
+        echo "  * Dashboard Frontend (3000)- React UI"
+        echo "  * Grafana (3001)           - Metrics dashboards (Docker)"
+        echo "  * Prometheus (9090)        - Metrics collection (Docker)"
+        echo "  * Syndicate Daemon         - Market intelligence + Cognition"
         echo ""
         echo "Examples:"
         echo "  ./gladius.sh start              # Start all services"
+        echo "  ./gladius.sh interact           # Start interactive AI session"
         echo "  ./gladius.sh cycle              # Run single autonomous cycle"
         echo "  ./gladius.sh cognition          # Run learning cycle only"
         echo "  ./gladius.sh benchmark 10       # Benchmark with 10 cycles"

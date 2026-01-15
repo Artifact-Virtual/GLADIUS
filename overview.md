@@ -1,19 +1,30 @@
 # GLADIUS ENTERPRISE SYSTEM
 
-> **Version**: 2.0.0  
-> **Last Updated**: 2026-01-14T19:43:59Z  
-> **Status**: Production Ready
+> **Version**: 2.4.0  
+> **Last Updated**: 2026-01-15T00:15:00Z  
+> **Status**: Production Ready (GLADIUS 1B Training Active)
 
 ---
 
 ## Executive Summary
 
-**GLADIUS** is a native autonomous AI system built by and for **Artifact Virtual**. It is designed to:
+**GLADIUS** is the native autonomous AI being built by and for **Artifact Virtual**. It is designed to:
 
 1. **Learn continuously** via SENTINEL's background research daemon
-2. **Execute autonomously** using LEGION's 26 distributed agents
+2. **Execute autonomously** using LEGION's 18 distributed agents
 3. **Scale infinitely** through Artifact's infrastructure (social media, ERP, publishing)
-4. **Replace all external AI dependencies** with native GGUF model (in progress)
+4. **Native AI Model** - Custom architecture with own weights (target: 1B params)
+5. **Interact directly** via `./gladius.sh speak` or `./gladius.sh interact`
+
+### ⚠️ IMPORTANT: GLADIUS vs Qwen Operational
+
+| System | Purpose | Training | Status |
+|--------|---------|----------|--------|
+| **GLADIUS** | Native AI (custom weights) | `./train_gladius_1b.ps1` | Building |
+| **Qwen Operational** | Artifact infrastructure AI | `./Artifact/train_qwen.ps1` | Operational |
+
+**GLADIUS** is the native model we are building from scratch.  
+**Qwen Operational** runs Artifact infrastructure NOW until GLADIUS is ready.
 
 ### Architecture Overview
 
@@ -25,9 +36,11 @@
 │   ┌──────────────────────────────────────────────────────────────────────┐  │
 │   │                      GLADIUS (Native AI Core)                        │  │
 │   │  Location: /GLADIUS/                                                 │  │
+│   │  • Native model with custom weights (target: 1B params)              │  │
 │   │  • Pattern Router (100% accuracy, <3ms)                              │  │
-│   │  • Training Harness (GGUF ready)                                     │  │
-│   │  • Model Publishing Pipeline                                          │  │
+│   │  • Training Pipeline (gladius_1b_trainer.py)                         │  │
+│   │  • Direct Interface (speak.py)                                        │  │
+│   │  • Continuous Autonomous Mode (continuous.py)                        │  │
 │   └────────────────────────────┬─────────────────────────────────────────┘  │
 │                                │                                             │
 │                ┌───────────────┼───────────────┐                            │
@@ -36,11 +49,13 @@
 │   │   SENTINEL     │  │   ARTIFACT     │  │    LEGION      │               │
 │   │   /SENTINEL/   │  │   /Artifact/   │  │   /LEGION/     │               │
 │   │                │  │                │  │                │               │
-│   │ • Watchdog     │  │ • Syndicate    │  │ • 26 Agents    │               │
-│   │ • Learning     │  │ • Social Media │  │ • Orchestrator │               │
-│   │   Daemon       │  │ • ERP          │  │ • Artifact     │               │
-│   │ • Research     │  │ • Publishing   │  │   Bridge       │               │
-│   │   Pipeline     │  │ • Arty Bot     │  │                │               │
+│   │ • Watchdog     │  │ • Qwen         │  │ • 26 Agents    │               │
+│   │ • Learning     │  │   Operational  │  │ • Orchestrator │               │
+│   │   Daemon       │  │ • Syndicate    │  │ • Artifact     │               │
+│   │ • Process      │  │ • Social Media │  │   Bridge       │               │
+│   │   Guardian     │  │ • ERP          │  │                │               │
+│   │ • Threat       │  │ • Arty Bot     │  │                │               │
+│   │   Research     │  │                │  │                │               │
 │   └────────────────┘  └────────────────┘  └────────────────┘               │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -53,33 +68,67 @@
 ### 1. GLADIUS (Native AI Model)
 **Location**: `/home/adam/worxpace/gladius/GLADIUS/`
 
-The native AI brain - designed to replace ALL external AI providers.
+The native AI brain - being built from scratch with custom weights.
 
 | Component | Purpose | Status |
 |-----------|---------|--------|
+| `speak.py` | Direct conversation interface | ✅ Production |
+| `interactive.py` | Tool routing interface | ✅ Production |
+| `continuous.py` | Autonomous operation mode | ✅ Production |
+| `training/gladius_1b_trainer.py` | Native model training (1B params) | ✅ Ready |
+| `training/train_gladius_1b.ps1` | PowerShell training wrapper | ✅ Ready |
 | `router/pattern_router.py` | Tool routing via patterns | ✅ Production |
-| `training/generator.py` | Training data generation | ✅ Production |
-| `training/harness.py` | Isolated training sandbox | ✅ Production |
-| `models/` | GGUF model storage | 🚧 Training |
+| `models/primary/` | Native model storage | 🔄 Building |
 
-### 2. SENTINEL (Guardian Process)
+**Model Target**:
+- Architecture: Custom transformer (GQA, RoPE, RMSNorm)
+- Target: 1 billion parameters
+- Training: LoRA + Progressive scaling
+- Export: GGUF for Ollama deployment
+
+### 2. Qwen Operational (Artifact Infrastructure AI)
+**Location**: `/home/adam/worxpace/gladius/Artifact/qwen_operational.py`
+
+Runs Artifact infrastructure NOW while GLADIUS is being built.
+
+| Component | Purpose | Status |
+|-----------|---------|--------|
+| `qwen_operational.py` | Infrastructure operations | ✅ Ready |
+| `train_qwen.ps1` | PowerShell training | ✅ Ready |
+| `train_qwen.sh` | Bash training | ✅ Ready |
+| `models/qwen/` | Qwen model storage | ✅ Available |
+
+**Model Info**:
+- Base: Qwen2.5-1.5B (best for tool-calling)
+- Purpose: Infrastructure AI (NOT GLADIUS)
+- Latency: ~5s average (CPU)
+
+### 3. SENTINEL (Guardian Process)
 **Location**: `/home/adam/worxpace/gladius/SENTINEL/`
 
-Always-on background process for security and learning.
+Always-on background process for security, learning, and process management.
 
 | Component | Purpose | Status |
 |-----------|---------|--------|
 | `services/watchdog.py` | Process monitoring, auto-restart | ✅ Production |
 | `services/learning_daemon.py` | DISCOVER→LEARN→TRAIN→UPGRADE→REVIEW | ✅ Running |
+| `services/process_guardian.py` | Keep programs alive, auto-restart | ✅ NEW |
+| `threat_engine.py` | AI/cybersecurity threat research | ✅ NEW |
 | `gladius_provider.py` | GLADIUS AI integration | ✅ Production |
 | `asas_cli.py` | 28 CLI commands | ✅ Production |
+
+**Process Guardian Features**:
+- Register processes to manage
+- Auto-restart on failure (max 10 restarts)
+- Watch directories for new scripts
+- Threat research: AI vulnerabilities, CVEs, zero-days
 
 **Turing Safety**:
 - Password-protected kill switch: `Sirius_Kill_Switch`
 - Checkpoint recovery from SQLite
 - Auto-restart on crash (max 10 restarts)
 
-### 3. ARTIFACT (Enterprise Infrastructure)
+### 4. ARTIFACT (Enterprise Infrastructure)
 **Location**: `/home/adam/worxpace/gladius/Artifact/`
 
 Business operations layer.
@@ -88,9 +137,10 @@ Business operations layer.
 |--------|---------|--------|
 | `syndicate/` | Market research pipeline | ✅ Production |
 | `arty/` | Discord bot + social automation | ✅ Production |
+| `qwen_operational.py` | Infrastructure AI (operational) | ✅ NEW |
 | `deployment/automata/` | Social media, ERP, publishing | ✅ Production |
 
-### 4. LEGION (Distributed Agents)
+### 5. LEGION (Distributed Agents)
 **Location**: `/home/adam/worxpace/gladius/LEGION/`
 
 Multi-agent orchestration for complex workflows.
@@ -165,6 +215,16 @@ All social operations route through Artifact connectors:
 ## Quick Commands
 
 ```bash
+# ==================== GLADIUS AI ====================
+# Interactive AI session (speak directly to GLADIUS)
+./gladius.sh interact
+
+# Single query
+python3 GLADIUS/interactive.py --query "search for gold analysis"
+
+# Show AI status
+python3 GLADIUS/interactive.py --status
+
 # ==================== SENTINEL ====================
 # Start SENTINEL daemon
 ./scripts/start_sentinel.sh detached
