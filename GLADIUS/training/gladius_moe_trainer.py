@@ -108,22 +108,10 @@ EXPERT_TEACHERS = [
         weight=1.2  # Exceptional reasoning density
     ),
     ExpertModel(
-        name="gemma",
-        hf_id="google/gemma-2-2b-it",
-        strengths=["safety", "web_knowledge", "instruction_following", "general_knowledge"],
-        weight=1.0  # Strong for web/search context
-    ),
-    ExpertModel(
-        name="mistral",
-        hf_id="mistralai/Mistral-7B-Instruct-v0.2",
-        strengths=["speed", "efficiency", "sliding_window", "long_context"],
-        weight=0.8  # Architectural patterns for efficiency
-    ),
-    ExpertModel(
         name="tinyllama",
         hf_id="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-        strengths=["fast_inference", "conversation", "lightweight"],
-        weight=0.6  # Speed patterns
+        strengths=["fast_inference", "safety", "instruction_following", "general_knowledge"],
+        weight=1.0  # Fallback for Gemma (gated model)
     ),
 ]
 
@@ -289,15 +277,43 @@ class MultiExpertDistiller:
             os.environ['HF_HOME'] = str(CACHE_DIR)
             os.environ['TRANSFORMERS_CACHE'] = str(CACHE_DIR)
             
+            # Check for local models first (tmp/models/)
+            local_models_dir = TMP_BASE / "models"
+            hf_name = expert.hf_id.split("/")[-1]
+            local_paths = [
+                local_models_dir / hf_name,
+                local_models_dir / hf_name.replace("-Instruct", ""),
+                local_models_dir / f"{hf_name.replace('-Instruct', '')}-meta",
+                local_models_dir / expert.name,
+            ]
+            
+            model_path = expert.hf_id  # Default to HF ID
+            
+            for local_path in local_paths:
+                if local_path.exists():
+                    # Check for model files
+                    has_safetensors = list(local_path.glob("*.safetensors"))
+                    has_bin = list(local_path.glob("*.bin"))
+                    has_pth = list(local_path.glob("*.pth"))
+                    
+                    if has_safetensors or has_bin:
+                        model_path = str(local_path)
+                        logger.info(f"Using local model: {local_path}")
+                        break
+                    elif has_pth:
+                        # Meta format - need to convert or use HF
+                        logger.info(f"Found Meta format at {local_path}, using HF for compatibility")
+                        continue
+            
             tokenizer = AutoTokenizer.from_pretrained(
-                expert.hf_id,
+                model_path,
                 trust_remote_code=True,
                 cache_dir=CACHE_DIR
             )
             
             if self.device == "cuda":
                 model = AutoModelForCausalLM.from_pretrained(
-                    expert.hf_id,
+                    model_path,
                     torch_dtype=torch.float16,
                     device_map="auto",
                     trust_remote_code=True,
@@ -305,7 +321,7 @@ class MultiExpertDistiller:
                 )
             else:
                 model = AutoModelForCausalLM.from_pretrained(
-                    expert.hf_id,
+                    model_path,
                     torch_dtype=torch.float32,
                     low_cpu_mem_usage=True,
                     trust_remote_code=True,

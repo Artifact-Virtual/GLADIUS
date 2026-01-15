@@ -95,6 +95,48 @@ GLADIUS is the **native AI model** that powers all intelligent operations within
 
 ## CLI Commands
 
+### GLADIUS Training CLI (Primary)
+```bash
+# Navigate to GLADIUS directory
+cd GLADIUS
+
+# Show current training status
+./gladius_train status
+
+# List all expert models and download status
+./gladius_train models
+
+# Download all required models
+./gladius_train download
+
+# Download specific model
+./gladius_train download qwen
+./gladius_train download phi
+./gladius_train download gemma
+
+# Start indefinite training
+./gladius_train train
+
+# Train for specific duration
+./gladius_train train --hours 72
+./gladius_train train --hours 168  # 1 week
+
+# Resume from checkpoint
+./gladius_train resume
+
+# Live training dashboard
+./gladius_train dashboard
+
+# Export to GGUF
+./gladius_train export
+
+# Validate trained model
+./gladius_train validate
+
+# Clean temp files
+./gladius_train clean --confirm
+```
+
 ### Direct AI Interaction
 ```bash
 # Speak directly to GLADIUS (conversational)
@@ -110,7 +152,7 @@ GLADIUS is the **native AI model** that powers all intelligent operations within
 ./gladius.sh speak --status
 ```
 
-### Model Training
+### Model Training (Legacy)
 ```bash
 # Run full training pipeline
 ./gladius.sh train

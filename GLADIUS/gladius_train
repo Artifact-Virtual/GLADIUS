@@ -1,0 +1,843 @@
+#!/usr/bin/env python3
+"""
+Training CLI
+====================
+
+Comprehensive CLI for managing GLADIUS model training operations.
+Handles model downloads, training orchestration, and monitoring.
+
+Usage:
+    ./gladius_train status              # Show training status
+    ./gladius_train models              # List all models and download status
+    ./gladius_train download            # Download missing models
+    ./gladius_train download qwen       # Download specific model
+    ./gladius_train train               # Start training (indefinite)
+    ./gladius_train train --hours 72    # Train for specific duration
+    ./gladius_train resume              # Resume from checkpoint
+    ./gladius_train dashboard           # Live training dashboard
+    ./gladius_train export              # Export to GGUF for deployment
+    ./gladius_train validate            # Validate trained model
+    ./gladius_train clean               # Clean temporary files
+
+Author: Artifact Virtual Systems
+"""
+
+import os
+import sys
+import json
+import time
+import signal
+import argparse
+import subprocess
+import shutil
+from pathlib import Path
+from datetime import datetime, timedelta
+from typing import Dict, List, Any, Optional, Tuple
+from dataclasses import dataclass, asdict
+import hashlib
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PATH CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+SCRIPT_DIR = Path(__file__).parent.resolve()
+GLADIUS_DIR = SCRIPT_DIR
+PROJECT_ROOT = GLADIUS_DIR.parent.resolve()
+
+# All heavy files in tmp/ (models, cache, checkpoints)
+TMP_DIR = GLADIUS_DIR / "tmp"
+MODELS_DIR = TMP_DIR / "models"
+CACHE_DIR = TMP_DIR / "cache"
+CHECKPOINTS_DIR = TMP_DIR / "checkpoints"
+LOGS_DIR = TMP_DIR / "logs"
+DOWNLOADS_DIR = TMP_DIR / "downloads"
+EXPERTS_CACHE = TMP_DIR / "experts_cache"
+
+# Training code
+TRAINING_DIR = GLADIUS_DIR / "training"
+
+# Output
+PRIMARY_DIR = GLADIUS_DIR / "models" / "gladius_primary"
+
+# Ensure directories exist
+for d in [TMP_DIR, MODELS_DIR, CACHE_DIR, CHECKPOINTS_DIR, LOGS_DIR, 
+          DOWNLOADS_DIR, EXPERTS_CACHE, PRIMARY_DIR]:
+    d.mkdir(parents=True, exist_ok=True)
+
+# Set HuggingFace environment
+os.environ['HF_HOME'] = str(CACHE_DIR)
+os.environ['TRANSFORMERS_CACHE'] = str(CACHE_DIR)
+os.environ['TMPDIR'] = str(DOWNLOADS_DIR)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TERMINAL COLORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class Colors:
+    HEADER = '\033[95m'
+    BLUE = '\033[94m'
+    CYAN = '\033[96m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    NC = '\033[0m'
+    BOLD = '\033[1m'
+    DIM = '\033[2m'
+    UNDERLINE = '\033[4m'
+
+def c(text: str, color: str) -> str:
+    """Colorize text"""
+    return f"{color}{text}{Colors.NC}"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EXPERT MODEL DEFINITIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@dataclass
+class ExpertConfig:
+    """Expert model configuration"""
+    name: str
+    hf_id: str
+    display_name: str
+    expected_size_gb: float
+    priority: int  # 1 = highest priority
+    weight: float
+    strengths: List[str]
+    required: bool = True
+    local_path: Optional[str] = None  # Override path if downloaded manually
+    
+EXPERT_MODELS = {
+    "qwen": ExpertConfig(
+        name="qwen",
+        hf_id="Qwen/Qwen2.5-1.5B-Instruct",
+        display_name="Qwen 2.5 1.5B Instruct",
+        expected_size_gb=3.0,
+        priority=1,
+        weight=1.5,
+        strengths=["tool_calling", "JSON", "multilingual"],
+        required=True
+    ),
+    "llama": ExpertConfig(
+        name="llama",
+        hf_id="meta-llama/Llama-3.2-1B-Instruct",
+        display_name="Llama 3.2 1B Instruct",
+        expected_size_gb=2.5,
+        priority=2,
+        weight=1.3,
+        strengths=["reasoning", "fluency", "conversation"],
+        required=True,
+        local_path="Llama-3.2-1B-meta"  # Already downloaded with Meta format
+    ),
+    "phi": ExpertConfig(
+        name="phi",
+        hf_id="microsoft/phi-2",
+        display_name="Phi-2",
+        expected_size_gb=5.5,
+        priority=3,
+        weight=1.2,
+        strengths=["math", "code", "logic"],
+        required=True
+    ),
+    "tinyllama": ExpertConfig(
+        name="tinyllama",
+        hf_id="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+        display_name="TinyLlama 1.1B",
+        expected_size_gb=2.2,
+        priority=4,
+        weight=1.0,
+        strengths=["fast_inference", "safety", "instructions"],
+        required=True
+    ),
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MODEL STATUS CHECKER
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def get_model_status(expert: ExpertConfig) -> Dict[str, Any]:
+    """Check download status for a model"""
+    # Check in HF cache - may be in cache/ or cache/hub/
+    cache_model_name = f"models--{expert.hf_id.replace('/', '--')}"
+    cache_paths = [
+        CACHE_DIR / cache_model_name,
+        CACHE_DIR / "hub" / cache_model_name,
+    ]
+    
+    # Model name variations to check
+    hf_name = expert.hf_id.split("/")[-1]
+    
+    # Check in local models directory - include common naming patterns
+    local_paths = [
+        MODELS_DIR / expert.name,
+        MODELS_DIR / hf_name,
+        MODELS_DIR / hf_name.replace("-Instruct", ""),  # Qwen2.5-1.5B-Instruct -> Qwen2.5-1.5B
+        MODELS_DIR / f"{hf_name.replace('-Instruct', '')}-meta",  # Llama-3.2-1B-Instruct -> Llama-3.2-1B-meta
+        EXPERTS_CACHE / expert.name,
+        EXPERTS_CACHE / hf_name,
+    ]
+    
+    # Add explicit local_path if configured
+    if expert.local_path:
+        local_paths.insert(0, MODELS_DIR / expert.local_path)
+    
+    status = {
+        "name": expert.name,
+        "hf_id": expert.hf_id,
+        "display_name": expert.display_name,
+        "expected_size_gb": expert.expected_size_gb,
+        "required": expert.required,
+        "downloaded": False,
+        "partial": False,
+        "path": None,
+        "size_gb": 0,
+        "complete": False,
+    }
+    
+    # Check HF cache first
+    for cache_path in cache_paths:
+        if cache_path.exists():
+            snapshots = cache_path / "snapshots"
+            blobs = cache_path / "blobs"
+            
+            if snapshots.exists():
+                for snapshot in snapshots.iterdir():
+                    if snapshot.is_dir():
+                        # Check for model files (may be symlinks)
+                        safetensors = list(snapshot.glob("*safetensors*"))
+                        bins = list(snapshot.glob("*.bin"))
+                        config = list(snapshot.glob("config.json"))
+                        
+                        if (safetensors or bins) and config:
+                            # Get size from blobs directory (actual files)
+                            if blobs.exists():
+                                size = sum(f.stat().st_size for f in blobs.iterdir() if f.is_file())
+                            else:
+                                # Follow symlinks for size
+                                size = sum(f.resolve().stat().st_size for f in snapshot.rglob("*") if f.is_symlink() or f.is_file())
+                            
+                            status["path"] = str(snapshot)
+                            status["size_gb"] = size / (1024**3)
+                            status["downloaded"] = True
+                            # Consider complete if > 80% expected size
+                            status["complete"] = status["size_gb"] >= (expert.expected_size_gb * 0.8)
+                            status["partial"] = not status["complete"]
+                            return status
+    
+    # Check local paths
+    for local_path in local_paths:
+        if local_path.exists():
+            safetensors = list(local_path.glob("*.safetensors"))
+            bins = list(local_path.glob("*.bin"))
+            pths = list(local_path.glob("*.pth"))
+            
+            if safetensors or bins or pths:
+                size = sum(f.stat().st_size for f in local_path.rglob("*") if f.is_file())
+                status["path"] = str(local_path)
+                status["size_gb"] = size / (1024**3)
+                status["downloaded"] = True
+                status["complete"] = status["size_gb"] >= (expert.expected_size_gb * 0.5)
+                status["partial"] = not status["complete"]
+                return status
+    
+    return status
+
+def get_all_model_status() -> Dict[str, Dict]:
+    """Get status for all expert models"""
+    return {name: get_model_status(expert) for name, expert in EXPERT_MODELS.items()}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MODEL DOWNLOADER
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def download_model(expert: ExpertConfig, force: bool = False) -> bool:
+    """Download a model from HuggingFace"""
+    status = get_model_status(expert)
+    
+    if status["complete"] and not force:
+        print(f"{c('✓', Colors.GREEN)} {expert.display_name} already downloaded ({status['size_gb']:.1f}GB)")
+        return True
+    
+    print(f"\n{c('⬇', Colors.CYAN)} Downloading {c(expert.display_name, Colors.BOLD)}...")
+    print(f"  HuggingFace ID: {expert.hf_id}")
+    print(f"  Expected size: {expert.expected_size_gb:.1f}GB")
+    print(f"  Destination: {CACHE_DIR}")
+    print()
+    
+    try:
+        # Check if huggingface_hub is available
+        try:
+            from huggingface_hub import snapshot_download, login
+            
+            # Check for HF token
+            hf_token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN")
+            if not hf_token:
+                token_file = Path.home() / ".cache" / "huggingface" / "token"
+                if token_file.exists():
+                    hf_token = token_file.read_text().strip()
+            
+            # Download with progress
+            path = snapshot_download(
+                expert.hf_id,
+                cache_dir=str(CACHE_DIR),
+                token=hf_token,
+                resume_download=True,
+            )
+            print(f"{c('✓', Colors.GREEN)} Downloaded to: {path}")
+            return True
+            
+        except ImportError:
+            # Fall back to CLI
+            print(f"{c('ℹ', Colors.YELLOW)} Using huggingface-cli for download...")
+            
+            cmd = [
+                sys.executable, "-m", "huggingface_hub", "download",
+                expert.hf_id,
+                "--cache-dir", str(CACHE_DIR),
+                "--resume-download"
+            ]
+            
+            result = subprocess.run(cmd, capture_output=False)
+            return result.returncode == 0
+            
+    except Exception as e:
+        print(f"{c('✗', Colors.RED)} Download failed: {e}")
+        return False
+
+def download_all_models(required_only: bool = True, force: bool = False) -> Dict[str, bool]:
+    """Download all required models"""
+    results = {}
+    
+    # Sort by priority
+    sorted_experts = sorted(EXPERT_MODELS.values(), key=lambda x: x.priority)
+    
+    for expert in sorted_experts:
+        if required_only and not expert.required:
+            print(f"{c('○', Colors.DIM)} Skipping optional: {expert.display_name}")
+            results[expert.name] = None
+            continue
+        
+        results[expert.name] = download_model(expert, force=force)
+    
+    return results
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TRAINING STATE MANAGEMENT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@dataclass
+class TrainingState:
+    """Persistent training state"""
+    status: str = "not_started"  # not_started, training, paused, completed, failed
+    phase: int = 0
+    current_expert: str = ""
+    experts_completed: List[str] = None
+    step: int = 0
+    epoch: int = 0
+    total_steps: int = 0
+    loss: float = 0.0
+    loss_history: List[float] = None
+    current_params: int = 0
+    target_params: int = 1_000_000_000
+    training_hours: float = 0.0
+    started_at: str = ""
+    last_checkpoint: str = ""
+    hardware: str = ""
+    errors: List[str] = None
+    
+    def __post_init__(self):
+        if self.experts_completed is None:
+            self.experts_completed = []
+        if self.loss_history is None:
+            self.loss_history = []
+        if self.errors is None:
+            self.errors = []
+    
+    def save(self):
+        state_file = CHECKPOINTS_DIR / "training_state.json"
+        with open(state_file, 'w') as f:
+            json.dump(asdict(self), f, indent=2)
+    
+    @classmethod
+    def load(cls) -> 'TrainingState':
+        state_file = CHECKPOINTS_DIR / "training_state.json"
+        if state_file.exists():
+            with open(state_file) as f:
+                data = json.load(f)
+                return cls(**data)
+        return cls()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TRAINING COMMANDS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def cmd_status():
+    """Show current training status"""
+    print(f"\n{c('═' * 70, Colors.CYAN)}")
+    print(f"{c('           GLADIUS TRAINING STATUS', Colors.BOLD)}")
+    print(f"{c('═' * 70, Colors.CYAN)}\n")
+    
+    # Try to load from MoE trainer state first, then CLI state
+    moe_state_file = CHECKPOINTS_DIR / "moe_training_state.json"
+    cli_state_file = CHECKPOINTS_DIR / "training_state.json"
+    
+    state_data = {}
+    if moe_state_file.exists():
+        with open(moe_state_file) as f:
+            state_data = json.load(f)
+    elif cli_state_file.exists():
+        with open(cli_state_file) as f:
+            state_data = json.load(f)
+    
+    # Map to TrainingState fields
+    status = state_data.get("status", "not_started")
+    phase = state_data.get("phase", 0)
+    current_expert = state_data.get("current_expert", "")
+    experts_completed = state_data.get("experts_distilled", state_data.get("experts_completed", []))
+    step = state_data.get("step", 0)
+    loss = state_data.get("loss", 0.0)
+    if "loss_history" in state_data and state_data["loss_history"]:
+        loss = state_data["loss_history"][-1]
+    current_params = state_data.get("current_params", 0)
+    target_params = state_data.get("target_params", 1_000_000_000)
+    training_hours = state_data.get("total_training_hours", state_data.get("training_hours", 0.0))
+    hardware = state_data.get("hardware", "Unknown")
+    
+    # Status color
+    status_colors = {
+        "not_started": Colors.DIM,
+        "initialized": Colors.DIM,
+        "training": Colors.GREEN,
+        "paused": Colors.YELLOW,
+        "completed": Colors.CYAN,
+        "failed": Colors.RED,
+    }
+    status_color = status_colors.get(status, Colors.NC)
+    
+    print(f"  {c('Status:', Colors.BOLD)}       {c(status.upper(), status_color)}")
+    print(f"  {c('Phase:', Colors.BOLD)}        {phase}/6")
+    print(f"  {c('Current:', Colors.BOLD)}      {current_expert or 'N/A'}")
+    print(f"  {c('Step:', Colors.BOLD)}         {step:,}")
+    print(f"  {c('Loss:', Colors.BOLD)}         {loss:.4f}" if loss else f"  {c('Loss:', Colors.BOLD)}         N/A")
+    print(f"  {c('Parameters:', Colors.BOLD)}   {current_params:,} / {target_params:,}")
+    progress = (current_params / target_params * 100) if target_params > 0 else 0
+    print(f"  {c('Progress:', Colors.BOLD)}     {progress:.1f}%")
+    print(f"  {c('Hours:', Colors.BOLD)}        {training_hours:.2f}")
+    print(f"  {c('Hardware:', Colors.BOLD)}     {hardware}")
+    print()
+    
+    # Experts progress
+    print(f"  {c('Experts Completed:', Colors.BOLD)}")
+    for expert in EXPERT_MODELS.values():
+        if expert.name in experts_completed:
+            print(f"    {c('✓', Colors.GREEN)} {expert.display_name}")
+        elif expert.name == current_expert:
+            print(f"    {c('◆', Colors.YELLOW)} {expert.display_name} (in progress)")
+        else:
+            print(f"    {c('○', Colors.DIM)} {expert.display_name}")
+    print()
+    
+    last_checkpoint = state_data.get("last_checkpoint", "")
+    if last_checkpoint:
+        print(f"  {c('Last checkpoint:', Colors.DIM)} {last_checkpoint}")
+    
+    print()
+
+def cmd_models():
+    """List all models and their download status"""
+    print(f"\n{c('═' * 70, Colors.CYAN)}")
+    print(f"{c('           GLADIUS EXPERT MODELS', Colors.BOLD)}")
+    print(f"{c('═' * 70, Colors.CYAN)}\n")
+    
+    all_status = get_all_model_status()
+    total_size = 0
+    total_expected = 0
+    ready_count = 0
+    required_ready = 0
+    required_total = 0
+    
+    print(f"  {'Model':<25} {'Status':<15} {'Size':<12} {'Required':<10}")
+    print(f"  {'-' * 25} {'-' * 15} {'-' * 12} {'-' * 10}")
+    
+    for name, status in all_status.items():
+        expert = EXPERT_MODELS[name]
+        
+        if status["complete"]:
+            status_str = c("✓ Ready", Colors.GREEN)
+            ready_count += 1
+            if expert.required:
+                required_ready += 1
+        elif status["partial"]:
+            status_str = c("◐ Partial", Colors.YELLOW)
+        elif status["downloaded"]:
+            status_str = c("◔ Incomplete", Colors.YELLOW)
+        else:
+            status_str = c("○ Missing", Colors.DIM)
+        
+        size_str = f"{status['size_gb']:.1f}GB" if status['size_gb'] > 0 else f"~{expert.expected_size_gb:.1f}GB"
+        required_str = c("Yes", Colors.BOLD) if expert.required else c("No", Colors.DIM)
+        
+        print(f"  {expert.display_name:<25} {status_str:<24} {size_str:<12} {required_str}")
+        
+        total_size += status['size_gb']
+        total_expected += expert.expected_size_gb
+        if expert.required:
+            required_total += 1
+    
+    print()
+    print(f"  {c('Total Downloaded:', Colors.BOLD)} {total_size:.1f}GB / ~{total_expected:.1f}GB expected")
+    print(f"  {c('Models Ready:', Colors.BOLD)} {ready_count}/{len(EXPERT_MODELS)} ({required_ready}/{required_total} required)")
+    print()
+    
+    # Recommendations
+    missing_required = [name for name, status in all_status.items() 
+                       if not status["complete"] and EXPERT_MODELS[name].required]
+    
+    if missing_required:
+        print(f"  {c('⚠ Missing required models:', Colors.YELLOW)} {', '.join(missing_required)}")
+        print(f"  {c('Run:', Colors.CYAN)} ./gladius_train download")
+    else:
+        print(f"  {c('✓ All required models ready for training', Colors.GREEN)}")
+    
+    print()
+
+def cmd_download(model_name: Optional[str] = None, force: bool = False, all_models: bool = False):
+    """Download models"""
+    print(f"\n{c('═' * 70, Colors.CYAN)}")
+    print(f"{c('           GLADIUS MODEL DOWNLOAD', Colors.BOLD)}")
+    print(f"{c('═' * 70, Colors.CYAN)}\n")
+    
+    # Check for huggingface_hub
+    try:
+        import huggingface_hub
+        print(f"  {c('✓', Colors.GREEN)} huggingface_hub installed")
+    except ImportError:
+        print(f"  {c('Installing huggingface_hub...', Colors.YELLOW)}")
+        subprocess.run([sys.executable, "-m", "pip", "install", "-q", "huggingface_hub"])
+    
+    print(f"  {c('Cache directory:', Colors.DIM)} {CACHE_DIR}")
+    print()
+    
+    if model_name:
+        if model_name not in EXPERT_MODELS:
+            print(f"{c('✗', Colors.RED)} Unknown model: {model_name}")
+            print(f"  Available: {', '.join(EXPERT_MODELS.keys())}")
+            return 1
+        
+        expert = EXPERT_MODELS[model_name]
+        success = download_model(expert, force=force)
+        return 0 if success else 1
+    else:
+        results = download_all_models(required_only=not all_models, force=force)
+        
+        print(f"\n{c('Download Summary:', Colors.BOLD)}")
+        for name, success in results.items():
+            if success is True:
+                print(f"  {c('✓', Colors.GREEN)} {name}")
+            elif success is False:
+                print(f"  {c('✗', Colors.RED)} {name}")
+            else:
+                print(f"  {c('○', Colors.DIM)} {name} (skipped)")
+        
+        return 0 if all(v in (True, None) for v in results.values()) else 1
+
+def cmd_train(hours: float = 0, resume: bool = False):
+    """Start or resume training"""
+    print(f"\n{c('═' * 70, Colors.CYAN)}")
+    print(f"{c('           GLADIUS MULTI-EXPERT TRAINING', Colors.BOLD)}")
+    print(f"{c('═' * 70, Colors.CYAN)}\n")
+    
+    # Check models first
+    all_status = get_all_model_status()
+    missing_required = [name for name, status in all_status.items() 
+                       if not status["complete"] and EXPERT_MODELS[name].required]
+    
+    if missing_required:
+        print(f"  {c('✗ Cannot start training - missing required models:', Colors.RED)}")
+        for name in missing_required:
+            print(f"    • {EXPERT_MODELS[name].display_name}")
+        print(f"\n  Run: ./gladius_train download")
+        return 1
+    
+    print(f"  {c('✓', Colors.GREEN)} All required models available")
+    print(f"  {c('Duration:', Colors.BOLD)} {'Indefinite' if hours == 0 else f'{hours:.1f} hours'}")
+    print(f"  {c('Mode:', Colors.BOLD)} {'Resume' if resume else 'New training'}")
+    print()
+    
+    # Build command
+    trainer_script = TRAINING_DIR / "gladius_moe_trainer.py"
+    
+    if not trainer_script.exists():
+        print(f"{c('✗', Colors.RED)} Trainer script not found: {trainer_script}")
+        return 1
+    
+    # Use venv Python if available for dependencies
+    venv_python = TMP_DIR / "venv" / "bin" / "python"
+    python_exe = str(venv_python) if venv_python.exists() else sys.executable
+    
+    cmd = [python_exe, str(trainer_script)]
+    if hours > 0:
+        cmd.extend(["--hours", str(hours)])
+    if resume:
+        cmd.append("--resume")
+    
+    print(f"  {c('Starting trainer...', Colors.CYAN)}")
+    print(f"  {c('Python:', Colors.DIM)} {python_exe}")
+    print(f"  {c('Command:', Colors.DIM)} {' '.join(cmd)}")
+    print(f"\n  {c('Press Ctrl+C to stop with checkpoint', Colors.YELLOW)}")
+    print(f"\n{c('─' * 70, Colors.DIM)}\n")
+    
+    # Run trainer
+    try:
+        result = subprocess.run(cmd, cwd=str(GLADIUS_DIR))
+        return result.returncode
+    except KeyboardInterrupt:
+        print(f"\n{c('Training interrupted - checkpoint saved', Colors.YELLOW)}")
+        return 0
+
+def cmd_dashboard():
+    """Show live training dashboard"""
+    growth_tracker = GLADIUS_DIR / "growth" / "growth_tracker.py"
+    
+    if not growth_tracker.exists():
+        print(f"{c('✗', Colors.RED)} Growth tracker not found")
+        return 1
+    
+    subprocess.run([sys.executable, str(growth_tracker), "--live"])
+    return 0
+
+def cmd_export():
+    """Export trained model to GGUF"""
+    print(f"\n{c('═' * 70, Colors.CYAN)}")
+    print(f"{c('           GLADIUS GGUF EXPORT', Colors.BOLD)}")
+    print(f"{c('═' * 70, Colors.CYAN)}\n")
+    
+    state = TrainingState.load()
+    
+    if state.status not in ("completed", "training", "paused"):
+        print(f"{c('✗', Colors.RED)} No trained model available to export")
+        print(f"  Current status: {state.status}")
+        return 1
+    
+    # Find the model
+    model_path = PRIMARY_DIR / "gladius-1b-v1"
+    if not model_path.exists():
+        print(f"{c('✗', Colors.RED)} Model not found at: {model_path}")
+        return 1
+    
+    print(f"  {c('Model path:', Colors.BOLD)} {model_path}")
+    print(f"  {c('Exporting to GGUF...', Colors.CYAN)}")
+    
+    # Check for llama.cpp convert script
+    convert_script = Path.home() / "llama.cpp" / "convert_hf_to_gguf.py"
+    
+    if not convert_script.exists():
+        print(f"\n  {c('ℹ', Colors.YELLOW)} llama.cpp not found at ~/llama.cpp")
+        print(f"  To export GGUF, install llama.cpp:")
+        print(f"    git clone https://github.com/ggerganov/llama.cpp ~/llama.cpp")
+        print(f"    cd ~/llama.cpp && make")
+        return 1
+    
+    output_path = model_path / "gladius-1b.gguf"
+    
+    cmd = [
+        sys.executable, str(convert_script),
+        str(model_path),
+        "--outfile", str(output_path),
+        "--outtype", "f16"
+    ]
+    
+    result = subprocess.run(cmd)
+    
+    if result.returncode == 0:
+        print(f"\n{c('✓', Colors.GREEN)} Exported to: {output_path}")
+    
+    return result.returncode
+
+def cmd_validate():
+    """Validate the trained model"""
+    print(f"\n{c('═' * 70, Colors.CYAN)}")
+    print(f"{c('           GLADIUS MODEL VALIDATION', Colors.BOLD)}")
+    print(f"{c('═' * 70, Colors.CYAN)}\n")
+    
+    model_path = PRIMARY_DIR / "gladius-1b-v1"
+    
+    if not model_path.exists():
+        print(f"{c('✗', Colors.RED)} Model not found at: {model_path}")
+        return 1
+    
+    print(f"  {c('Model path:', Colors.BOLD)} {model_path}")
+    print(f"  {c('Loading model...', Colors.CYAN)}")
+    
+    try:
+        import torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+        
+        tokenizer = AutoTokenizer.from_pretrained(str(model_path))
+        model = AutoModelForCausalLM.from_pretrained(
+            str(model_path),
+            torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+            device_map="auto" if torch.cuda.is_available() else None,
+        )
+        
+        param_count = sum(p.numel() for p in model.parameters())
+        print(f"  {c('✓', Colors.GREEN)} Model loaded: {param_count:,} parameters")
+        
+        # Test generation
+        print(f"\n  {c('Testing generation...', Colors.CYAN)}")
+        
+        test_prompts = [
+            "Route this query to a tool: search for gold analysis",
+            "What are your capabilities?",
+        ]
+        
+        for prompt in test_prompts:
+            inputs = tokenizer(prompt, return_tensors="pt")
+            if torch.cuda.is_available():
+                inputs = {k: v.cuda() for k, v in inputs.items()}
+            
+            with torch.no_grad():
+                outputs = model.generate(**inputs, max_new_tokens=50, temperature=0.7)
+            
+            response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+            print(f"\n  {c('Prompt:', Colors.YELLOW)} {prompt[:50]}...")
+            print(f"  {c('Response:', Colors.GREEN)} {response[len(prompt):100]}...")
+        
+        print(f"\n{c('✓', Colors.GREEN)} Validation passed")
+        return 0
+        
+    except Exception as e:
+        print(f"{c('✗', Colors.RED)} Validation failed: {e}")
+        return 1
+
+def cmd_clean(confirm: bool = False):
+    """Clean temporary files"""
+    print(f"\n{c('═' * 70, Colors.CYAN)}")
+    print(f"{c('           GLADIUS CLEANUP', Colors.BOLD)}")
+    print(f"{c('═' * 70, Colors.CYAN)}\n")
+    
+    # Show what will be cleaned
+    items = [
+        (DOWNLOADS_DIR, "Download temp files"),
+        (LOGS_DIR, "Log files"),
+        (CHECKPOINTS_DIR / "*.bak", "Backup checkpoints"),
+    ]
+    
+    print(f"  {c('Items to clean:', Colors.BOLD)}")
+    for path, desc in items:
+        if path.exists() if isinstance(path, Path) and not '*' in str(path) else True:
+            size = 0
+            if isinstance(path, Path) and path.exists():
+                size = sum(f.stat().st_size for f in path.rglob("*") if f.is_file())
+            print(f"    • {desc}: {size / (1024**2):.1f}MB")
+    
+    if not confirm:
+        print(f"\n  {c('Add --confirm to actually delete files', Colors.YELLOW)}")
+        return 0
+    
+    # Clean
+    for path, desc in items:
+        if isinstance(path, Path) and path.exists() and path.is_dir():
+            shutil.rmtree(path, ignore_errors=True)
+            path.mkdir(exist_ok=True)
+            print(f"  {c('✓', Colors.GREEN)} Cleaned: {desc}")
+    
+    return 0
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CLI ENTRY POINT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def print_banner():
+    """Print CLI banner"""
+    print(f"""
+{Colors.CYAN}╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║             G L A D I U S   T R A I N I N G   C L I                      ║
+║                                                                          ║
+║         Multi-Expert Knowledge Distillation · 1B Parameters              ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝{Colors.NC}
+""")
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="GLADIUS Training CLI",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Commands:
+  status              Show current training status
+  models              List all expert models and download status
+  download [MODEL]    Download models (all required or specific)
+  train               Start training (runs indefinitely)
+  resume              Resume training from checkpoint
+  dashboard           Show live training dashboard
+  export              Export trained model to GGUF
+  validate            Validate the trained model
+  clean               Clean temporary files
+
+Examples:
+  ./gladius_train status
+  ./gladius_train download              # Download all required models
+  ./gladius_train download qwen         # Download specific model
+  ./gladius_train train                 # Train indefinitely
+  ./gladius_train train --hours 72      # Train for 72 hours
+  ./gladius_train dashboard             # Live monitoring
+        """
+    )
+    
+    parser.add_argument("command", nargs="?", default="status",
+                       choices=["status", "models", "download", "train", "resume", 
+                               "dashboard", "export", "validate", "clean", "help"])
+    parser.add_argument("model", nargs="?", help="Model name for download command")
+    parser.add_argument("--hours", type=float, default=0, 
+                       help="Training duration in hours (0 = indefinite)")
+    parser.add_argument("--force", action="store_true", 
+                       help="Force re-download of models")
+    parser.add_argument("--all", action="store_true",
+                       help="Include optional models in download")
+    parser.add_argument("--confirm", action="store_true",
+                       help="Confirm destructive operations")
+    parser.add_argument("--quiet", action="store_true",
+                       help="Minimal output")
+    
+    args = parser.parse_args()
+    
+    if not args.quiet:
+        print_banner()
+    
+    # Dispatch commands
+    if args.command == "status":
+        return cmd_status()
+    
+    elif args.command == "models":
+        return cmd_models()
+    
+    elif args.command == "download":
+        return cmd_download(args.model, force=args.force, all_models=args.all)
+    
+    elif args.command == "train":
+        return cmd_train(hours=args.hours, resume=False)
+    
+    elif args.command == "resume":
+        return cmd_train(hours=args.hours, resume=True)
+    
+    elif args.command == "dashboard":
+        return cmd_dashboard()
+    
+    elif args.command == "export":
+        return cmd_export()
+    
+    elif args.command == "validate":
+        return cmd_validate()
+    
+    elif args.command == "clean":
+        return cmd_clean(confirm=args.confirm)
+    
+    elif args.command == "help":
+        parser.print_help()
+        return 0
+    
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main() or 0)
