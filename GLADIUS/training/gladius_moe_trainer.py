@@ -43,18 +43,29 @@ SCRIPT_DIR = Path(__file__).parent.resolve()
 GLADIUS_DIR = SCRIPT_DIR.parent.resolve()
 PROJECT_ROOT = GLADIUS_DIR.parent.resolve()
 
-# All paths relative to project root for portability
-MODELS_DIR = GLADIUS_DIR / "models"
-PRIMARY_DIR = MODELS_DIR / "primary"
-CHECKPOINTS_DIR = MODELS_DIR / "checkpoints"
-EXPERTS_DIR = MODELS_DIR / "experts"
-DATA_DIR = SCRIPT_DIR / "data"
+# ML Workspace for large files (separate from repo)
+ML_WORKSPACE = Path.home() / "gladius_workspace"
+if not ML_WORKSPACE.exists():
+    ML_WORKSPACE.mkdir(parents=True, exist_ok=True)
+
+# Use ML workspace for heavy files, repo for configs
+MODELS_DIR = ML_WORKSPACE / "models"
+PRIMARY_DIR = MODELS_DIR / "gladius_primary"
+CHECKPOINTS_DIR = ML_WORKSPACE / "checkpoints"
+EXPERTS_DIR = ML_WORKSPACE / "experts_cache"
+DATA_DIR = SCRIPT_DIR / "data"  # Keep data in repo for versioning
 LOGS_DIR = PROJECT_ROOT / "logs" / "training"
-CACHE_DIR = MODELS_DIR / ".cache"
+CACHE_DIR = ML_WORKSPACE / "cache"  # HuggingFace cache
+TMP_DIR = ML_WORKSPACE / "tmp"  # Temp files during training
 
 # Ensure directories exist
-for d in [MODELS_DIR, PRIMARY_DIR, CHECKPOINTS_DIR, EXPERTS_DIR, DATA_DIR, LOGS_DIR, CACHE_DIR]:
+for d in [MODELS_DIR, PRIMARY_DIR, CHECKPOINTS_DIR, EXPERTS_DIR, DATA_DIR, LOGS_DIR, CACHE_DIR, TMP_DIR]:
     d.mkdir(parents=True, exist_ok=True)
+
+# Set environment for HuggingFace to use our cache
+os.environ['HF_HOME'] = str(CACHE_DIR)
+os.environ['TRANSFORMERS_CACHE'] = str(CACHE_DIR)
+os.environ['TMPDIR'] = str(TMP_DIR)
 
 # Configure logging
 logging.basicConfig(

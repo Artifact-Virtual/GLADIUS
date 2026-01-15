@@ -50,17 +50,31 @@ from dataclasses import dataclass, field, asdict
 import threading
 import traceback
 
-# Setup paths
+# Setup paths - Use ML workspace for heavy files
 SCRIPT_DIR = Path(__file__).parent
 GLADIUS_ROOT = SCRIPT_DIR.parent.parent.parent
-MODELS_DIR = SCRIPT_DIR.parent / "models"
-CHECKPOINTS_DIR = MODELS_DIR / "checkpoints"
-DATA_DIR = SCRIPT_DIR / "data"
+
+# ML Workspace for large model files (separate from repo)
+ML_WORKSPACE = Path.home() / "gladius_workspace"
+if not ML_WORKSPACE.exists():
+    ML_WORKSPACE.mkdir(parents=True, exist_ok=True)
+
+# Use ML workspace for models/checkpoints, repo for data/logs
+MODELS_DIR = ML_WORKSPACE / "models"
+CHECKPOINTS_DIR = ML_WORKSPACE / "checkpoints"
+CACHE_DIR = ML_WORKSPACE / "cache"
+TMP_DIR = ML_WORKSPACE / "tmp"
+DATA_DIR = SCRIPT_DIR / "data"  # Keep in repo for versioning
 LOGS_DIR = GLADIUS_ROOT / "logs" / "training"
 
 # Ensure directories exist
-for d in [MODELS_DIR, CHECKPOINTS_DIR, DATA_DIR, LOGS_DIR]:
+for d in [MODELS_DIR, CHECKPOINTS_DIR, CACHE_DIR, TMP_DIR, DATA_DIR, LOGS_DIR]:
     d.mkdir(parents=True, exist_ok=True)
+
+# Set environment for HuggingFace
+os.environ['HF_HOME'] = str(CACHE_DIR)
+os.environ['TRANSFORMERS_CACHE'] = str(CACHE_DIR)
+os.environ['TMPDIR'] = str(TMP_DIR)
 
 # Configure logging
 logging.basicConfig(
