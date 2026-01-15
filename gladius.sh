@@ -18,7 +18,9 @@
 
 # Don't use set -e as we want to continue even if some services fail
 
-GLADIUS_ROOT="/home/adam/worxpace/gladius"
+# Dynamic path detection - works from any location
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+GLADIUS_ROOT="$SCRIPT_DIR"
 LOG_DIR="$GLADIUS_ROOT/logs"
 PID_DIR="$GLADIUS_ROOT/.pids"
 

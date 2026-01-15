@@ -462,22 +462,15 @@ class Gladius1BTrainer:
     
     def setup_model(self) -> Tuple[Any, Any]:
         """Setup model and tokenizer with LoRA"""
-        from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-        from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+        from peft import LoraConfig, get_peft_model
         import torch
         
         logger.info(f"Loading base model: {self.config.base_model}")
         
-        # Quantization config for memory efficiency
-        if self.config.use_4bit:
-            bnb_config = BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_quant_type="nf4",
-                bnb_4bit_compute_dtype=torch.float16,
-                bnb_4bit_use_double_quant=True,
-            )
-        else:
-            bnb_config = None
+        # Check for GPU availability
+        has_cuda = torch.cuda.is_available()
+        logger.info(f"CUDA available: {has_cuda}")
         
         # Load tokenizer
         tokenizer = AutoTokenizer.from_pretrained(
@@ -487,18 +480,35 @@ class Gladius1BTrainer:
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
         
-        # Load model
-        model = AutoModelForCausalLM.from_pretrained(
-            self.config.base_model,
-            quantization_config=bnb_config,
-            device_map="auto",
-            trust_remote_code=True,
-            torch_dtype=torch.float16,
-        )
-        
-        # Prepare for training
-        if self.config.use_4bit:
+        # Load model - CPU-compatible
+        if has_cuda:
+            # GPU path with quantization
+            from transformers import BitsAndBytesConfig
+            from peft import prepare_model_for_kbit_training
+            
+            bnb_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=torch.float16,
+                bnb_4bit_use_double_quant=True,
+            )
+            model = AutoModelForCausalLM.from_pretrained(
+                self.config.base_model,
+                quantization_config=bnb_config,
+                device_map="auto",
+                trust_remote_code=True,
+                torch_dtype=torch.float16,
+            )
             model = prepare_model_for_kbit_training(model)
+        else:
+            # CPU path - no quantization, use float32
+            logger.info("Running on CPU - using float32 without quantization")
+            model = AutoModelForCausalLM.from_pretrained(
+                self.config.base_model,
+                trust_remote_code=True,
+                torch_dtype=torch.float32,
+                low_cpu_mem_usage=True,
+            )
         
         if self.config.use_gradient_checkpointing:
             model.gradient_checkpointing_enable()
@@ -568,23 +578,29 @@ class Gladius1BTrainer:
         # Prepare data
         dataset = self.prepare_data(tokenizer)
         
-        # Training arguments
+        # Training arguments - adapt to hardware
+        import torch
+        has_cuda = torch.cuda.is_available()
+        
         training_args = TrainingArguments(
             output_dir=str(CHECKPOINTS_DIR / f"phase_{phase}"),
             num_train_epochs=3,
-            per_device_train_batch_size=self.config.batch_size,
-            gradient_accumulation_steps=self.config.gradient_accumulation_steps,
+            per_device_train_batch_size=self.config.batch_size if has_cuda else 1,
+            gradient_accumulation_steps=self.config.gradient_accumulation_steps if has_cuda else 16,
             learning_rate=self.config.learning_rate,
             warmup_steps=self.config.warmup_steps,
             logging_steps=self.config.logging_steps,
             save_steps=self.config.save_steps,
             eval_steps=self.config.eval_steps,
             save_total_limit=3,
-            fp16=True,
+            fp16=has_cuda,  # Only use fp16 with GPU
+            bf16=False,
             optim="adamw_torch",
             lr_scheduler_type="cosine",
             report_to="none",
             remove_unused_columns=False,
+            dataloader_pin_memory=False,  # Disable for CPU
+            no_cuda=not has_cuda,
         )
         
         # Data collator
