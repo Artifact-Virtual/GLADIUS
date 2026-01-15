@@ -37,8 +37,10 @@
 │   │                      GLADIUS (Native AI Core)                        │  │
 │   │  Location: /GLADIUS/                                                 │  │
 │   │  • Native model with custom weights (target: 1B params)              │  │
+│   │  • Multi-Expert Distillation (Qwen + Llama + Phi + Gemma)            │  │
+│   │  • Training Pipeline (gladius_moe_trainer.py)                        │  │
+│   │  • Growth Tracker (growth/growth_tracker.py)                         │  │
 │   │  • Pattern Router (100% accuracy, <3ms)                              │  │
-│   │  • Training Pipeline (gladius_1b_trainer.py)                         │  │
 │   │  • Direct Interface (speak.py)                                        │  │
 │   │  • Continuous Autonomous Mode (continuous.py)                        │  │
 │   └────────────────────────────┬─────────────────────────────────────────┘  │

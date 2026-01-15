@@ -1,23 +1,29 @@
 # GLADIUS System Mapping
 
 > **Module**: `/GLADIUS/`  
-> **Last Updated**: 2026-01-14T23:55:00Z  
+> **Last Updated**: 2026-01-15T12:30:00Z  
 > **Purpose**: Native AI Model - The Brain of Artifact Virtual
 
 ---
 
 ## ⚠️ IMPORTANT: GLADIUS vs Qwen Operational
 
-| System | Purpose | Location |
-|--------|---------|----------|
-| **GLADIUS** | Native AI model (custom weights) | `/GLADIUS/` |
-| **Qwen Operational** | Artifact infrastructure AI | `/Artifact/qwen_operational.py` |
+| System | Purpose | Location | Training |
+|--------|---------|----------|----------|
+| **GLADIUS** | Native AI model (custom weights) | `/GLADIUS/` | `./train_gladius_moe.ps1` |
+| **Qwen Operational** | Artifact infrastructure AI | `/Artifact/qwen_operational.py` | `./Artifact/train_qwen.ps1` |
 
-**GLADIUS** is the native model we are building from scratch with custom weights.
+**GLADIUS** is the native model we are building **from scratch with our own weights**.
+- Uses **Multi-Expert Distillation** from Qwen + Llama + Phi + Gemma
+- Target: 1 billion parameters
+- Custom transformer architecture (GQA, RoPE, RMSNorm)
+
 **Qwen Operational** is the operational AI that runs Artifact infrastructure NOW.
+- Fine-tuned Qwen2.5-1.5B for tool-calling
+- Runs all Artifact operations until GLADIUS is ready
 
 They are **completely separate**:
-- Train GLADIUS: `./train_gladius_1b.ps1`
+- Train GLADIUS: `./GLADIUS/training/train_gladius_moe.ps1`
 - Train Qwen: `./Artifact/train_qwen.ps1`
 
 When GLADIUS reaches maturity, it will replace Qwen Operational.
@@ -64,14 +70,26 @@ GLADIUS is the **native AI model** that powers all intelligent operations within
 | **Latency** | ~12s average (CPU) |
 | **Version** | 0.1.0 |
 
-### 1B Training Target
+### 1B Training Target - Multi-Expert Architecture (NEW)
 | Property | Value |
 |----------|-------|
 | **Target Model** | gladius:1b |
-| **Base Model** | Qwen2.5-1.5B |
+| **Architecture** | Custom Transformer |
 | **Target Params** | 1,000,000,000 |
-| **Method** | LoRA + Progressive Training |
-| **Trainer** | `./train_gladius_1b.ps1` or `.sh` |
+| **Hidden Size** | 2048 |
+| **Layers** | 24 |
+| **Attention Heads** | 16 (GQA with 4 KV heads) |
+| **Method** | Multi-Expert Knowledge Distillation |
+| **Expert Teachers** | Qwen, Llama, Phi, Gemma |
+| **Trainer** | `./train_gladius_moe.ps1` or `.sh` |
+
+### Expert Teachers
+| Expert | Model | Strengths |
+|--------|-------|-----------|
+| **Qwen** | Qwen2.5-1.5B-Instruct | Tool-calling, JSON, multilingual |
+| **Llama** | Llama-3.2-1B-Instruct | Reasoning, fluency, conversation |
+| **Phi** | Phi-3-mini-4k-instruct | Mathematics, code generation |
+| **Gemma** | Gemma-2-2b-it | Safety, instruction following |
 
 ---
 
@@ -107,7 +125,31 @@ GLADIUS is the **native AI model** that powers all intelligent operations within
 ./gladius.sh train --no-validate
 ```
 
-### 1B Parameter Training (NEW)
+### 1B Multi-Expert Training (CURRENT)
+```bash
+# PowerShell (Windows/Cross-platform)
+cd GLADIUS/training
+./train_gladius_moe.ps1              # Full training (72h max)
+./train_gladius_moe.ps1 -Hours 24    # Custom time limit
+./train_gladius_moe.ps1 -Status      # Check training progress
+./train_gladius_moe.ps1 -Resume      # Resume from checkpoint
+
+# Bash (Linux/Mac)
+./train_gladius_moe.sh               # Full training
+./train_gladius_moe.sh 24            # Train for 24 hours
+./train_gladius_moe.sh status        # Check progress
+
+# Python Direct
+python3 gladius_moe_trainer.py --hours 72
+python3 gladius_moe_trainer.py --status
+
+# Growth Tracker (Visual Dashboard)
+python3 GLADIUS/growth/growth_tracker.py          # Show dashboard
+python3 GLADIUS/growth/growth_tracker.py --live   # Live updates
+python3 GLADIUS/growth/growth_tracker.py --sync   # Sync history
+```
+
+### Legacy Single-Expert Training
 ```bash
 # PowerShell (Windows/Cross-platform)
 cd GLADIUS/training
@@ -397,34 +439,72 @@ cd GLADIUS/training && ./train_gladius_1b.sh start
 ## Training Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                 GLADIUS 1B TRAINING PIPELINE                 │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐  │
-│  │   Phase 1    │ → │   Phase 2    │ → │   Phase 3    │  │
-│  │ Base Fine-   │    │ Extended     │    │ LoRA Stack   │  │
-│  │ tuning       │    │ Training     │    │ Expansion    │  │
-│  └──────────────┘    └──────────────┘    └──────────────┘  │
-│         ↓                                       ↓           │
-│  ┌──────────────┐                       ┌──────────────┐   │
-│  │ Checkpoints  │                       │   Phase 4    │   │
-│  │ (Recovery)   │                       │ GGUF Export  │   │
-│  └──────────────┘                       └──────────────┘   │
-│                                                ↓            │
-│                                         ┌──────────────┐   │
-│                                         │ gladius:1b   │   │
-│                                         │ (Ollama)     │   │
-│                                         └──────────────┘   │
-│                                                             │
-│  Features:                                                  │
-│  • LoRA-based parameter efficient training                  │
-│  • 4-bit quantization for memory efficiency                 │
-│  • Automatic checkpoint recovery                            │
-│  • GGUF export for Ollama deployment                        │
-│  • Target: 1 billion parameters                             │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│              GLADIUS 1B MULTI-EXPERT TRAINING PIPELINE                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌──────────────────────────────────────────────────────────────────────┐   │
+│  │ PHASE 0: Create Student Model (Custom Architecture)                  │   │
+│  │ • 24 layers, 2048 hidden, 16 attention heads (4 KV)                  │   │
+│  │ • Random weight initialization (NOT fine-tuning)                     │   │
+│  │ • Target: ~1B parameters                                             │   │
+│  └──────────────────────────────────────────────────────────────────────┘   │
+│                                      ↓                                       │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐            │
+│  │  PHASE 1   │  │  PHASE 2   │  │  PHASE 3   │  │  PHASE 4   │            │
+│  │   QWEN     │→│   LLAMA    │→│    PHI     │→│   GEMMA    │            │
+│  │ Distill    │  │ Distill    │  │ Distill    │  │ Distill    │            │
+│  ├────────────┤  ├────────────┤  ├────────────┤  ├────────────┤            │
+│  │ Tool-call  │  │ Reasoning  │  │ Math/Code  │  │ Safety     │            │
+│  │ JSON       │  │ Fluency    │  │ Logic      │  │ Instruct   │            │
+│  │ Multilang  │  │ Converse   │  │ Step-by    │  │ General    │            │
+│  └────────────┘  └────────────┘  └────────────┘  └────────────┘            │
+│         ↓                                               ↓                    │
+│  ┌──────────────┐                              ┌──────────────┐             │
+│  │ Checkpoints  │                              │   PHASE 5    │             │
+│  │ (Recovery)   │                              │ Final Unify  │             │
+│  └──────────────┘                              └──────────────┘             │
+│                                                       ↓                      │
+│                                               ┌──────────────┐              │
+│                                               │   PHASE 6    │              │
+│                                               │  Save Model  │              │
+│                                               │  GGUF Export │              │
+│                                               └──────────────┘              │
+│                                                       ↓                      │
+│                                               ┌──────────────┐              │
+│                                               │ gladius:1b   │              │
+│                                               │ (Ollama)     │              │
+│                                               └──────────────┘              │
+│                                                                              │
+│  Key Features:                                                               │
+│  • Knowledge Distillation from 4 expert models (Qwen, Llama, Phi, Gemma)    │
+│  • Custom weights (not fine-tuning existing model)                          │
+│  • KL Divergence + Cross-Entropy loss                                       │
+│  • GPU-first with automatic CPU fallback                                    │
+│  • Checkpoint recovery at each phase                                        │
+│  • GGUF export for Ollama deployment                                        │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Growth Tracking
+
+Track GLADIUS growth visually with the growth tracker:
+
+```bash
+# Show growth dashboard
+python3 GLADIUS/growth/growth_tracker.py
+
+# Live updates (refreshes every 5s)
+python3 GLADIUS/growth/growth_tracker.py --live
+
+# Sync from training state
+python3 GLADIUS/growth/growth_tracker.py --sync
+
+# Export as JSON
+python3 GLADIUS/growth/growth_tracker.py --json
 ```
 
 ---
