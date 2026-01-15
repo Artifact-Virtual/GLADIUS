@@ -1,0 +1,48 @@
+{
+  "cycle_interval_minutes": 60,
+  "research_keywords": [
+    "GGUF",
+    "LLM",
+    "fine-tuning",
+    "tool-use",
+    "AI agent",
+    "autonomous",
+    "trading AI",
+    "market analysis",
+    "small language models",
+    "quantization"
+  ],
+  "broad_targets": [
+    "artificial intelligence",
+    "machine learning",
+    "deep learning",
+    "neural networks",
+    "transformers"
+  ],
+  "focused_targets": [
+    "small language models",
+    "quantization",
+    "efficient inference",
+    "tool calling",
+    "function calling"
+  ],
+  "auto_train_threshold": 100,
+  "max_discoveries_per_cycle": 20,
+  "sources": {
+    "arxiv": {
+      "enabled": true,
+      "categories": ["cs.AI", "cs.LG", "cs.CL"],
+      "max_results": 10
+    },
+    "github": {
+      "enabled": true,
+      "topics": ["llm", "gguf", "fine-tuning", "ai-agent"],
+      "max_results": 10
+    },
+    "huggingface": {
+      "enabled": true,
+      "topics": ["transformers", "llm", "tool-use"],
+      "max_results": 10
+    }
+  }
+}

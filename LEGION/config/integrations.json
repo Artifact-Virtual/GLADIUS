@@ -1,0 +1,89 @@
+{
+  "_comment": "LEGION integrations - routes through Artifact infrastructure",
+  "_note": "All operations should use Artifact bridges, not direct implementations",
+  
+  "routing": {
+    "mode": "artifact_bridge",
+    "fallback_enabled": false,
+    "gladius_root": "../..",
+    "artifact_root": "../../Artifact"
+  },
+  
+  "email": {
+    "_route": "artifact.smtp",
+    "smtp_host": "smtp.hostinger.com",
+    "smtp_port": 465,
+    "use_ssl": true,
+    "username": "ali.shakil@artifactvirtual.com",
+    "from_email": "support@artifactvirtual.com",
+    "aliases": ["admin@artifactvirtual.com", "adam@artifactvirtual.com", "gladius@artifactvirtual.com"]
+  },
+  
+  "social_media": {
+    "_route": "artifact.social",
+    "_note": "All social media operations route through Artifact/deployment/automata/social_media",
+    "platforms": {
+      "discord": {
+        "enabled": true,
+        "route": "artifact.arty.discord"
+      },
+      "twitter": {
+        "enabled": true,
+        "route": "artifact.social.twitter"
+      },
+      "linkedin": {
+        "enabled": true,
+        "route": "artifact.social.linkedin"
+      },
+      "facebook": {
+        "enabled": true,
+        "route": "artifact.social.facebook"
+      },
+      "instagram": {
+        "enabled": true,
+        "route": "artifact.social.instagram"
+      }
+    }
+  },
+  
+  "ai": {
+    "_route": "gladius",
+    "_note": "All AI operations route through GLADIUS native model",
+    "provider": "gladius",
+    "fallback_provider": "ollama",
+    "gladius_path": "../../GLADIUS"
+  },
+  
+  "crm": {
+    "db_path": "data/crm.db",
+    "api_key": "",
+    "webhook_url": ""
+  },
+  
+  "finance": {
+    "_route": "artifact.syndicate",
+    "coingecko_api": "https://api.coingecko.com/api/v3",
+    "frankfurter_api": "https://api.frankfurter.app",
+    "marketstack_api": "http://api.marketstack.com/v1",
+    "marketstack_key": "free_tier"
+  },
+  
+  "erp": {
+    "_route": "artifact.erp",
+    "_note": "All ERP operations route through Artifact/deployment/automata/erp_integrations",
+    "enabled": true,
+    "providers": ["odoo", "sap", "netsuite", "dynamics", "salesforce"]
+  },
+  
+  "project_management": {
+    "db_path": "data/projects.db",
+    "webhook_url": ""
+  },
+  
+  "public_apis": {
+    "spacex": "https://api.spacexdata.com/v4",
+    "weather": "https://wttr.in",
+    "news": "https://newsapi.org/v2",
+    "github": "https://api.github.com"
+  }
+}

@@ -1,0 +1,241 @@
+<!-- Floating Card Modal -->
+<div id="floating-card-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-[#232b3b] rounded-2xl shadow-2xl p-8 max-w-lg w-full relative border-2 border-[#00bcd4]">
+        <button id="close-modal-btn" class="absolute top-3 right-4 text-2xl text-gray-300 hover:text-white">&times;</button>
+        <div id="floating-card-content" class="text-gray-100 text-lg leading-relaxed"></div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait for Mermaid to finish rendering
+    setTimeout(() => {
+        // Select all Mermaid nodes
+        document.querySelectorAll('.mermaid g.node').forEach(node => {
+            node.style.cursor = 'pointer';
+            node.addEventListener('click', function(e) {
+                e.stopPropagation();
+                // Get the HTML label from the node's <foreignObject> or <text>
+                let html = '';
+                const fo = node.querySelector('foreignObject');
+                if (fo) {
+                    html = fo.innerHTML;
+                } else {
+                    // fallback: get text content
+                    html = '<div>' + node.textContent + '</div>';
+                }
+                // Show modal
+                document.getElementById('floating-card-content').innerHTML = html;
+                document.getElementById('floating-card-modal').classList.remove('hidden');
+            });
+        });
+    }, 800);
+
+    // Close modal logic
+    document.getElementById('close-modal-btn').onclick = function(e) {
+        document.getElementById('floating-card-
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 0.04em;
+            background: rgba(44, 62, 80, 0.92);
+            box-shadow: 0 4px 24px 0 rgba(63,81,181,0.18);
+            border-radius: 1.5rem;
+            padding: 1.2rem 2.5rem;
+            margin-bottom: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            position: sticky;
+            top: 1.5rem;
+            z-index: 10;
+        }
+        .logo-placeholder {
+            width: 2.8rem;
+            height: 2.8rem;
+            background: linear-gradient(135deg, #3f51b5 60%, #00bcd4 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #fff;
+            font-weight: bold;
+            box-shadow: 0 2px 8px 0 rgba(63,81,181,0.18);
+        }
+        .mermaid {
+            background: rgba(45, 55, 72, 0.98) !important;
+            border-radius: 1.25rem;
+            padding: 2rem 1.5rem 2rem 1.5rem;
+            box-shadow: 0 8px 40px 0 rgba(0,188,212,0.12), 0 0 0 4px #00bcd4;
+            overflow-x: auto;
+            margin-bottom: 2.5rem;
+        }
+        /* Mermaid custom theme overrides */
+        :root {
+            --mermaid-font-family: 'Inter', sans-serif;
+            --mermaid-node-fill: #3f51b5;
+            --mermaid-node-stroke: #5c6bc0;
+            --mermaid-node-text-color: #fff;
+            --mermaid-line-color: #a0aec0;
+            --mermaid-cluster-fill: #232b3b;
+            --mermaid-cluster-stroke: #4a5568;
+            --mermaid-primary-color: #3f51b5;
+            --mermaid-secondary-color: #00bcd4;
+            --mermaid-tertiary-color: #9c27b0;
+        }
+        .mermaid .node text {
+            text-align: left;
+            font-size: 1.05rem;
+            font-family: 'Inter', sans-serif;
+        }
+        /* Legend icons */
+        .legend-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.7rem;
+            font-size: 1.1rem;
+        }
+        /* Responsive tweaks */
+        @media (max-width: 900px) {
+            .glass { padding: 1.2rem; }
+            .floating-header { padding: 1rem 1.2rem; }
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-start py-8 px-2 min-h-screen">
+    <div class="floating-header shadow-lg">
+        <div class="logo-placeholder">🏢</div>
+        <span class="text-2xl sm:text-3xl font-extrabold tracking-wide text-[#e2e8f0]">Organizational Hierarchy Map</span>
+    </div>
+    <div class="glass w-full max-w-6xl p-8 sm:p-12">
+        <div class="mermaid text-base">
+            graph TD
+                %% Define all nodes with enhanced details
+                BOD("<b>Board of Directors</b><br><span style='font-size:0.95em'>Set strategic direction<br>Ensure ethical governance<br>Oversee executive performance</span>")
+                CEO("<b>Chief Executive Officer (CEO)</b><br><span style='font-size:0.95em'>Execute board's strategy<br>Lead overall operations<br>Drive company growth & profit</span>")
+
+                VP_Ops("<b>VP of Operations</b><br><span style='font-size:0.92em'>Optimize processes<br>Manage supply chain<br>Ensure operational efficiency</span>")
+                OM("<b>Operations Manager</b><br><span style='font-size:0.92em'>Oversee daily ops<br>Lead operations teams<br>Implement process improvements</span>")
+                TL_Ops("<b>Team Lead (Operations)</b><br><span style='font-size:0.92em'>Supervise daily tasks<br>Train new staff<br>Problem-solve at team level</span>")
+                WA("<b>Warehouse Associate</b><br><span style='font-size:0.92em'>Manage inventory<br>Pick & pack orders<br>Maintain warehouse safety</span>")
+                Driver("<b>Driver</b><br><span style='font-size:0.92em'>Deliver goods on time<br>Ensure vehicle maintenance<br>Maintain delivery records</span>")
+                LC("<b>Logistics Coordinator</b><br><span style='font-size:0.92em'>Handle inventory flow<br>Coordinate shipping<br>Optimize distribution</span>")
+
+                VP_Mktg("<b>VP of Marketing</b><br><span style='font-size:0.92em'>Develop brand strategy<br>Oversee campaigns<br>Analyze market trends</span>")
+                MM("<b>Marketing Manager</b><br><span style='font-size:0.92em'>Lead marketing team<br>Plan campaign execution<br>Report on KPIs</span>")
+                MS("<b>Marketing Specialist</b><br><span style='font-size:0.92em'>Execute campaigns<br>Create content<br>Track performance</span>")
+                SMM("<b>Social Media Manager</b><br><span style='font-size:0.92em'>Manage online presence<br>Engage community<br>Build brand awareness</span>")
+
+                VP_ProdTech("<b>VP of Product & Tech</b><br><span style='font-size:0.92em'>Define product vision<br>Lead R&D initiatives<br>Ensure tech innovation</span>")
+                PM("<b>Product Manager</b><br><span style='font-size:0.92em'>Oversee product lifecycle<br>Identify market needs<br>Guide feature development</span>")
+                LSE("<b>Lead Software Engineer</b><br><span style='font-size:0.92em'>Guide architecture<br>Mentor dev team<br>Develop critical features</span>")
+                PD("<b>Product Designer (UX/UI)</b><br><span style='font-size:0.92em'>Design user experiences<br>Create interfaces<br>Ensure usability</span>")
+                SSE("<b>Software Engineer Senior</b><br><span style='font-size:0.92em'>Design & implement complex features<br>Perform code reviews<br>Troubleshoot advanced issues</span>")
+                SE("<b>Software Engineer</b><br><span style='font-size:0.92em'>Develop & test software<br>Maintain applications<br>Collaborate on solutions</span>")
+
+                VP_HRFin("<b>VP of People & Finance</b><br><span style='font-size:0.92em'>Manage human capital<br>Oversee financial health<br>Ensure regulatory compliance</span>")
+                HRM("<b>HR Manager</b><br><span style='font-size:0.92em'>Lead HR initiatives<br>Manage employee relations<br>Develop talent strategies</span>")
+                HRBP("<b>HR Business Partner</b><br><span style='font-size:0.92em'>Support employee relations<br>Manage talent acquisition<br>Facilitate development</span>")
+                Acct("<b>Accountant / Analyst</b><br><span style='font-size:0.92em'>Manage financial records<br>Oversee budgets<br>Provide financial insights</span>")
+
+                %% Hierarchy Connections
+                BOD --> CEO
+
+                CEO --> VP_Ops
+                CEO --> VP_Mktg
+                CEO --> VP_ProdTech
+                CEO --> VP_HRFin
+
+                %% Department Subgraphs
+                subgraph "Operations Department"
+                    VP_Ops --> OM
+                    OM --> TL_Ops
+                    OM --> LC
+                    TL_Ops --> WA
+                    TL_Ops --> Driver
+                end
+
+                subgraph "Marketing Department"
+                    VP_Mktg --> MM
+                    MM --> MS
+                    MM --> SMM
+                end
+
+                subgraph "Product & Technology Department"
+                    VP_ProdTech --> PM
+                    VP_ProdTech --> LSE
+                    PM --> PD
+                    LSE --> SSE
+                    LSE --> SE
+                end
+
+                subgraph "People & Finance Department"
+                    VP_HRFin --> HRM
+                    HRM --> HRBP
+                    HRM --> Acct
+                end
+
+                %% Styling
+                class BOD,CEO org-top-level;
+                class VP_Ops,VP_Mktg,VP_ProdTech,VP_HRFin org-vp-level;
+                class OM,MM,PM,LSE,HRM org-manager-level;
+                class TL_Ops org-lead-level;
+                class WA,Driver,LC,MS,SMM,PD,SSE,SE,HRBP,Acct org-individual-level;
+
+                linkStyle default stroke:#00bcd4,stroke-width:2.5px;
+
+                classDef org-top-level fill:#673ab7,stroke:#fff,stroke-width:2.5px,color:#fff;
+                classDef org-vp-level fill:#00bcd4,stroke:#fff,stroke-width:2.5px,color:#fff;
+                classDef org-manager-level fill:#4db6ac,stroke:#fff,stroke-width:2.5px,color:#fff;
+                classDef org-lead-level fill:#81c784,stroke:#fff,stroke-width:2.5px,color:#212121;
+                classDef org-individual-level fill:#e0f2f7,stroke:#b2ebf2,stroke-width:2.5px,color:#263238;
+        </div>
+
+        <!-- Enhanced Legend & Details -->
+        <div class="text-center text-base text-gray-300 mt-14 px-2 leading-relaxed">
+            <h2 class="text-xl font-semibold text-gray-100 mb-4" style="font-family: 'Montserrat', sans-serif;">Map Details & Scalability</h2>
+            <p class="mb-4">
+                This interactive hierarchy map uses Mermaid.js for clarity and scalability. Each position includes its key functions for a comprehensive overview.
+            </p>
+            <p class="mb-7">
+                To expand, add new nodes and connections in the Mermaid code block. The design is responsive and color-coded for easy navigation.
+            </p>
+            <h3 class="text-lg font-semibold text-gray-100 mb-3" style="font-family: 'Montserrat', sans-serif;">Color Legend:</h3>
+            <ul class="list-none flex flex-col items-center gap-2 mx-auto max-w-md">
+                <li class="flex items-center">
+                    <span class="legend-icon bg-[#673ab7] text-white shadow-md">👑</span>
+                    <span>Board & CEO (Top Leadership)</span>
+                </li>
+                <li class="flex items-center">
+                    <span class="legend-icon bg-[#00bcd4] text-white shadow-md">🏢</span>
+                    <span>Vice Presidents (Department Heads)</span>
+                </li>
+                <li class="flex items-center">
+                    <span class="legend-icon bg-[#4db6ac] text-white shadow-md">🧑‍💼</span>
+                    <span>Managers (Mid-Level Leadership)</span>
+                </li>
+                <li class="flex items-center">
+                    <span class="legend-icon bg-[#81c784] text-[#212121] shadow-md">🧑‍🔧</span>
+                    <span>Team Leads (Frontline Leadership)</span>
+                </li>
+                <li class="flex items-center">
+                    <span class="legend-icon bg-[#e0f2f7] text-[#263238] shadow-md">👤</span>
+                    <span>Individual Contributors</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            flowchart: {
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+    </script>
+</body>
+</html>

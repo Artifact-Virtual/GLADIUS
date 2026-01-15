@@ -1,0 +1,27 @@
+import { AuthService } from '../../../src/services/AuthService';
+
+describe('AuthService', () => {
+    let authService: AuthService;
+
+    beforeEach(() => {
+        authService = new AuthService();
+    });
+
+    it('should register a new user', async () => {
+        const userData = { username: 'testuser', password: 'password' };
+        const result = await authService.register(userData);
+        expect(result).toHaveProperty('id');
+        expect(result.username).toBe(userData.username);
+    });
+
+    it('should login an existing user', async () => {
+        const userData = { username: 'testuser', password: 'password' };
+        await authService.register(userData);
+        const token = await authService.login(userData.username, userData.password);
+        expect(token).toBeDefined();
+    });
+
+    it('should throw an error for invalid login', async () => {
+        await expect(authService.login('invaliduser', 'wrongpassword')).rejects.toThrow();
+    });
+});

@@ -1,0 +1,15 @@
+{
+  "processes": [
+    {
+      "name": "learning_daemon",
+      "command": ["python3", "services/learning_daemon.py", "start"],
+      "working_dir": "${GLADIUS_ROOT}/SENTINEL",
+      "max_restarts": 10,
+      "restart_delay": 5
+    }
+  ],
+  "heartbeat_interval": 30,
+  "health_check_interval": 10,
+  "max_total_restarts_per_hour": 30,
+  "_note": "GLADIUS_ROOT is resolved at runtime from environment or script location"
+}

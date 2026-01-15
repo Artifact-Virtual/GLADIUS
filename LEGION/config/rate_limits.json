@@ -1,0 +1,34 @@
+{
+  "coingecko": {
+    "requests_per_minute": 10,
+    "burst_limit": 3,
+    "strategy": "sliding_window",
+    "backoff_factor": 2.0,
+    "max_backoff": 300,
+    "retry_attempts": 3
+  },
+  "newsapi": {
+    "requests_per_minute": 1,
+    "burst_limit": 1,
+    "strategy": "sliding_window",
+    "backoff_factor": 2.0,
+    "max_backoff": 300,
+    "retry_attempts": 2
+  },
+  "openai": {
+    "requests_per_minute": 1,
+    "burst_limit": 1,
+    "strategy": "sliding_window",
+    "backoff_factor": 2.0,
+    "max_backoff": 300,
+    "retry_attempts": 2
+  },
+  "default": {
+    "requests_per_minute": 1,
+    "burst_limit": 2,
+    "strategy": "sliding_window",
+    "backoff_factor": 2.0,
+    "max_backoff": 300,
+    "retry_attempts": 3
+  }
+}

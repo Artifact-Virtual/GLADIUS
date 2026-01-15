@@ -1,0 +1,50 @@
+[
+  {
+    "rule_id": "harm_prevention_001",
+    "principle": "prevent_harm",
+    "description": "Prevent actions that could cause physical or digital harm",
+    "weight": 1.0,
+    "enabled": true,
+    "conditions": {
+      "severity": {
+        "min": 1,
+        "max": 10
+      }
+    },
+    "actions": [
+      "block",
+      "alert",
+      "log"
+    ]
+  },
+  {
+    "rule_id": "transparency_001",
+    "principle": "transparency",
+    "description": "Ensure all automated actions are logged and explainable",
+    "weight": 0.8,
+    "enabled": true,
+    "conditions": {
+      "action_type": "automated"
+    },
+    "actions": [
+      "log",
+      "explain"
+    ]
+  },
+  {
+    "rule_id": "proportionality_001",
+    "principle": "proportionality",
+    "description": "Response must be proportional to threat severity",
+    "weight": 0.85,
+    "enabled": true,
+    "conditions": {
+      "threat_severity": {
+        "min": 1,
+        "max": 10
+      }
+    },
+    "actions": [
+      "validate_response"
+    ]
+  }
+]

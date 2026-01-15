@@ -1,0 +1,23 @@
+{
+  "leads": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john.doe@example.com",
+      "score": 85,
+      "source": "LinkedIn"
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "email": "jane.smith@example.com",
+      "score": 90,
+      "source": "Website"
+    }
+  ],
+  "metadata": {
+    "totalLeads": 2,
+    "enrichmentDate": "2023-10-01",
+    "enrichmentSource": "API"
+  }
+}

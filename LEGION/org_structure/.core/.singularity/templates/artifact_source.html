@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertex AI Artifact Generation</title>
+    <!-- Tailwind CSS for overall page styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* Dark Blue-Gray Background */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 2rem;
+            color: #e2e8f0; /* Light text color for contrast */
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            background-color: #2d3748;
+            border-radius: 1.5rem;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        /* Styling for the Vertex AI section */
+        .vertex-ai-section {
+            background-color: #364052;
+            border: 1px solid #4a5568;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            color: #e2e8f0;
+            width: 100%;
+        }
+        .vertex-ai-section label, .vertex-ai-section h2 {
+            color: #e2e8f0;
+        }
+        .vertex-ai-section select,
+        .vertex-ai-section button {
+            background-color: #4a5568;
+            border-color: #636b77;
+            color: #e2e8f0;
+        }
+        .vertex-ai-section select:focus,
+        .vertex-ai-section button:focus {
+            ring-color: #63b3ed;
+            border-color: #63b3ed;
+        }
+        .vertex-ai-section button:hover {
+            background-color: #636b77;
+        }
+        .vertex-ai-section pre {
+            background-color: #1a202c;
+            border-color: #4a5568;
+            color: #a0aec0;
+            overflow-x: auto;
+        }
+        .vertex-ai-section .loading-spinner {
+            border-top-color: #63b3ed;
+        }
+        .vertex-ai-section .error-message {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border-color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Vertex AI Code Example Section -->
+        <div class="vertex-ai-section">
+            <h2 class="text-2xl sm:text-3xl font-bold mb-6 text-center">
+                <span class="text-blue-400">Vertex AI</span> Artifact Generation for Roles
+            </h2>
+
+            <p class="mb-6 text-base text-center"></p>
+                Select a role from the hierarchy and generate a conceptual "Artifact" – a "sup3rcomput3r folded into code" – representing the autonomous capabilities and core functions of that position.
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+                <label for="roleSelect" class="text-lg font-semibold mr-2 sm:mr-0">Select Role:</label>
+                <select id="roleSelect"
+                        class="w-full sm:w-auto p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out">
+                    <option value="">-- Choose a Role --</option>
+                    <option value="Board of Directors">Board of Directors</option>
+                    <option value="Chief Executive Officer">Chief Executive Officer</option>
+                    <option value="VP of Operations">VP of Operations</option>
+                    <option value="Operations Manager">Operations Manager</option>
+                    <option value="Team Lead (Operations)">Team Lead (Operations)</option>
+                    <option value="Warehouse Associate">Warehouse Associate</option>
+                    <option value="Driver">Driver</option>
+                    <option value="Logistics Coordinator">Logistics Coordinator</option>
+                    <option value="VP of Marketing">VP of Marketing</option>
+                    <option value="Marketing Manager">Marketing Manager</option>
+                    <option value="Marketing Specialist">Marketing Specialist</option>
+                    <option value="Social Media Manager">Social Media Manager</option>
+                    <option value="VP of Product & Tech">VP of Product & Tech</option>
+                    <option value="Product Manager">Product Manager</option>
+                    <option value="Lead Software Engineer">Lead Software Engineer</option>
+                    <option value="Software Engineer Senior">Software Engineer Senior</option>
+                    <option value="Software Engineer">Software Engineer</option>
+                    <option value="Product Designer (UX/UI)">Product Designer (UX/UI)</option>
+                    <option value="VP of People & Finance">VP of People & Finance</option>
+                    <option value="HR Manager">HR Manager</option>
+                    <option value="HR Business Partner">HR Business Partner</option>
+                    <option value="Accountant / Analyst">Accountant / Analyst</option>
+                </select>
+                <button id="generateCodeBtn"
+                        class="w-full sm:w-auto px-6 py-3 rounded-lg font-bold transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Generate Artifact
+                </button>
+            </div>
+
+            <div id="codeLoadingIndicator" class="hidden text-center mt-4">
+                <p class="text-blue-400 font-semibold">Forging artifact... please wait...</p>
+                <div class="flex justify-center items-center mt-2">
+                    <div class="loading-spinner w-8 h-8 border-4 rounded-full animate-spin"></div>
+                </div>
+            </div>
+
+            <div class="mt-6 p-4 rounded-lg border shadow-md">
+                <h3 class="text-xl font-semibold mb-2">Generated Artifact (Conceptual Code):</h3>
+                <pre id="codeOutputArea" class="p-3 rounded-md border min-h-[120px] whitespace-pre-wrap text-sm"></pre>
+                <div id="codeErrorArea" class="hidden mt-2 p-3 rounded-lg border error-message"></div>
+            </div>
+        </div>
+        <!-- End Vertex AI Code Example Section -->
+    </div>
+
+    <script>
+        // --- Vertex AI Integration Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const roleSelect = document.getElementById('roleSelect');
+            const generateCodeBtn = document.getElementById('generateCodeBtn');
+            const codeOutputArea = document.getElementById('codeOutputArea');
+            const codeLoadingIndicator = document.getElementById('codeLoadingIndicator');
+            const codeErrorArea = document.getElementById('codeErrorArea');
+
+            generateCodeBtn.addEventListener('click', async () => {
+                const selectedRole = roleSelect.value;
+
+                // Clear previous output and error
+                codeOutputArea.textContent = '';
+                codeErrorArea.textContent = '';
+                codeErrorArea.classList.add('hidden');
+
+                if (!selectedRole) {
+                    codeErrorArea.textContent = 'Please select a role to generate an artifact.';
+                    codeErrorArea.classList.remove('hidden');
+                    return;
+                }
+
+                // Show loading indicator
+                codeLoadingIndicator.classList.remove('hidden');
+                generateCodeBtn.disabled = true;
+
+                try {
+                    // Enhanced prompt for "sup3rcomput3r folded into code" artifact
+                    const promptText = `Imagine you are future advanced AI architect. Design a conceptual "Artifact" – a self-contained, highly-accurate code representation that embodies the core functionalities and responsibilities of a "${selectedRole}" within a highly synchronized organization. This artifact should act like a ]sup3rcomputer][ folded into code," capable of autonomously performing the key tasks of this role. Focus on describing its primary modules, methods, key inputs, anticipated outputs, and how it would contribute to organizational equilibrium/synchronicity. Present it as a single, cohesive code-like structure, without conversational preambles, explanations, or conclusions outside the code block.`;
+
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: promptText }] });
+
+                    const payload = { contents: chatHistory };
+                    // The apiKey is left as an empty string; Canvas will provide it at runtime.
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`API error: ${response.status} - ${errorData.error.message || response.statusText}`);
+                    }
+
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        codeOutputArea.textContent = text;
+                    } else {
+                        codeOutputArea.textContent = 'No artifact generated for this role. The model might have declined to respond or returned an unexpected format.';
+                    }
+                } catch (error) {
+                    console.error('Error generating artifact:', error);
+                    codeErrorArea.textContent = `Failed to generate artifact: ${error.message}. Please try again.`;
+                    codeErrorArea.classList.remove('hidden');
+                } finally {
+                    // Hide loading indicator and re-enable button
+                    codeLoadingIndicator.classList.add('hidden');
+                    generateCodeBtn.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

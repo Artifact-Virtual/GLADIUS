@@ -1,0 +1,29 @@
+{
+  "name": "artifact-web-hunter",
+  "version": "1.0.0",
+  "description": "A web scraping and lead enrichment tool using Puppeteer.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "scrape": "node hunter/scraper.js",
+    "enrich": "node hunter/enrich.js"
+  },
+  "dependencies": {
+<<<<<<< HEAD
+    "axios": "^1.10.0",
+    "bull": "^4.16.5",
+    "compromise": "^14.14.4",
+    "express": "^4.17.1",
+    "puppeteer": "^24.10.1"
+=======
+    "puppeteer": "^10.0.0",
+    "axios": "^1.10.0",
+    "express": "^4.17.1"
+>>>>>>> b95a206f19fd951bc94ed5064c74cde6fab71252
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  },
+  "author": "Your Name",
+  "license": "MIT"
+}

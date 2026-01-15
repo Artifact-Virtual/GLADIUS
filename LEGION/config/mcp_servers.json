@@ -1,0 +1,167 @@
+{
+  "mcp_servers": {
+    "version": "1.0.0",
+    "description": "MCP Server Registry and Configuration",
+    "auto_discovery": true,
+    "auto_integration": true,
+    "health_check_interval": 30,
+    "servers": [
+      {
+        "name": "local_comprehensive",
+        "url": "http://localhost:9000/mcp",
+        "protocol": "sse",
+        "description": "Local comprehensive MCP server with all enterprise functions",
+        "capabilities": [
+          "file_management",
+          "code_execution", 
+          "web_operations",
+          "system_control",
+          "database_operations",
+          "memory_management",
+          "ai_operations",
+          "communication"
+        ],
+        "tools": [],
+        "resources": [],
+        "enabled": true,
+        "auto_start": true,
+        "priority": 1
+      },
+      {
+        "name": "enterprise_file_server",
+        "url": "http://localhost:9001/mcp",
+        "protocol": "sse",
+        "description": "Enterprise file management MCP server",
+        "capabilities": [
+          "file_management",
+          "directory_operations",
+          "file_search",
+          "backup_operations"
+        ],
+        "tools": [],
+        "resources": [],
+        "enabled": true,
+        "auto_start": false,
+        "priority": 2
+      },
+      {
+        "name": "web_automation_server",
+        "url": "http://localhost:9002/mcp",
+        "protocol": "sse",
+        "description": "Web automation and scraping MCP server",
+        "capabilities": [
+          "web_scraping",
+          "browser_automation",
+          "api_interactions",
+          "web_monitoring"
+        ],
+        "tools": [],
+        "resources": [],
+        "enabled": true,
+        "auto_start": false,
+        "priority": 3
+      },
+      {
+        "name": "database_server",
+        "url": "http://localhost:9003/mcp",
+        "protocol": "sse",
+        "description": "Database operations MCP server",
+        "capabilities": [
+          "sql_operations",
+          "nosql_operations",
+          "data_analysis",
+          "backup_restore"
+        ],
+        "tools": [],
+        "resources": [],
+        "enabled": true,
+        "auto_start": false,
+        "priority": 4
+      },
+      {
+        "name": "ai_operations_server",
+        "url": "http://localhost:9004/mcp",
+        "protocol": "sse",
+        "description": "AI and ML operations MCP server",
+        "capabilities": [
+          "model_inference",
+          "data_preprocessing",
+          "feature_engineering",
+          "model_training"
+        ],
+        "tools": [],
+        "resources": [],
+        "enabled": true,
+        "auto_start": false,
+        "priority": 5
+      }
+    ]
+  },
+  "discovery_settings": {
+    "local_scan_ports": [9000, 9001, 9002, 9003, 9004, 8080, 8081, 3000, 4000, 5000],
+    "network_scan_enabled": false,
+    "config_file_locations": [
+      "~/.mcp/servers.json",
+      "/etc/mcp/servers.json",
+      "./config/mcp_servers.json"
+    ],
+    "discovery_interval": 300,
+    "timeout": 5
+  },
+  "security_settings": {
+    "require_authentication": false,
+    "allowed_hosts": ["localhost", "127.0.0.1"],
+    "ssl_verify": false,
+    "rate_limiting": {
+      "enabled": true,
+      "requests_per_minute": 100,
+      "burst_size": 20
+    }
+  },
+  "execution_settings": {
+    "auto_execution_enabled": true,
+    "safe_function_patterns": [
+      "read_*",
+      "list_*", 
+      "get_*",
+      "search_*",
+      "find_*",
+      "analyze_*",
+      "calculate_*",
+      "convert_*",
+      "format_*",
+      "validate_*",
+      "check_*",
+      "ping_*",
+      "status_*",
+      "info_*",
+      "describe_*"
+    ],
+    "dangerous_function_patterns": [
+      "delete_*",
+      "remove_*",
+      "destroy_*",
+      "truncate_*",
+      "drop_*",
+      "kill_*",
+      "stop_*",
+      "terminate_*",
+      "shutdown_*",
+      "format_*",
+      "wipe_*"
+    ],
+    "max_execution_time": 30,
+    "retry_strategies": {
+      "default": "exponential_backoff",
+      "critical": "circuit_breaker",
+      "safe": "immediate"
+    }
+  },
+  "monitoring": {
+    "health_checks_enabled": true,
+    "performance_monitoring": true,
+    "error_tracking": true,
+    "metrics_collection": true,
+    "log_level": "INFO"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "thresholds": {
+    "memory_percent_max": 85.0,
+    "cpu_percent_max": 90.0,
+    "disk_percent_max": 90.0,
+    "api_timeout_seconds": 10,
+    "db_query_timeout_seconds": 5,
+    "latency_warning_ms": 1000,
+    "latency_critical_ms": 5000
+  },
+  "checks_enabled": {
+    "database": true,
+    "authentication": true,
+    "network": true,
+    "system": true,
+    "services": true,
+    "regression": true
+  },
+  "endpoints": {
+    "ollama": "http://localhost:11434/api/tags",
+    "arxiv": "https://export.arxiv.org/api/query?search_query=all:test&max_results=1",
+    "github": "https://api.github.com/rate_limit",
+    "discord": "https://discord.com/api/v10/gateway"
+  },
+  "databases": [
+    "SENTINEL/services/learning_state.db",
+    "Artifact/syndicate/data/syndicate.db"
+  ],
+  "services": {
+    "watchdog": {
+      "heartbeat_max_age_seconds": 120,
+      "warning_age_seconds": 60
+    },
+    "learning_daemon": {
+      "max_checkpoint_age_hours": 2,
+      "critical_checkpoint_age_hours": 24
+    },
+    "gladius_router": {
+      "max_latency_ms": 100
+    }
+  },
+  "regression": {
+    "min_samples": 5,
+    "threshold_multiplier": 1.5
+  },
+  "alerts": {
+    "email_on_unhealthy": true,
+    "discord_on_degraded": true,
+    "email_recipients": ["ali.shakil@artifactvirtual.com"],
+    "discord_webhook": true
+  }
+}

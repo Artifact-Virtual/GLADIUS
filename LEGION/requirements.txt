@@ -1,0 +1,50 @@
+# Enterprise Legion System Requirements
+# Core system dependencies for the AI-powered enterprise management platform
+
+# HTTP and Web Framework
+aiohttp>=3.8.4
+requests>=2.31.0
+flask>=2.0.0
+flask_cors>=3.0.10
+flask_socketio>=5.0.0
+
+# Data Processing and Analysis
+pandas>=2.2.0
+numpy>=1.24.0
+
+# System Monitoring and Utilities
+psutil>=5.9.5
+rich>=13.7.1
+click>=8.1.7
+
+# Configuration Management
+python-dotenv>=1.0.1
+
+# Development and Testing
+pytest>=8.2.2
+
+# Social Media Automation
+selenium>=4.15.0
+webdriver-manager>=4.0.0
+feedparser>=6.0.10
+asyncio-throttle>=1.0.2
+
+# AI and Machine Learning (Only what's actively used)
+transformers>=4.30.0
+
+# Rate Limiting and API Management
+# (Required for intelligent rate limiting system)
+# Already covered by existing dependencies:
+# - requests (for HTTP API calls)
+# - asyncio (built-in, for async rate limiting)
+# - json (built-in, for config management)
+# - datetime (built-in, for time-based limiting)
+# - threading (built-in, for background processing)
+# - enum (built-in, for strategy definitions)
+# - collections (built-in, for deque operations)
+
+# Optional: Advanced monitoring (used in intelligent_instrumentation.py)
+# GPUtil>=1.4.0  # Uncomment if GPU monitoring needed
+# torch>=2.0.0   # Uncomment if ML models are actively used
+# torchvision>=0.15.0  # Uncomment if computer vision is needed
+# playwright>=1.40.0  # Alternative to selenium, currently not used

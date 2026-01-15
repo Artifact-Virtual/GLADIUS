@@ -1,0 +1,2 @@
+# Ignore Angular cache and other large files
+.angular/cache/

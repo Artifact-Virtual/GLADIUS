@@ -1,0 +1,127 @@
+{
+  "generated_at": "2025-06-18T08:47:16.476440",
+  "project_spec": {
+    "name": "final_api_service_project",
+    "description": "A comprehensive REST API service demonstrating advanced LLM-enhanced production capabilities including JWT authentication, Redis caching, WebSocket real-time updates, Celery background tasks, and Prometheus monitoring. Features optimized PostgreSQL ORM, role-based access control, and multi-layer caching strategies.",
+    "language": "python",
+    "framework": "FastAPI",
+    "project_type": "microservice_api",
+    "version": "1.0.0",
+    "author": "Artifact Virtual",
+    "license": "MIT",
+    "files": [
+      {
+        "name": "main.py",
+        "path": "src/final_api_service_project/main.py",
+        "type": "python",
+        "content": "# Main application entry point with FastAPI integration\nfrom fastapi import FastAPI\nfrom .config import get_settings\nfrom .core import init_app\n\nsettings = get_settings()\napp = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION)\n\n# Initialize application with dependencies\ninit_app(app, settings)\n\n# Health check endpoint\n@app.get('/health')\ndef health_check():\n    return {'status': 'healthy'}",
+        "description": "Generated file: src/final_api_service_project/main.py",
+        "is_executable": false,
+        "permissions": "644"
+      },
+      {
+        "name": "core.py",
+        "path": "src/final_api_service_project/core.py",
+        "type": "python",
+        "content": "# Core business logic and service layer implementation\nfrom fastapi import Depends, HTTPException, status\nfrom sqlalchemy.orm import Session\nfrom typing import Optional\nfrom .config import get_db, get_settings\nfrom .utils import validate_token\n\nsettings = get_settings()\n\ndef init_app(app: FastAPI, settings: dict):\n    \"\"\"Initialize application with dependencies and middleware\"\"\"\n    app.state.settings = settings\n    app.state.db = get_db()\n    app.state.redis = Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT)\n\n    # Register middleware\n    @app.middleware(\"http\")\n    async def add_middlewares(request: Request, call_next):\n        # Add request processing middleware\n        return await call_next(request)\n\n    # Register event handlers\n    @app.on_event(\"startup\")\n    async def startup_event():\n        # Initialize database connections and caches\n        pass\n\n    @app.on_event(\"shutdown\")\n    async def shutdown_event():\n        # Clean up resources\n        pass\n\n    # Register routes\n    from .routes import router\n    app.include_router(router)\n\n    # Register WebSocket endpoint\n    @app.websocket(\"/ws/updates\")\n    async def websocket_endpoint(websocket: WebSocket):\n        # Handle real-time updates\n        pass",
+        "description": "Generated file: src/final_api_service_project/core.py",
+        "is_executable": false,
+        "permissions": "644"
+      },
+      {
+        "name": "utils.py",
+        "path": "src/final_api_service_project/utils.py",
+        "type": "python",
+        "content": "# Utility functions for common operations\nfrom typing import Optional\nfrom fastapi import Depends, HTTPException, status\nfrom jose import JWTError, jwt\nfrom datetime import datetime, timedelta\nfrom .config import get_settings\n\nsettings = get_settings()\n\ndef validate_token(token: str):\n    \"\"\"Validate JWT token and return user information\"\"\"\n    try:\n        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[\"HS256\"])\n        user_id: str = payload.get(\"sub\")\n        if user_id is None:\n            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Invalid token\")\n        return user_id\n    except JWTError:\n        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=\"Token expired\")",
+        "description": "Generated file: src/final_api_service_project/utils.py",
+        "is_executable": false,
+        "permissions": "644"
+      },
+      {
+        "name": "config.py",
+        "path": "src/final_api_service_project/config.py",
+        "type": "python",
+        "content": "# Configuration management with environment variables\nfrom pydantic import BaseSettings\nfrom typing import Optional\n\nclass Settings(BaseSettings):\n    \"\"\"Application configuration settings\"\"\"\n    PROJECT_NAME: str = \"Final API Service Project\"\n    VERSION: str = \"1.0.0\"\n    ENVIRONMENT: str = \"development\"\n    DEBUG: bool = False\n    SECRET_KEY: str\n    DATABASE_URL: str\n    REDIS_HOST: str = \"localhost\"\n    REDIS_PORT: int = 6379\n    JWT_SECRET: str\n    JWT_EXPIRE_MINUTES: int = 30\n    CELERY_BROKER_URL: str = \"redis://localhost:6379/0\"\n    CELERY_RESULT_BACKEND: str = \"redis://localhost:6379/0\"\n    PROMETHEUS_PORT: int = 9090\n\n    class Config:\n        env_file = \".env\"\n        env_file_encoding = \"utf-8\"\n\nsettings = Settings()",
+        "description": "Generated file: src/final_api_service_project/config.py",
+        "is_executable": false,
+        "permissions": "644"
+      },
+      {
+        "name": "requirements.txt",
+        "path": "requirements.txt",
+        "type": "text",
+        "content": "requests\npydantic\nclick\nfastapi>=0.104.0\nuvicorn[standard]>=0.24.0\nsqlalchemy>=2.0.0\nalembic>=1.12.0\nasyncpg>=0.29.0\nredis>=5.0.0\ncelery>=5.3.0\npython-jose[cryptography]>=3.3.0\npasslib[bcrypt]>=1.7.4\npython-multipart>=0.0.6\nprometheus-client>=0.19.0\nopentelemetry-api>=1.21.0\nstructlog>=23.2.0\n",
+        "description": "Python dependencies",
+        "is_executable": false,
+        "permissions": "644"
+      },
+      {
+        "name": "README.md",
+        "path": "README.md",
+        "type": "markdown",
+        "content": "# final_api_service_project\n\nA comprehensive REST API service demonstrating advanced LLM-enhanced production capabilities including JWT authentication, Redis caching, WebSocket real-time updates, Celery background tasks, and Prometheus monitoring. Features optimized PostgreSQL ORM, role-based access control, and multi-layer caching strategies.\n\n## Features\n\n- JWT authentication with refresh tokens\n- Redis-based caching with TTL management\n- WebSocket real-time event streaming\n- Celery task queue for background processing\n- Prometheus metrics endpoint\n- PostgreSQL ORM with async support\n- Role-based access control (RBAC)\n- Multi-layer caching strategy (in-memory + Redis)\n- Structured logging with Structlog\n- OpenAPI 3.0 specification integration\n\n## Installation\n\n```bash\n# Clone the repository\ngit clone <repository-url>\ncd final_api_service_project\n\n# Install dependencies\npip install -r requirements.txt\n```\n\n## Usage\n\n{'health_check': 'GET /health', 'token_authentication': 'POST /token (with client credentials)', 'real_time_updates': 'WebSocket connection to /ws/updates', 'background_task': 'POST /tasks/execute (with Celery task payload)'}\n\n## Development\n\n```bash\n# Install development dependencies\npip install -r requirements-dev.txt\n\n# Run tests\npython -m pytest\n\n# Run linting\nflake8 src/\nblack src/\n```\n\n## License\n\nMIT\n\n## Author\n\nArtifact Virtual\n",
+        "description": "Project documentation",
+        "is_executable": false,
+        "permissions": "644"
+      },
+      {
+        "name": ".gitignore",
+        "path": ".gitignore",
+        "type": "text",
+        "content": "# Python\n__pycache__/\n*.py[cod]\n*$py.class\n*.so\n.Python\nbuild/\ndevelop-eggs/\ndist/\ndownloads/\neggs/\n.eggs/\nlib/\nlib64/\nparts/\nsdist/\nvar/\nwheels/\n*.egg-info/\n.installed.cfg\n*.egg\n\n# Virtual environments\nvenv/\nenv/\nENV/\n\n# IDE\n.vscode/\n.idea/\n*.swp\n*.swo\n\n# OS\n.DS_Store\nThumbs.db\n\n# Logs\n*.log\nlogs/\n\n# Environment variables\n.env\n.env.local\n\n# Database\n*.db\n*.sqlite\n\n# Cache\n.cache/\n.pytest_cache/\n\n# Coverage\n.coverage\nhtmlcov/\n",
+        "description": "Git ignore file",
+        "is_executable": false,
+        "permissions": "644"
+      }
+    ],
+    "directories": [
+      "src",
+      "src/final_api_service_project",
+      "tests",
+      "docs",
+      "config"
+    ],
+    "dependencies": [
+      "requests",
+      "pydantic",
+      "click",
+      "fastapi>=0.104.0",
+      "uvicorn[standard]>=0.24.0",
+      "sqlalchemy>=2.0.0",
+      "alembic>=1.12.0",
+      "asyncpg>=0.29.0",
+      "redis>=5.0.0",
+      "celery>=5.3.0",
+      "python-jose[cryptography]>=3.3.0",
+      "passlib[bcrypt]>=1.7.4",
+      "python-multipart>=0.0.6",
+      "prometheus-client>=0.19.0",
+      "opentelemetry-api>=1.21.0",
+      "structlog>=23.2.0"
+    ],
+    "dev_dependencies": [
+      "pytest>=7.4.0",
+      "pytest-asyncio>=0.21.0",
+      "httpx>=0.25.0",
+      "black>=24.1.0",
+      "flake8>=6.0.0",
+      "mypy>=1.8.0"
+    ],
+    "readme_content": "# final_api_service_project\n\nA comprehensive REST API service demonstrating advanced LLM-enhanced production capabilities including JWT authentication, Redis caching, WebSocket real-time updates, Celery background tasks, and Prometheus monitoring. Features optimized PostgreSQL ORM, role-based access control, and multi-layer caching strategies.\n\n## Features\n\n- JWT authentication with refresh tokens\n- Redis-based caching with TTL management\n- WebSocket real-time event streaming\n- Celery task queue for background processing\n- Prometheus metrics endpoint\n- PostgreSQL ORM with async support\n- Role-based access control (RBAC)\n- Multi-layer caching strategy (in-memory + Redis)\n- Structured logging with Structlog\n- OpenAPI 3.0 specification integration\n\n## Installation\n\n```bash\n# Clone the repository\ngit clone <repository-url>\ncd final_api_service_project\n\n# Install dependencies\npip install -r requirements.txt\n```\n\n## Usage\n\n{'health_check': 'GET /health', 'token_authentication': 'POST /token (with client credentials)', 'real_time_updates': 'WebSocket connection to /ws/updates', 'background_task': 'POST /tasks/execute (with Celery task payload)'}\n\n## Development\n\n```bash\n# Install development dependencies\npip install -r requirements-dev.txt\n\n# Run tests\npython -m pytest\n\n# Run linting\nflake8 src/\nblack src/\n```\n\n## License\n\nMIT\n\n## Author\n\nArtifact Virtual\n",
+    "setup_instructions": "1. Install Python 3.8+\n2. Create virtual environment: python -m venv venv && source venv/bin/activate\n3. Install dependencies: pip install -r requirements.txt\n4. Configure environment variables in .env file\n5. Run application: uvicorn main:app --reload",
+    "usage_examples": {
+      "health_check": "GET /health",
+      "token_authentication": "POST /token (with client credentials)",
+      "real_time_updates": "WebSocket connection to /ws/updates",
+      "background_task": "POST /tasks/execute (with Celery task payload)"
+    },
+    "api_documentation": "",
+    "include_tests": true,
+    "include_docs": true,
+    "include_config": true,
+    "include_ci_cd": false,
+    "include_docker": false
+  },
+  "file_count": 7,
+  "directory_count": 5
+}

@@ -1,0 +1,557 @@
+import React, { useState, useEffect } from 'react';
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell
+} from 'recharts';
+
+// Function to call the Gemini API
+// IMPORTANT: In a production setup with the backend, this function would call your backend API.
+// For this client-side demo, it still directly calls the public Gemini API.
+async function callGeminiAPI(prompt, codeSnippet = '') {
+  let chatHistory = [];
+  let systemInstruction = `
+    You are an expert code analysis assistant.
+    When asked to provide metrics or charts based on the provided code snippet, generate a JSON array of chart configurations.
+    Each chart object should strictly follow this schema. If you cannot generate meaningful charts, return an empty array [].
+    Ensure all string values are properly escaped for JSON.
+
+    Schema for chart objects:
+    [
+      {
+        "id": "unique-chart-id",
+        "type": "bar" | "pie" | "line",
+        "title": "A descriptive title for the chart (e.g., 'Lines per Function', 'File Type Distribution')",
+        "description": "A brief explanation of what the chart represents.",
+        "data": [
+          // Array of data objects. Keys depend on chart type.
+          // For 'bar'/'line': {"name": "Category", "value": 10},
+          // For 'pie': {"name": "Slice Name", "value": 5}
+        ],
+        "dataKeys": { // Specifies which keys in 'data' map to chart elements
+          "name": "name", // For XAxis (bar/line) or slice name (pie)
+          "value": "value" // For YAxis (bar/line) or slice value (pie)
+        },
+        "colors": ["#hexcolor1", "#hexcolor2"] // Optional: specific colors for slices/bars
+      }
+    ]
+
+    When analyzing code for charts, consider metrics like:
+    - Line counts (total, per file, per function, per component)
+    - File type distribution
+    - Number of functions, classes, components
+    - Distribution of comments, empty lines
+    - Cyclomatic complexity (if inferable)
+    - Dependencies (simple counts if inferable)
+
+    For any other questions not related to chart generation, respond conversationally.
+  `;
+
+  // Determine if the user is asking for charts
+  const chartKeywords = ['chart', 'metrics', 'graph', 'visualize', 'breakdown', 'statistics', 'analysis'];
+  const isChartRequest = chartKeywords.some(keyword => prompt.toLowerCase().includes(keyword));
+
+  if (codeSnippet) {
+    chatHistory.push({ role: "user", parts: [{ text: `Code snippet to analyze:\n\`\`\`\n${codeSnippet}\n\`\`\`\n\nUser's request: ${prompt}` }] });
+  } else {
+    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+  }
+
+  const payload = {
+    contents: chatHistory,
+    generationConfig: {} // Initialize generationConfig
+  };
+
+  // If it's a chart request, set the responseMimeType to JSON and define the schema
+  if (isChartRequest) {
+    payload.generationConfig.responseMimeType = "application/json";
+    payload.generationConfig.responseSchema = {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          id: { type: "STRING" },
+          type: { type: "STRING", enum: ["bar", "pie", "line"] },
+          title: { type: "STRING" },
+          description: { type: "STRING" },
+          data: {
+            type: "ARRAY",
+            items: { type: "OBJECT" } // Data objects can have varying properties
+          },
+          dataKeys: {
+            type: "OBJECT",
+            properties: {
+              name: { type: "STRING" },
+              value: { type: "STRING" }
+            },
+            required: ["name", "value"]
+          },
+          colors: {
+            type: "ARRAY",
+            items: { type: "STRING" }
+          }
+        },
+        required: ["id", "type", "title", "data", "dataKeys", "description"]
+      }
+    };
+    payload.systemInstruction = { parts: [{ text: systemInstruction }] }; // Add system instruction for JSON output
+  }
+
+
+  // --- IMPORTANT FOR BACKEND INTEGRATION ---
+  // If you had a live backend running at http://localhost:5000, you would change this:
+  // const apiUrl = `http://localhost:5000/api/chat-analyze`;
+  // const backendPayload = {
+  //    code_snippet: codeSnippet,
+  //    prompt: prompt,
+  //    is_chart_request: isChartRequest
+  // };
+  // const response = await fetch(apiUrl, {
+  //    method: 'POST',
+  //    headers: { 'Content-Type': 'application/json' },
+  //    body: JSON.stringify(backendPayload)
+  // });
+  // Then parse the backend's JSON response, which would contain 'type' and 'data'.
+  // --- END BACKEND INTEGRATION NOTE ---
+
+  const apiKey = ""; // API key will be provided by the Canvas environment for direct API calls
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Gemini API error:", errorData);
+      throw new Error(`Gemini API returned status ${response.status}: ${errorData.error.message}`);
+    }
+
+    const result = await response.json();
+
+    if (result.candidates && result.candidates.length > 0 &&
+      result.candidates[0].content && result.candidates[0].content.parts &&
+      result.candidates[0].content.parts.length > 0) {
+
+      const rawText = result.candidates[0].content.parts[0].text;
+      
+      // If it was a chart request, try to parse JSON
+      if (isChartRequest) {
+        try {
+          const parsedJson = JSON.parse(rawText);
+          return { type: 'charts', data: parsedJson };
+        } catch (jsonError) {
+          console.error("Failed to parse JSON from AI response for charts:", jsonError, "Raw text:", rawText);
+          return { type: 'text', data: "I was asked for charts but couldn't interpret the response as valid JSON. Please try rephrasing your request, or asking for general analysis." };
+        }
+      } else {
+        return { type: 'text', data: rawText };
+      }
+    } else {
+      console.warn("Gemini API response structure unexpected:", result);
+      return { type: 'text', data: "I couldn't get a clear response from the AI. Please try again." };
+    }
+  } catch (error) {
+    console.error("Error calling Gemini API:", error);
+    return { type: 'text', data: `Failed to connect to AI: ${error.message}. Please check your network or API key.` };
+  }
+}
+
+// Default colors for charts if not provided by AI
+const DEFAULT_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF19A3', '#19FFD4'];
+
+// Main App Component
+const App = () => {
+  const [chatMessages, setChatMessages] = useState([]);
+  const [inputValue, setInputValue] = useState('');
+  const [codeSnippet, setCodeSnippet] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showMetrics, setShowMetrics] = useState(true); // State to toggle between chat and metrics
+  const [liveMetricsData, setLiveMetricsData] = useState([]); // State to store AI-generated chart data
+  const [githubUrlInput, setGithubUrlInput] = useState(''); // State for GitHub URL input
+
+  const handleSendMessage = async () => {
+    if (inputValue.trim() === '') return;
+
+    const userMessage = { text: inputValue, sender: 'user' };
+    setChatMessages((prevMessages) => [...prevMessages, userMessage]);
+    setInputValue('');
+    setLoading(true);
+
+    try {
+      // In a real backend integration, you'd conditionally call different backend endpoints here
+      // const backendUrl = 'http://localhost:5000'; // Replace with your backend URL
+      // let aiResponse;
+      // if (githubUrlInput) {
+      //   // Call backend /api/analyze-github-repo
+      //   const response = await fetch(`${backendUrl}/api/analyze-github-repo`, {
+      //     method: 'POST',
+      //     headers: { 'Content-Type': 'application/json' },
+      //     body: JSON.stringify({ repo_url: githubUrlInput, prompt: inputValue, is_chart_request: chartKeywords.some(keyword => inputValue.toLowerCase().includes(keyword)) })
+      //   });
+      //   aiResponse = await response.json();
+      // } else if (/* if zip file was uploaded */) {
+      //   // Call backend /api/analyze-zip-file
+      // } else {
+      //   // Call backend /api/chat-analyze for local file/pasted snippet
+      //   const response = await fetch(`${backendUrl}/api/chat-analyze`, {
+      //     method: 'POST',
+      //     headers: { 'Content-Type': 'application/json' },
+      //     body: JSON.stringify({ code_snippet: codeSnippet, prompt: inputValue, is_chart_request: chartKeywords.some(keyword => inputValue.toLowerCase().includes(keyword)) })
+      //   });
+      //   aiResponse = await response.json();
+      // }
+
+      // For this client-side demo, we still call the direct Gemini API:
+      const aiResponse = await callGeminiAPI(inputValue, codeSnippet);
+      
+      if (aiResponse.type === 'charts') {
+        setLiveMetricsData(aiResponse.data);
+        const aiMessage = { text: `Here are the charts based on your request. Please switch to "Metrics & Charts" view to see them.`, sender: 'ai' };
+        setChatMessages((prevMessages) => [...prevMessages, aiMessage]);
+        setShowMetrics(true); // Automatically switch to metrics view
+      } else {
+        const aiMessage = { text: aiResponse.data, sender: 'ai' };
+        setChatMessages((prevMessages) => [...prevMessages, aiMessage]);
+        setLiveMetricsData([]); // Clear previous charts if a text response is received
+      }
+
+    } catch (error) {
+      const errorMessage = { text: `Error: ${error.message}. If you are trying to use GitHub/ZIP, ensure your backend server is running and configured correctly.`, sender: 'ai' };
+      setChatMessages((prevMessages) => [...prevMessages, errorMessage]);
+      setLiveMetricsData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Basic file size check to prevent freezing on extremely large files
+      if (file.size > 1 * 1024 * 1024) { // 1 MB limit for client-side demo
+        setChatMessages((prevMessages) => [...prevMessages, { text: 'File is too large for client-side processing in this demo. Please try a smaller file or paste a snippet directly.', sender: 'ai' }]);
+        e.target.value = null; // Clear the input
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setCodeSnippet(event.target.result);
+        setChatMessages((prevMessages) => [...prevMessages, { text: `File "${file.name}" loaded successfully into the code input. You can now ask questions or request charts.`, sender: 'ai' }]);
+        setGithubUrlInput(''); // Clear GitHub URL if a local file is loaded
+      };
+      reader.onerror = (error) => {
+        console.error("Error reading file:", error);
+        setChatMessages((prevMessages) => [...prevMessages, { text: 'Failed to read file. Please try again.', sender: 'ai' }]);
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const handleCodeSnippetChange = (e) => {
+    setCodeSnippet(e.target.value);
+    setGithubUrlInput(''); // Clear GitHub URL if snippet is pasted
+  };
+
+  const handleGithubUrlChange = (e) => {
+    setGithubUrlInput(e.target.value);
+    setCodeSnippet(''); // Clear code snippet if GitHub URL is entered
+  };
+
+  // Scroll to the bottom of the chat window
+  useEffect(() => {
+    const chatWindow = document.getElementById('chat-window');
+    if (chatWindow) {
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+  }, [chatMessages]);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 font-inter text-gray-800 p-4 sm:p-6 lg:p-8 flex flex-col items-center">
+      <h1 className="text-4xl sm:text-5xl font-extrabold text-indigo-700 mb-6 text-center drop-shadow-lg">
+        Codebase Insight Chat
+      </h1>
+
+      {/* Toggle Buttons */}
+      <div className="flex space-x-4 mb-8">
+        <button
+          onClick={() => setShowMetrics(true)}
+          className={`px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 ease-in-out ${
+            showMetrics ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800 shadow'
+          }`}
+        >
+          Metrics & Charts
+        </button>
+        <button
+          onClick={() => setShowMetrics(false)}
+          className={`px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 ease-in-out ${
+            !showMetrics ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800 shadow'
+          }`}
+        >
+          AI Chat
+        </button>
+      </div>
+
+      <div className="w-full max-w-7xl bg-white rounded-3xl shadow-xl flex flex-col lg:flex-row overflow-hidden border border-indigo-200">
+        {/* Left Panel: File Upload Simulation / Chat Input */}
+        <div className="w-full lg:w-1/3 p-6 bg-indigo-50 border-r border-indigo-100 flex flex-col">
+          <h2 className="text-2xl font-bold text-indigo-800 mb-4">Code Input Options</h2>
+
+          {/* Local File Upload */}
+          <div className="mb-4 p-3 border border-indigo-200 rounded-xl bg-indigo-100/50">
+            <label htmlFor="file-upload" className="block text-base font-medium text-gray-700 mb-2">Upload a local code file:</label>
+            <input
+              type="file"
+              id="file-upload"
+              className="block w-full text-sm text-gray-600
+                         file:mr-4 file:py-2 file:px-4
+                         file:rounded-full file:border-0
+                         file:text-sm file:font-semibold
+                         file:bg-indigo-200 file:text-indigo-800
+                         hover:file:bg-indigo-300 cursor-pointer"
+              onChange={handleFileChange}
+              accept=".txt,.js,.py,.html,.css,.md,.json,.xml,.java,.c,.cpp,.h,.hpp,.ts,.tsx,.jsx,.go,.rb,.php,.swift,.kt"
+            />
+            <p className="text-xs text-gray-500 mt-1">Accepts common code/text files. Max 1MB for client-side demo.</p>
+          </div>
+
+          {/* ZIP Upload (Placeholder) */}
+          <div className="mb-4 p-3 border border-gray-200 rounded-xl bg-gray-100/50">
+            <label htmlFor="zip-upload" className="block text-base font-medium text-gray-500 mb-2">Upload a ZIP archive (requires backend):</label>
+            <input
+              type="file"
+              id="zip-upload"
+              className="block w-full text-sm text-gray-400 cursor-not-allowed
+                         file:mr-4 file:py-2 file:px-4
+                         file:rounded-full file:border-0
+                         file:text-sm file:font-semibold
+                         file:bg-gray-200 file:text-gray-500"
+              accept=".zip"
+              disabled
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              **Requires backend for unzipping and processing multiple files.**
+            </p>
+          </div>
+
+          {/* GitHub/Google Drive URL (Placeholder) */}
+          <div className="mb-4 p-3 border border-gray-200 rounded-xl bg-gray-100/50">
+            <label htmlFor="repo-url" className="block text-base font-medium text-gray-500 mb-2">GitHub/Google Drive URL (requires backend):</label>
+            <input
+              type="text"
+              id="repo-url"
+              className="w-full p-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
+              placeholder="e.g., https://github.com/user/repo"
+              value={githubUrlInput}
+              onChange={handleGithubUrlChange} // Still allow typing for demo purposes, but it's disabled.
+              disabled
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              **Requires backend for API access, authentication, and cloning.**
+            </p>
+          </div>
+
+          <p className="text-sm font-medium text-gray-700 mb-2">Or paste code snippet directly:</p>
+          <textarea
+            className="w-full h-48 p-4 border border-indigo-300 rounded-xl resize-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent outline-none text-sm font-mono bg-white shadow-inner mb-4"
+            placeholder="Paste your code snippet here. The content from the last uploaded file or pasted text will be used for AI analysis."
+            value={codeSnippet}
+            onChange={handleCodeSnippetChange}
+          ></textarea>
+
+          <div className="mt-auto pt-4 border-t border-indigo-200">
+            <p className="text-sm text-gray-600 mb-2">
+              <strong>Understanding Deep Analysis:</strong>
+            </p>
+            <p className="text-xs text-gray-500 mb-1">
+              For **extremely in-depth line-by-line full codebase deep dive analysis**, especially for large projects, specialized parsing tools and complex context management are critical. These typically reside on a dedicated **backend server**.
+            </p>
+            <p className="text-xs text-gray-500">
+              This demo focuses on client-side AI interaction with provided code snippets or single file uploads, demonstrating the *concept* of AI-powered insights and dynamic charting.
+            </p>
+          </div>
+        </div>
+
+        {/* Right Panel: Chat Interface or Metrics Display */}
+        <div className="w-full lg:w-2/3 flex flex-col">
+          {showMetrics ? (
+            <div className="p-6 flex-grow overflow-y-auto">
+              <h2 className="text-2xl font-bold text-indigo-800 mb-4">Live Codebase Metrics</h2>
+              {liveMetricsData.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {liveMetricsData.map((chartConfig, index) => (
+                    <div key={chartConfig.id || `chart-${index}`} className={`p-4 rounded-xl shadow border ${chartConfig.type === 'bar' ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'}`}>
+                      <h3 className="text-lg font-semibold text-gray-800 mb-2">{chartConfig.title}</h3>
+                      <p className="text-sm text-gray-600 mb-4">{chartConfig.description}</p>
+                      <ResponsiveContainer width="100%" height={300}>
+                        {chartConfig.type === 'bar' && (
+                          <BarChart data={chartConfig.data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                            <XAxis dataKey={chartConfig.dataKeys.name} tick={{ fill: '#4B5563' }} />
+                            <YAxis tick={{ fill: '#4B5563' }} />
+                            <Tooltip cursor={{ fill: 'transparent' }} />
+                            <Legend />
+                            <Bar dataKey={chartConfig.dataKeys.value} fill={chartConfig.colors?.[0] || DEFAULT_COLORS[0]} className="rounded-t-lg" />
+                          </BarChart>
+                        )}
+                        {chartConfig.type === 'pie' && (
+                          <PieChart>
+                            <Pie
+                              data={chartConfig.data}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              outerRadius={120}
+                              fill="#8884d8"
+                              dataKey={chartConfig.dataKeys.value}
+                              label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                            >
+                              {chartConfig.data.map((entry, idx) => (
+                                <Cell key={`cell-${idx}`} fill={(chartConfig.colors && chartConfig.colors[idx % chartConfig.colors.length]) || DEFAULT_COLORS[idx % DEFAULT_COLORS.length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip />
+                            <Legend />
+                          </PieChart>
+                        )}
+                        {/* You can add 'line' chart rendering here as well if needed */}
+                      </ResponsiveContainer>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-gray-500 py-10">
+                  <p className="mb-2">No charts available yet.</p>
+                  <p>Load some code and ask the AI for chart suggestions in the "AI Chat" view.</p>
+                  <p className="mt-4 text-sm text-gray-600">
+                    Example prompts: "Show me code complexity metrics," or "Visualize the distribution of file types."
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col flex-grow bg-white rounded-br-3xl p-6">
+              <div id="chat-window" className="flex-grow overflow-y-auto p-4 space-y-4 bg-gray-50 rounded-xl shadow-inner border border-gray-200">
+                {chatMessages.length === 0 && (
+                  <div className="text-center text-gray-500 py-10">
+                    <p className="mb-2">Start a conversation!</p>
+                    <p>Upload or paste code, then try asking: "Summarize this code," or "What are the potential issues in this snippet?"</p>
+                    <p className="mt-2">To get charts, ask for "metrics," "charts," or "visualization" of the code.</p>
+                  </div>
+                )}
+                {chatMessages.map((msg, index) => (
+                  <div
+                    key={index}
+                    className={`flex ${
+                      msg.sender === 'user' ? 'justify-end' : 'justify-start'
+                    }`}
+                  >
+                    <div
+                      className={`max-w-3/4 p-3 rounded-2xl shadow-md ${
+                        msg.sender === 'user'
+                          ? 'bg-indigo-500 text-white rounded-br-none'
+                          : 'bg-gray-200 text-gray-800 rounded-bl-none'
+                      }`}
+                    >
+                      {msg.text}
+                    </div>
+                  </div>
+                ))}
+                {loading && (
+                  <div className="flex justify-start">
+                    <div className="max-w-3/4 p-3 rounded-2xl bg-gray-200 text-gray-800 rounded-bl-none shadow-md">
+                      <div className="dot-pulse"></div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Chat Input */}
+              <div className="mt-6 flex items-center gap-3">
+                <input
+                  type="text"
+                  className="flex-grow px-5 py-3 border border-indigo-300 rounded-full focus:ring-2 focus:ring-indigo-400 focus:border-transparent outline-none text-base placeholder-gray-500 shadow-sm"
+                  placeholder="Ask about the code or workspace..."
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  disabled={loading}
+                />
+                <button
+                  onClick={handleSendMessage}
+                  className="bg-indigo-600 text-white p-3 rounded-full hover:bg-indigo-700 transition-colors duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={loading}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <style>{` /* Removed 'jsx' attribute */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        .font-inter {
+          font-family: 'Inter', sans-serif;
+        }
+
+        /* Dot Pulse Loading Animation */
+        .dot-pulse {
+          position: relative;
+          width: 10px;
+          height: 10px;
+          border-radius: 5px;
+          background-color: #6B7280; /* gray-500 */
+          color: #6B7280; /* gray-500 */
+          animation: dotPulse 1.5s infinite ease-in-out;
+        }
+
+        .dot-pulse::before, .dot-pulse::after {
+          content: '';
+          display: inline-block;
+          position: absolute;
+          top: 0;
+          width: 10px;
+          height: 10px;
+          border-radius: 5px;
+          background-color: #6B7280; /* gray-500 */
+          color: #6B7280; /* gray-500 */
+        }
+
+        .dot-pulse::before {
+          left: -15px;
+          animation: dotPulseLeft 1.5s infinite ease-in-out;
+        }
+
+        .dot-pulse::after {
+          right: -15px;
+          animation: dotPulseRight 1.5s infinite ease-in-out;
+        }
+
+        @keyframes dotPulse {
+          0% { transform: scale(0.8); opacity: 0.7; }
+          50% { transform: scale(1); opacity: 1; }
+          100% { transform: scale(0.8); opacity: 0.7; }
+        }
+
+        @keyframes dotPulseLeft {
+          0% { transform: translateX(0px); opacity: 0.7; }
+          50% { transform: translateX(15px); opacity: 1; }
+          100% { transform: translateX(0px); opacity: 0.7; }
+        }
+
+        @keyframes dotPulseRight {
+          0% { transform: translateX(0px); opacity: 0.7; }
+          50% { transform: translateX(-15px); opacity: 1; }
+          100% { transform: translateX(0px); opacity: 0.7; }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default App;

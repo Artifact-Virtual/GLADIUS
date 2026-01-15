@@ -1,0 +1,388 @@
+```rust
+#![cfg_attr(not(feature = "std"), no_std, no_main)]
+
+#[ink::contract]
+mod board_of_directors {
+    use ink::storage::Mapping;
+    use ink::prelude::{string::String, vec::Vec};
+
+    /// Placeholder struct for system-wide policies.
+    /// In a real system, `rules` would be more complex.
+    #[derive(scale::Encode, scale::Decode, Clone, PartialEq, Debug)]
+    #[cfg_attr(feature = "ink-generate-api-metadata", derive(ink::metadata::GenerateBlowfishData))]
+    pub struct SystemPolicy {
+        id: String,
+        name: String,
+        // Simplified rules representation for MVP contract
+        rules_hash: [u8; 32],
+        version: u32,
+        timestamp: u64, // Using block timestamp or similar for synchronization context
+    }
+
+    /// Placeholder struct for strategic directives.
+    /// In a real system, `parameters` would be more complex.
+    #[derive(scale::Encode, scale::Decode, Clone, PartialEq, Debug)]
+    #[cfg_attr(feature = "ink-generate-api-metadata", derive(ink::metadata::GenerateBlowfishData))]
+    pub struct SystemDirective {
+        id: String,
+        command: String, // High-level command string
+        // Simplified parameters representation
+        parameters_hash: [u8; 32],
+        timestamp: u64, // Using block timestamp or similar for synchronization context
+        target_scopes: Vec<String>,
+    }
+
+    /// Simplified struct representing a consistent snapshot of system metrics.
+    /// In a real system, this would contain extensive data.
+    /// This data must be provided by the caller, assumed to be consistent at the block height.
+    #[derive(scale::Encode, scale::Decode, Clone, PartialEq, Debug)]
+    #[cfg_attr(feature = "ink-generate-api-metadata", derive(ink::metadata::GenerateBlowfishData))]
+    pub struct EquilibriumSnapshotData {
+        total_cpu_load: u64, // Aggregate CPU load across system
+        memory_utilization_permille: u16, // Memory utilization in parts per thousand (0-1000)
+        io_wait_ratio_permille: u16, // I/O wait ratio in parts per thousand (0-1000)
+        critical_services_healthy_count: u32,
+        total_critical_services_count: u32,
+    }
+
+
+    /// Represents the global system equilibrium status.
+    #[derive(scale::Encode, scale::Decode, Clone, Copy, PartialEq, Eq, Debug)]
+    #[cfg_attr(feature = "ink-generate-api-metadata", derive(ink::metadata::GenerateBlowfishData))]
+    pub enum EquilibriumStatus {
+        Unknown,
+        Operational,
+        Degraded,
+        Critical,
+    }
+
+    /// Event emitted when a new policy is distributed.
+    /// Serves as a synchronous signal for external components.
+    #[ink(event)]
+    pub struct PolicyUpdated {
+        #[ink(topic)]
+        policy_id: String,
+        version: u32,
+        timestamp: u64,
+    }
+
+    /// Event emitted when a strategic directive is issued.
+    /// Serves as a synchronous signal for external components.
+    #[ink(event)]
+    pub struct DirectiveIssued {
+        #[ink(topic)]
+        directive_id: String,
+        command: String,
+        timestamp: u64,
+    }
+
+    /// The Board of Directors contract storage.
+    #[ink(storage)]
+    pub struct BoardOfDirectors {
+        current_system_policy: Option<SystemPolicy>,
+        equilibrium_status: EquilibriumStatus,
+        last_equilibrium_check_timestamp: u64,
+        // Placeholder for potential mapping of policies/directives by ID if needed
+        // policies_by_id: Mapping<String, SystemPolicy>,
+        // directives_by_id: Mapping<String, SystemDirective>,
+    }
+
+    impl BoardOfDirectors {
+        /// Constructor initializes the contract.
+        #[ink(constructor)]
+        pub fn new() -> Self {
+            Self {
+                current_system_policy: None,
+                equilibrium_status: EquilibriumStatus::Unknown,
+                last_equilibrium_check_timestamp: 0,
+                // policies_by_id: Mapping::default(),
+                // directives_by_id: Mapping::default(),
+            }
+        }
+
+        /// Hardcoded task 1: Synchronously distributes a new system policy.
+        /// In the contract context, "synchronous distribution" means updating
+        /// the contract's internal state and emitting an event atomically
+        /// within a single block. External components must react synchronously
+        /// to this on-chain event.
+        #[ink(message)]
+        pub fn distribute_policy_update(&mut self, new_policy: SystemPolicy) -> Result<(), String> {
+            // Basic validation (MVP)
+            if new_policy.id.is_empty() || new_policy.name.is_empty() {
+                 return Err(String::from("Invalid policy data"));
+            }
+
+            let timestamp = self.env().block_timestamp();
+            let mut policy_to_store = new_policy.clone();
+            policy_to_store.timestamp = timestamp; // Record the on-chain timestamp of distribution
+
+            // Synchronous update of the contract's internal state
+            self.current_system_policy = Some(policy_to_store);
+
+            // Synchronously emit an event signaling the update
+            self.env().emit_event(PolicyUpdated {
+                policy_id: new_policy.id.clone(),
+                version: new_policy.version,
+                timestamp,
+            });
+
+            // Log success (conceptually)
+            // println!("Policy {} version {} distributed at {}", new_policy.id, new_policy.version, timestamp);
+
+            // In contract, success means state update and event emission happened.
+            Ok(())
+        }
+
+        /// Hardcoded task 2: Validates global system equilibrium based on provided snapshot data.
+        /// The snapshot data must be provided by the caller, representing a consistent view
+        /// at this block height. Equilibrium checks are hardcoded deterministic logic.
+        #[ink(message)]
+        pub fn validate_system_equilibrium(&mut self, snapshot: EquilibriumSnapshotData) -> EquilibriumStatus {
+            let current_timestamp = self.env().block_timestamp();
+
+            // Apply deterministic mathematical/logical checks for equilibrium (hardcoded examples)
+            let mut new_status = EquilibriumStatus::Operational;
+
+            // Equilibrium Rule 1: Total CPU load threshold
+            if snapshot.total_cpu_load > 5000 { // Example threshold
+                // println!("High CPU load detected ({}). Equilibrium at risk.", snapshot.total_cpu_load);
+                new_status = EquilibriumStatus::Degraded;
+            }
+
+            // Equilibrium Rule 2: Memory utilization threshold
+            if snapshot.memory_utilization_permille > 900 { // > 90%
+                 // println!("High Memory utilization detected ({} permille). Equilibrium at risk.", snapshot.memory_utilization_permille);
+                 new_status = EquilibriumStatus::Degraded; // Degraded if just high util
+                 if snapshot.memory_utilization_permille > 980 { // > 98%
+                     // println!("Critical Memory utilization detected ({} permille). Equilibrium critical.", snapshot.memory_utilization_permille);
+                     new_status = EquilibriumStatus::Critical;
+                 }
+            }
+
+            // Equilibrium Rule 3: I/O Wait ratio indicates potential bottlenecks
+            if snapshot.io_wait_ratio_permille > 150 { // > 15%
+                // println!("Significant I/O wait detected ({} permille). Potential bottleneck affecting equilibrium.", snapshot.io_wait_ratio_permille);
+                 if new_status != EquilibriumStatus::Critical { new_status = EquilibriumStatus::Degraded; } // Don't overwrite Critical status
+            }
+
+            // Equilibrium Rule 4: Critical service health
+            if snapshot.total_critical_services_count > 0 &&
+                snapshot.critical_services_healthy_count < snapshot.total_critical_services_count * 95 / 100 // Less than 95% healthy
+            {
+                 // println!("{} critical services unhealthy ({} / {}). Equilibrium critical.",
+                 //     snapshot.total_critical_services_count - snapshot.critical_services_healthy_count,
+                 //     snapshot.critical_services_healthy_count,
+                 //     snapshot.total_critical_services_count);
+                 new_status = EquilibriumStatus::Critical;
+            }
+
+            // Update contract state synchronously
+            self.equilibrium_status = new_status;
+            self.last_equilibrium_check_timestamp = current_timestamp;
+
+            // println!("Equilibrium validation complete. Status: {:?}", self.equilibrium_status);
+            self.equilibrium_status
+        }
+
+         /// Hardcoded task 3: Issues a critical strategic directive.
+        /// Similar to policy distribution, "synchronous issuance" means updating
+        /// internal state and emitting an event atomically. External components
+        /// must coordinate their reaction based on this event.
+        #[ink(message)]
+        pub fn issue_strategic_directive(&mut self, directive: SystemDirective) -> Result<(), String> {
+            // Basic validation (MVP)
+             if directive.id.is_empty() || directive.command.is_empty() || directive.target_scopes.is_empty() {
+                 return Err(String::from("Invalid directive data"));
+             }
+
+            let timestamp = self.env().block_timestamp();
+            let mut directive_to_store = directive.clone();
+            directive_to_store.timestamp = timestamp; // Record the on-chain timestamp of issuance
+
+            // Simulate storing the directive (can add a mapping if keeping history)
+            // self.directives_by_id.insert(directive.id.clone(), directive_to_store);
+
+            // Synchronously emit an event signaling the directive
+            self.env().emit_event(DirectiveIssued {
+                directive_id: directive.id.clone(),
+                command: directive.command.clone(),
+                timestamp,
+            });
+
+            // Log success (conceptually)
+            // println!("Strategic directive {} issued at {}", directive.id, timestamp);
+
+            // In contract, success means state update (if storing) and event emission happened.
+             Ok(())
+        }
+
+        /// Retrieves the current calculated equilibrium status.
+        #[ink(message)]
+        pub fn get_equilibrium_status(&self) -> EquilibriumStatus {
+            self.equilibrium_status
+        }
+
+        /// Retrieves the last applied system policy.
+        #[ink(message)]
+        pub fn get_current_policy(&self) -> Option<SystemPolicy> {
+            self.current_system_policy.clone()
+        }
+
+        /// Retrieves the timestamp of the last equilibrium validation.
+        #[ink(message)]
+        pub fn get_last_equilibrium_check_timestamp(&self) -> u64 {
+            self.last_equilibrium_check_timestamp
+        }
+    }
+
+    /// Unit tests in Rust/Ink!
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        // Helper to create a policy for testing
+        fn create_test_policy(id: &str, version: u32) -> SystemPolicy {
+            SystemPolicy {
+                id: id.into(),
+                name: format!("Policy {}", id).into(),
+                rules_hash: [0u8; 32], // Dummy hash
+                version,
+                timestamp: 0, // Will be overwritten by contract timestamp
+            }
+        }
+
+        // Helper to create snapshot data for testing
+        fn create_test_snapshot(
+            cpu_load: u64,
+            mem_util: u16,
+            io_wait: u16,
+            healthy_services: u32,
+            total_services: u32
+        ) -> EquilibriumSnapshotData {
+            EquilibriumSnapshotData {
+                total_cpu_load: cpu_load,
+                memory_utilization_permille: mem_util,
+                io_wait_ratio_permille: io_wait,
+                critical_services_healthy_count: healthy_services,
+                total_critical_services_count: total_services,
+            }
+        }
+
+        #[ink::test]
+        fn it_works() {
+            let mut board = BoardOfDirectors::new();
+            assert_eq!(board.get_equilibrium_status(), EquilibriumStatus::Unknown);
+        }
+
+        #[ink::test]
+        fn policy_distribution_updates_state_and_emits_event() {
+            let mut board = BoardOfDirectors::new();
+            let policy = create_test_policy("policy-abc", 1);
+
+            // Mock the contract environment to check emitted events
+            let mut env = ink::env::test::TestAccountBuilder::new().build();
+            env.set_block_timestamp::<ink::env::DefaultEnvironment>(100);
+            ink::env::test::set_environment::<ink::env::DefaultEnvironment>(env);
+
+            let result = board.distribute_policy_update(policy.clone());
+            assert!(result.is_ok());
+            assert!(board.get_current_policy().is_some());
+
+            let stored_policy = board.get_current_policy().unwrap();
+            assert_eq!(stored_policy.id, policy.id);
+            assert_eq!(stored_policy.version, policy.version);
+            assert_eq!(stored_policy.timestamp, 100); // Check if timestamp was set by contract
+
+            // Check emitted events
+            let emitted_events = ink::env::test::recorded_events().collect::<Vec<_>>();
+            assert_eq!(emitted_events.len(), 1);
+            let event = emitted_events[0].clone();
+            let decoded_event = <Event as scale::Decode>::decode(&mut &event.data[..])
+                .expect("Failed to decode PolicyUpdated event");
+            match decoded_event {
+                Event::PolicyUpdated(PolicyUpdated { policy_id, version, timestamp }) => {
+                    assert_eq!(policy_id, policy.id);
+                    assert_eq!(version, policy.version);
+                    assert_eq!(timestamp, 100);
+                }
+                _ => panic!("Unexpected event type"),
+            }
+        }
+
+        #[ink::test]
+        fn equilibrium_validation_updates_status() {
+            let mut board = BoardOfDirectors::new();
+
+            // Snapshot indicating operational state
+            let snapshot_operational = create_test_snapshot(
+                4000, 800, 100, 19, 20 // Low load, low util, low io, 95% healthy
+            );
+            let status1 = board.validate_system_equilibrium(snapshot_operational);
+            assert_eq!(status1, EquilibriumStatus::Operational);
+            assert_eq!(board.get_equilibrium_status(), EquilibriumStatus::Operational);
+             assert!(board.get_last_equilibrium_check_timestamp() > 0);
+
+
+            // Snapshot indicating degraded state (high CPU load)
+            let snapshot_degraded_cpu = create_test_snapshot(
+                6000, 800, 100, 20, 20 // High load
+            );
+            let status2 = board.validate_system_equilibrium(snapshot_degraded_cpu);
+            assert_eq!(status2, EquilibriumStatus::Degraded);
+            assert_eq!(board.get_equilibrium_status(), EquilibriumStatus::Degraded);
+
+            // Snapshot indicating critical state (high memory)
+            let snapshot_critical_mem = create_test_snapshot(
+                4000, 990, 100, 20, 20 // Critical memory util
+            );
+            let status3 = board.validate_system_equilibrium(snapshot_critical_mem);
+            assert_eq!(status3, EquilibriumStatus::Critical);
+            assert_eq!(board.get_equilibrium_status(), EquilibriumStatus::Critical);
+
+             // Snapshot indicating critical state (service failure)
+            let snapshot_critical_services = create_test_snapshot(
+                4000, 800, 100, 18, 20 // Less than 95% healthy
+            );
+            let status4 = board.validate_system_equilibrium(snapshot_critical_services);
+            assert_eq!(status4, EquilibriumStatus::Critical);
+            assert_eq!(board.get_equilibrium_status(), EquilibriumStatus::Critical);
+        }
+
+        #[ink::test]
+        fn directive_issuance_emits_event() {
+             let mut board = BoardOfDirectors::new();
+             let directive = SystemDirective {
+                id: "directive-xyz".into(),
+                command: "REBALANCE_LOAD".into(),
+                parameters_hash: [1u8; 32], // Dummy hash
+                timestamp: 0, // Will be overwritten
+                target_scopes: vec!["COMPUTE_CLUSTER_1".into(), "STORAGE_POOL_A".into()],
+             };
+
+             // Mock the contract environment
+             let mut env = ink::env::test::TestAccountBuilder::new().build();
+             env.set_block_timestamp::<ink::env::DefaultEnvironment>(200);
+             ink::env::test::set_environment::<ink::env::DefaultEnvironment>(env);
+
+             let result = board.issue_strategic_directive(directive.clone());
+             assert!(result.is_ok());
+
+             // Check emitted events
+             let emitted_events = ink::env::test::recorded_events().collect::<Vec<_>>();
+             assert_eq!(emitted_events.len(), 1); // Expecting only the DirectiveIssued event
+             let event = emitted_events[0].clone();
+             let decoded_event = <Event as scale::Decode>::decode(&mut &event.data[..])
+                 .expect("Failed to decode DirectiveIssued event");
+
+             match decoded_event {
+                 Event::DirectiveIssued(DirectiveIssued { directive_id, command, timestamp }) => {
+                     assert_eq!(directive_id, directive.id);
+                     assert_eq!(command, directive.command);
+                     assert_eq!(timestamp, 200);
+                 }
+                 _ => panic!("Unexpected event type"),
+             }
+        }
+    }
+}
+```

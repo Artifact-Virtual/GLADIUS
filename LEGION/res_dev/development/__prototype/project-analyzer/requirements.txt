@@ -1,0 +1,4 @@
+Flask==2.3.2
+python-dotenv==1.0.0
+PyGithub==2.1.1
+google-cloud-aiplatform==1.49.0

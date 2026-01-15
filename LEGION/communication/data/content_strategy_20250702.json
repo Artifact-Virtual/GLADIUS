@@ -1,0 +1,38 @@
+{
+  "content_pipeline": [
+    {
+      "type": "blog_post",
+      "title": "AI Revolution in Digital Organizations",
+      "status": "ready"
+    },
+    {
+      "type": "case_study",
+      "title": "Zero-Budget AI Implementation",
+      "status": "draft"
+    },
+    {
+      "type": "whitepaper",
+      "title": "Future of Digital Organizations",
+      "status": "planning"
+    }
+  ],
+  "social_media_strategy": {
+    "linkedin": {
+      "frequency": "Daily",
+      "focus": "Thought leadership"
+    },
+    "twitter": {
+      "frequency": "3x/week",
+      "focus": "Industry trends"
+    },
+    "medium": {
+      "frequency": "Weekly",
+      "focus": "Deep insights"
+    }
+  },
+  "brand_messaging": {
+    "tagline": "Zero-Budget Digital Organization Builder",
+    "value_proposition": "AI-powered autonomous business operations",
+    "target_audience": "Entrepreneurs and business leaders"
+  }
+}

@@ -1,0 +1,164 @@
+[
+  {
+    "name": "Alpha Vantage",
+    "category": "Financial Markets",
+    "url": "https://www.alphavantage.co/",
+    "env_key": "ALPHAVANTAGE_API_KEY",
+    "requires_api_key": true,
+    "status": "unconfirmed",
+    "description": "Stocks, forex, crypto, technical indicators, economic data."
+  },
+  {
+    "name": "Marketstack",
+    "category": "Stock Market Data",
+    "url": "https://marketstack.com/",
+    "env_key": "MARKETSTACK_API_KEY",
+    "requires_api_key": true,
+    "status": "unconfirmed",
+    "description": "Real-time, intraday, and historical stock market data."
+  },
+  {
+    "name": "CoinGecko",
+    "category": "Crypto",
+    "url": "https://api.coingecko.com/api/v3/",
+    "env_key": null,
+    "requires_api_key": false,
+    "status": "operational",
+    "description": "Cryptocurrency prices, market cap, exchanges, and more."
+  },
+  {
+    "name": "Frankfurter",
+    "category": "Forex",
+    "url": "https://api.frankfurter.app/",
+    "env_key": null,
+    "requires_api_key": false,
+    "status": "operational",
+    "description": "Foreign exchange rates from the European Central Bank."
+  },
+  {
+    "name": "NewsAPI",
+    "category": "Current Affairs",
+    "url": "https://newsapi.org/",
+    "env_key": "NEWSAPI_KEY",
+    "requires_api_key": true,
+    "status": "unconfirmed",
+    "description": "Headlines, breaking news, articles from 80,000+ sources."
+  },
+  {
+    "name": "AbuseIPDB",
+    "category": "Cybersecurity",
+    "url": "https://www.abuseipdb.com/",
+    "env_key": "ABUSEIPDB_API_KEY",
+    "requires_api_key": true,
+    "status": "unconfirmed",
+    "description": "IP reputation, abuse reports."
+  },
+  {
+    "name": "USGS Earthquake",
+    "category": "Science & Environment",
+    "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson",
+    "env_key": null,
+    "requires_api_key": false,
+    "status": "operational",
+    "description": "Real-time earthquake data from the US Geological Survey."
+  },
+  {
+    "name": "NASA APOD",
+    "category": "Science & Imagery",
+    "url": "https://api.nasa.gov/planetary/apod",
+    "env_key": "NASA_API_KEY",
+    "requires_api_key": true,
+    "status": "operational (demo key)",
+    "description": "Astronomy Picture of the Day and other NASA imagery/data APIs."
+  },
+  {
+    "name": "OpenWeatherMap",
+    "category": "Weather",
+    "url": "https://api.openweathermap.org/",
+    "env_key": "OPENWEATHERMAP_API_KEY",
+    "requires_api_key": true,
+    "status": "unconfirmed",
+    "description": "Weather, forecasts, historical data."
+  },
+  {
+    "name": "OpenCorporates",
+    "category": "Business Intelligence",
+    "url": "https://api.opencorporates.com/",
+    "env_key": "OPENCORPORATES_API_KEY",
+    "requires_api_key": true,
+    "status": "unconfirmed",
+    "description": "Company registry and corporate data."
+  },
+  {
+    "name": "VirusTotal",
+    "category": "Cybersecurity",
+    "url": "https://www.virustotal.com/api/v3/",
+    "env_key": "VIRUSTOTAL_API_KEY",
+    "requires_api_key": true,
+    "status": "unconfirmed",
+    "description": "File, URL, IP, and domain threat analysis."
+  },
+  {
+    "name": "GDELT Project",
+    "category": "Current Affairs",
+    "url": "https://api.gdeltproject.org/api/v2/doc/doc",
+    "env_key": null,
+    "requires_api_key": false,
+    "status": "operational",
+    "description": "Global news, events, and media monitoring."
+  },
+  {
+    "name": "Nager.Date",
+    "category": "Public Holidays",
+    "url": "https://date.nager.at/api/v3/NextPublicHolidaysWorldwide",
+    "env_key": null,
+    "requires_api_key": false,
+    "status": "operational",
+    "description": "Worldwide public holiday data."
+  },
+  {
+    "name": "FRED",
+    "category": "Economic Data",
+    "url": "https://fred.stlouisfed.org/docs/api/fred/",
+    "env_key": "FRED_API_KEY",
+    "requires_api_key": true,
+    "status": "unconfirmed",
+    "description": "Federal Reserve Economic Data: US and global economic indicators."
+  },
+  {
+    "name": "World Bank Open Data",
+    "category": "Economic & Development Data",
+    "url": "https://datahelpdesk.worldbank.org/knowledgebase/articles/889386-developer-information-overview",
+    "env_key": null,
+    "requires_api_key": false,
+    "status": "unconfirmed",
+    "description": "Global economic, social, and development indicators."
+  },
+  {
+    "name": "SpaceX API",
+    "category": "Space & Science",
+    "url": "https://api.spacexdata.com/v4/launches/next",
+    "env_key": null,
+    "requires_api_key": false,
+    "status": "unconfirmed",
+    "description": "SpaceX launches, rockets, missions."
+  },
+  {
+    "name": "SEC EDGAR",
+    "category": "Regulatory & Compliance",
+    "url": "https://www.sec.gov/edgar/sec-api-documentation",
+    "env_key": null,
+    "requires_api_key": false,
+    "status": "unconfirmed",
+    "description": "US company filings, financials, disclosures."
+  },
+  {
+    "name": "OTX AlienVault",
+    "category": "Cybersecurity",
+    "url": "https://otx.alienvault.com/api/",
+    "env_key": "ALIENVAULT_API_KEY",
+    "requires_api_key": true,
+    "status": "unconfirmed",
+    "description": "Threat intelligence, indicators of compromise."
+  }
+]

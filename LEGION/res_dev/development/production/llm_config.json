@@ -1,0 +1,9 @@
+{
+  "provider": "ollama",
+  "model": "Artifact_Virtual/raegen:latest",
+  "temperature": 0.1,
+  "max_tokens": 4096,
+  "api_key": null,
+  "base_url": null,
+  "timeout": 30
+}

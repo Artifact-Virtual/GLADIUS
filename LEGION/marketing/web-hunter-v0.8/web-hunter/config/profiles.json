@@ -1,0 +1,11 @@
+{
+  "searchTargets": [
+    {
+      "name": "Books to Scrape",
+      "url": "https://books.toscrape.com/",
+      "trackingIntents": ["book data scraping", "demo"]
+    }
+  ],
+  "informationSources": [],
+  "defaultProfile": "Books to Scrape"
+}

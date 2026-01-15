@@ -1,0 +1,27 @@
+Here are the contents for the file: /chat-app/chat-app/tests/unit/models/User.test.ts
+
+import { User } from '../../../src/models/User';
+
+describe('User Model', () => {
+    let user: User;
+
+    beforeEach(() => {
+        user = new User('1', 'testuser', 'password123');
+    });
+
+    test('should create a user with the correct properties', () => {
+        expect(user.id).toBe('1');
+        expect(user.username).toBe('testuser');
+        expect(user.password).toBe('password123');
+    });
+
+    test('should update the username', () => {
+        user.username = 'newusername';
+        expect(user.username).toBe('newusername');
+    });
+
+    test('should validate password', () => {
+        expect(user.validatePassword('password123')).toBe(true);
+        expect(user.validatePassword('wrongpassword')).toBe(false);
+    });
+});

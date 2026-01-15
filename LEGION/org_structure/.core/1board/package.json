@@ -1,0 +1,79 @@
+{
+  "name": "@artifact-virtual/board-governance",
+  "version": "1.0.0",
+  "description": "Mathematical governance framework for autonomous board of directors oversight and decision-making protocols.",
+  "main": "dist/main.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "dev": "ts-node src/main.ts",
+    "intelligence": "ts-node start-intelligence.ts",
+    "intelligence:enhanced": "ts-node start-enhanced-intelligence.ts",
+    "intelligence:simple": "ts-node start-simple-intelligence.ts",
+    "intelligence:prod": "npm run build && node dist/start-intelligence.js",
+    "intelligence:enhanced:prod": "npm run build && node dist/start-enhanced-intelligence.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts",
+    "docs": "typedoc src --out docs",
+    "governance:simulate": "ts-node src/simulation/governance-simulator.ts",
+    "metrics:dashboard": "ts-node src/monitoring/metrics-dashboard.ts"
+  },
+  "dependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/sqlite3": "^3.1.11",
+    "@types/ws": "^8.18.1",
+    "axios": "^1.10.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "lodash": "^4.17.21",
+    "mathjs": "^11.10.1",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.8.1",
+    "sqlite3": "^5.1.7",
+    "typescript": "^5.1.6",
+    "uuid": "^9.0.0",
+    "winston": "^3.9.0",
+    "ws": "^8.18.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.2",
+    "@types/lodash": "^4.14.195",
+    "@types/node": "^20.3.1",
+    "@types/uuid": "^9.0.2",
+    "@typescript-eslint/eslint-plugin": "^5.60.0",
+    "@typescript-eslint/parser": "^5.60.0",
+    "eslint": "^8.43.0",
+    "jest": "^29.5.0",
+    "prettier": "^2.8.8",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.1",
+    "typedoc": "^0.24.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artifact-virtual/board-governance.git"
+  },
+  "keywords": [
+    "board-governance",
+    "autonomous-organization",
+    "mathematical-governance",
+    "oversight-framework",
+    "artificial-intelligence",
+    "quantum-computing",
+    "blockchain",
+    "research-lab",
+    "fail-safe-protocols",
+    "adaptive-governance"
+  ],
+  "author": "Artifact Virtual Board of Directors",
+  "license": "PROPRIETARY",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,227 @@
+{
+  "system": {
+    "name": "Enhanced Enterprise Legion",
+    "version": "2.0.0",
+    "mode": "enhanced_operational",
+    "description": "Advanced AI-powered digital organization with sophisticated orchestration"
+  },
+  "business": {
+    "company_name": "Artifact Virtual",
+    "domain_target": "artifactvirtual.ai",
+    "revenue_target_annual": 50000,
+    "revenue_target_monthly": 4167,
+    "profit_margin_target": 88,
+    "break_even_month": 6,
+    "lead_pipeline_target": 80000
+  },
+  "orchestrator": {
+    "enabled": true,
+    "health_check_interval": 30,
+    "workflow_scheduling": true,
+    "auto_recovery": true,
+    "max_concurrent_workflows": 10,
+    "inter_agent_communication": true,
+    "performance_monitoring": true
+  },
+  "agents": {
+    "initialization_timeout": 60,
+    "message_queue_size": 1000,
+    "retry_attempts": 3,
+    "heartbeat_interval": 15,
+    "collaboration_enabled": true,
+    "knowledge_sharing": true
+  },
+  "departments": {
+    "strategy": {
+      "active": true,
+      "priority": 9,
+      "description": "Strategic planning and business development",
+      "agents": {
+        "strategic_planner": {
+          "capabilities": ["strategic_analysis", "business_planning", "goal_setting"],
+          "performance_weight": 0.4
+        },
+        "business_analyst": {
+          "capabilities": ["data_analysis", "process_optimization", "reporting"],
+          "performance_weight": 0.3
+        },
+        "market_researcher": {
+          "capabilities": ["market_analysis", "competitor_research", "trend_analysis"],
+          "performance_weight": 0.3
+        }
+      }
+    },
+    "marketing": {
+      "active": true,
+      "priority": 8,
+      "description": "Lead generation and content marketing",
+      "agents": {
+        "content_creator": {
+          "capabilities": ["content_writing", "marketing_materials", "blog_posts"],
+          "performance_weight": 0.4
+        },
+        "social_media_manager": {
+          "capabilities": ["social_media_posting", "engagement_tracking", "campaign_management"],
+          "performance_weight": 0.3
+        },
+        "lead_generator": {
+          "capabilities": ["lead_identification", "qualification", "pipeline_management"],
+          "performance_weight": 0.3
+        }
+      }
+    },
+    "finance": {
+      "active": true,
+      "priority": 8,
+      "description": "Financial planning and revenue tracking",
+      "agents": {
+        "financial_analyst": {
+          "capabilities": ["financial_modeling", "budget_analysis", "revenue_tracking"],
+          "performance_weight": 0.4
+        },
+        "budget_manager": {
+          "capabilities": ["budget_planning", "expense_tracking", "financial_forecasting"],
+          "performance_weight": 0.3
+        },
+        "revenue_tracker": {
+          "capabilities": ["revenue_analysis", "sales_tracking", "performance_metrics"],
+          "performance_weight": 0.3
+        }
+      }
+    },
+    "operations": {
+      "active": true,
+      "priority": 7,
+      "description": "Daily operations and automation",
+      "agents": {
+        "workflow_orchestrator": {
+          "capabilities": ["process_automation", "task_coordination", "workflow_optimization"],
+          "performance_weight": 0.4
+        },
+        "resource_optimizer": {
+          "capabilities": ["resource_allocation", "efficiency_analysis", "optimization"],
+          "performance_weight": 0.3
+        },
+        "task_scheduler": {
+          "capabilities": ["task_planning", "scheduling", "deadline_management"],
+          "performance_weight": 0.3
+        }
+      }
+    },
+    "business_intelligence": {
+      "active": true,
+      "priority": 8,
+      "description": "Market research and analytics",
+      "agents": {
+        "data_analyst": {
+          "capabilities": ["data_processing", "analytics", "insights_generation"],
+          "performance_weight": 0.4
+        },
+        "market_analyst": {
+          "capabilities": ["market_research", "competitive_analysis", "market_intelligence"],
+          "performance_weight": 0.3
+        },
+        "competitive_researcher": {
+          "capabilities": ["competitor_analysis", "market_positioning", "research"],
+          "performance_weight": 0.3
+        }
+      }
+    },
+    "communication": {
+      "active": true,
+      "priority": 7,
+      "description": "Content creation and social media",
+      "agents": {
+        "content_writer": {
+          "capabilities": ["writing", "editing", "content_strategy"],
+          "performance_weight": 0.4
+        },
+        "social_media_monitor": {
+          "capabilities": ["social_monitoring", "sentiment_analysis", "engagement_tracking"],
+          "performance_weight": 0.3
+        },
+        "brand_manager": {
+          "capabilities": ["brand_strategy", "brand_consistency", "reputation_management"],
+          "performance_weight": 0.3
+        }
+      }
+    }
+  },
+  "workflows": {
+    "enabled": true,
+    "triggers": {
+      "revenue_milestone": {
+        "enabled": true,
+        "threshold": 5000,
+        "target_agents": ["finance_financial_analyst", "strategy_strategic_planner"]
+      },
+      "lead_qualification": {
+        "enabled": true,
+        "lead_value_threshold": 10000,
+        "target_agents": ["marketing_lead_generator", "finance_revenue_tracker"]
+      },
+      "daily_operations": {
+        "enabled": true,
+        "schedule": "daily_09:00",
+        "target_agents": ["operations_workflow_orchestrator"]
+      },
+      "weekly_strategy_review": {
+        "enabled": true,
+        "schedule": "monday_10:00",
+        "target_agents": ["strategy_strategic_planner", "business_intelligence_data_analyst"]
+      }
+    }
+  },
+  "schedules": {
+    "daily_operations": {
+      "enabled": true,
+      "frequency": "daily",
+      "start_time": "09:00",
+      "departments": ["strategy", "marketing", "finance", "operations", "business_intelligence", "communication"]
+    },
+    "weekly_strategy": {
+      "enabled": true,
+      "frequency": "weekly",
+      "start_time": "monday_10:00",
+      "departments": ["strategy", "business_intelligence", "finance"]
+    },
+    "monthly_review": {
+      "enabled": true,
+      "frequency": "monthly",
+      "start_time": "first_monday_14:00",
+      "departments": ["strategy", "finance", "marketing", "operations"]
+    }
+  },
+  "logging": {
+    "level": "INFO",
+    "file_path": "logs/enhanced_enterprise_legion.log",
+    "max_file_size": "10MB",
+    "backup_count": 5,
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "enable_agent_logging": true,
+    "enable_workflow_logging": true,
+    "enable_performance_logging": true
+  },
+  "database": {
+    "file_path": "enterprise_operations.db",
+    "enable_performance_tracking": true,
+    "enable_workflow_tracking": true,
+    "enable_communication_tracking": true,
+    "backup_interval": "daily"
+  },
+  "reporting": {
+    "enabled": true,
+    "executive_dashboard": true,
+    "agent_performance_reports": true,
+    "workflow_analytics": true,
+    "business_intelligence_reports": true,
+    "frequency": "daily"
+  },
+  "performance": {
+    "enable_metrics": true,
+    "track_agent_performance": true,
+    "track_workflow_efficiency": true,
+    "track_business_metrics": true,
+    "optimization_enabled": true
+  }
+}

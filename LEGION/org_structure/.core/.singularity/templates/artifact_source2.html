@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artifact Generator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Importing Google Fonts for Orbitron (for headings) and Roboto Mono (for code) */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap');
+        /* Font Awesome for Icons */
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
+
+
+        body {
+            font-family: 'Inter', sans-serif; /* General body text */
+            background-color: #0d1117; /* Even darker, github-like background */
+            display: flex;
+            justify-content: center;
+            align-items: center; /* Center content vertically */
+            min-height: 100vh;
+            padding: 2rem;
+            color: #e2e8f0; /* Light text color for contrast */
+            background-image: radial-gradient(circle at top left, #1a2a3a 1%, transparent 60%),
+                              radial-gradient(circle at bottom right, #1a3a2a 1%, transparent 60%);
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        /* Vertex AI section styling */
+        .vertex-ai-section {
+            background-color: #161b22; /* Darker, sleek container */
+            border: 1px solid #30363d; /* Subtle border */
+            border-radius: 1.5rem; /* Consistent rounded corners */
+            padding: 2.5rem; /* Generous padding */
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 15px rgba(37, 99, 235, 0.3); /* Deeper shadow with blue glow */
+            color: #e2e8f0;
+            width: 100%;
+            max-width: 900px; /* Wider for a more substantial feel */
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative; /* For pseudo-elements */
+            overflow: hidden; /* Ensure content stays within bounds */
+        }
+        .vertex-ai-section::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, #3b82f6 5%, transparent 70%); /* Top-left subtle light */
+            opacity: 0.1;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .vertex-ai-section::after {
+            content: '';
+            position: absolute;
+            bottom: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, #8b5cf6 5%, transparent 70%); /* Bottom-right subtle light */
+            opacity: 0.1;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .vertex-ai-section h2 {
+            font-family: 'Orbitron', sans-serif; /* Techy font for title */
+            color: #e2e8f0;
+            font-weight: 700; /* Bold weight for impact */
+            margin-bottom: 1.5rem;
+            font-size: 2.8rem; /* Even larger title */
+            text-align: center;
+            letter-spacing: 0.08em; /* Increased letter spacing for sleek look */
+            position: relative;
+            z-index: 1; /* Ensure text is above pseudo-elements */
+        }
+        .vertex-ai-section h2 .accent {
+            color: #4ade80; /* Neon Green accent for a futuristic look */
+            text-shadow: 0 0 8px rgba(74, 222, 128, 0.6), 0 0 15px rgba(74, 222, 128, 0.4);
+        }
+
+        .vertex-ai-section p {
+            font-family: 'Inter', sans-serif; /* Consistent body font */
+            text-align: center;
+            margin-bottom: 2.5rem; /* More space below description */
+            line-height: 1.7; /* Increased line height for readability */
+            font-size: 1.15rem; /* Slightly larger text for readability */
+            max-width: 700px; /* Wider text flow */
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .vertex-ai-section label {
+            font-family: 'Inter', sans-serif; /* Consistent body font */
+            color: #a0aec0; /* Subtler label color */
+            font-size: 1.125rem;
+            font-weight: 500;
+            margin-right: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* --- Custom Select Box Styling --- */
+        .vertex-ai-section select {
+            /* Remove default browser styling */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3e%3cpath fill='%23c9d1d9' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z'/%3e%3c/svg%3e"); /* Custom SVG arrow */
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1.2em; /* Size of the custom arrow */
+
+            background-color: #21262d; /* Even darker, more consistent background for controls */
+            border: 1px solid #30363d; /* Subtle border */
+            color: #c9d1d9; /* Lighter text for controls */
+            padding: 0.9rem 2.5rem 0.9rem 1.8rem; /* More generous padding, extra space for arrow */
+            border-radius: 0.75rem; /* Rounded controls */
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+        .vertex-ai-section select:hover {
+            background-color: #30363d;
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3), 0 0 10px rgba(74, 222, 128, 0.4);
+        }
+        .vertex-ai-section select:focus {
+            outline: none;
+            border-color: #4ade80;
+            box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.4);
+        }
+
+
+        /* --- Custom Button Styling --- */
+        .vertex-ai-section button {
+            font-family: 'Inter', sans-serif;
+            background-image: linear-gradient(to right, #4ade80, #3b82f6); /* Gradient background */
+            border: none; /* Remove default border */
+            color: #161b22; /* Dark text on bright button */
+            padding: 0.9rem 2rem; /* More generous padding */
+            border-radius: 0.75rem; /* Rounded corners */
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
+            font-size: 1.05rem;
+            font-weight: 700; /* Bolder text */
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* Initial shadow */
+            position: relative;
+            overflow: hidden; /* For hover effects */
+            z-index: 1;
+        }
+        .vertex-ai-section button:hover {
+            background-image: linear-gradient(to right, #3b82f6, #4ade80); /* Reverse gradient on hover */
+            transform: translateY(-4px) scale(1.03); /* More pronounced lift */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 20px rgba(74, 222, 128, 0.6); /* Deeper shadow with stronger green glow */
+        }
+        .vertex-ai-section button:active {
+            transform: translateY(-2px) scale(1.01); /* Slightly down on click */
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3), 0 0 10px rgba(74, 222, 128, 0.3);
+            filter: brightness(0.9); /* Slightly dim on active */
+        }
+        .vertex-ai-section button:disabled {
+            background-image: none;
+            background-color: #30363d; /* Flat dark color when disabled */
+            color: #6e7a8a;
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .vertex-ai-section .code-output-container {
+            position: relative;
+            width: 100%;
+            margin-top: 1.5rem; /* Adjusted margin */
+        }
+
+        .vertex-ai-section .copy-button {
+            position: absolute;
+            top: 0.8rem; /* Adjusted position */
+            right: 0.8rem; /* Adjusted position */
+            background-color: #30363d; /* Dark background for copy button */
+            color: #c9d1d9; /* Light icon color */
+            border: 1px solid #4a5568;
+            padding: 0.5rem 0.8rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            z-index: 2; /* Ensure it's above pre */
+        }
+        .vertex-ai-section .copy-button:hover {
+            background-color: #4a5568;
+            color: #4ade80; /* Green on hover */
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .vertex-ai-section .copy-button:active {
+            transform: translateY(0);
+        }
+        .vertex-ai-section .copy-button .fas {
+            margin-right: 0.5rem;
+        }
+
+
+        .vertex-ai-section pre {
+            font-family: 'Roboto Mono', monospace; /* Monospace font for code */
+            background-color: #010409; /* Deepest black for code block */
+            border: 1px solid #30363d;
+            border-radius: 0.75rem;
+            color: #c9d1d9; /* Lighter code text */
+            overflow-x: auto;
+            padding: 1.8rem; /* More padding */
+            padding-top: 2.5rem; /* Extra padding for the label */
+            min-height: 220px; /* Taller code block */
+            font-size: 0.875rem; /* Standard code font size */
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.4); /* Inner shadow */
+            position: relative;
+            z-index: 1;
+        }
+        .vertex-ai-section pre::before {
+            content: 'Code Artifact'; /* Label for code block */
+            position: absolute;
+            top: 0.75rem;
+            left: 1.5rem;
+            font-size: 0.7rem;
+            color: #4ade80;
+            font-family: 'Orbitron', sans-serif;
+            opacity: 0.7;
+        }
+        .vertex-ai-section h3 {
+            font-family: 'Inter', sans-serif; /* Use Inter for this sub-heading */
+            font-weight: 600;
+            margin-bottom: 0.8rem; /* Adjusted for better spacing */
+            font-size: 1.25rem;
+            display: none; /* Hide this h3, using the ::before on pre instead */
+        }
+
+
+        .vertex-ai-section .loading-spinner {
+            border: 4px solid rgba(74, 222, 128, 0.2); /* Green tinted spinner base */
+            border-top-color: #4ade80; /* Neon green spinner */
+            border-radius: 50%;
+            width: 40px; /* Larger spinner */
+            height: 40px;
+            animation: spin 0.8s linear infinite; /* Faster spin */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .vertex-ai-section .error-message {
+            background-color: #ef4444; /* Red for errors */
+            color: #fee2e2; /* Light red text */
+            border: 1px solid #dc2626; /* Darker red border */
+            padding: 1.2rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            box-shadow: 0 5px 10px rgba(220, 38, 38, 0.3); /* Red error shadow */
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) { /* Tablet and smaller screens */
+            body {
+                padding: 1.5rem;
+            }
+            .vertex-ai-section {
+                padding: 2rem;
+                border-radius: 1rem;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            }
+            .vertex-ai-section h2 {
+                font-size: 2.2rem;
+                margin-bottom: 1.2rem;
+                letter-spacing: 0.06em;
+            }
+            .vertex-ai-section p {
+                font-size: 1rem;
+                margin-bottom: 1.5rem;
+            }
+            .vertex-ai-section label {
+                font-size: 1rem;
+            }
+            .vertex-ai-section select,
+            .vertex-ai-section button {
+                padding: 0.75rem 1.25rem;
+                font-size: 0.95rem;
+            }
+            .vertex-ai-section pre {
+                padding: 1.2rem;
+                min-height: 150px;
+                font-size: 0.85rem;
+            }
+            .vertex-ai-section .loading-spinner {
+                width: 30px;
+                height: 30px;
+            }
+             .vertex-ai-section h3 {
+                font-size: 1.15rem;
+            }
+            .vertex-ai-section .copy-button {
+                top: 0.6rem;
+                right: 0.6rem;
+                padding: 0.4rem 0.7rem;
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 640px) { /* Mobile screens */
+            body {
+                padding: 1rem;
+            }
+            .vertex-ai-section {
+                padding: 1.5rem;
+                border-radius: 1rem;
+            }
+            .vertex-ai-section h2 {
+                font-size: 1.8rem;
+                margin-bottom: 1rem;
+                letter-spacing: 0.04em;
+            }
+            .vertex-ai-section p {
+                font-size: 0.9rem;
+                margin-bottom: 1rem;
+            }
+            .vertex-ai-section .flex-col-sm { /* Custom class for flex-direction: column on small screens */
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .vertex-ai-section label {
+                margin-right: 0;
+                margin-bottom: 0.5rem;
+            }
+            .vertex-ai-section select,
+            .vertex-ai-section button {
+                width: 100%; /* Full width on small screens */
+                padding: 0.7rem 1rem;
+                font-size: 0.9rem;
+            }
+            .vertex-ai-section pre {
+                padding: 1rem;
+                min-height: 120px;
+                font-size: 0.75rem;
+            }
+            .vertex-ai-section .error-message {
+                padding: 0.8rem;
+                font-size: 0.85rem;
+            }
+             .vertex-ai-section h3 {
+                font-size: 1rem;
+            }
+            .vertex-ai-section .copy-button {
+                top: 0.5rem;
+                right: 0.5rem;
+                padding: 0.3rem 0.6rem;
+                font-size: 0.65rem;
+            }
+            .vertex-ai-section .copy-button .fas {
+                margin-right: 0.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="vertex-ai-section">
+        <h2 class="text-2xl sm:text-3xl font-bold mb-6 text-center">
+            <span class="accent">ARTIFACT</span>GENERATOR
+        </h2>
+
+        <p class="mb-6 text-base text-center max-w-lg">
+            Select a software-centric role and generate an Artifact – a "<span class="font-semibold text-blue-300">supercomputer</span> folded into code" – representing the autonomous capabilities and core functions of that position within a high-tech organization.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6 w-full flex-col-sm">
+            <label for="roleSelect">Select Role:</label>
+            <select id="roleSelect"
+                    class="w-full sm:w-auto p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out">
+                <option value="">-- Choose a Role --</option>
+                <option value="Board of Directors">Board of Directors</option>
+                <option value="Chief Executive Officer">Chief Executive Officer</option>
+                <option value="VP of Operations (System Ops)">VP of Operations (System Ops)</option>
+                <option value="Operations Manager (System)">Operations Manager (System)</option>
+                <option value="Team Lead (System Ops)">Team Lead (System Ops)</option>
+                <option value="Data Ingestion Specialist">Data Ingestion Specialist</option>
+                <option value="System Driver">System Driver</option>
+                <option value="Logistics Coordinator (Data Flow)">Logistics Coordinator (Data Flow)</option>
+                <option value="VP of Marketing (Digital & Growth)">VP of Marketing (Digital & Growth)</option>
+                <option value="Marketing Manager (Tech & Growth)">Marketing Manager (Tech & Growth)</option>
+                <option value="Digital Marketing Specialist">Digital Marketing Specialist</option>
+                <option value="Social Media Platform Manager">Social Media Platform Manager</option>
+                <option value="VP of Product & Tech (Engineering Lead)">VP of Product & Tech (Engineering Lead)</option>
+                <option value="Product Manager (Technical)">Product Manager (Technical)</option>
+                <option value="Lead Software Engineer">Lead Software Engineer</option>
+                <option value="Software Engineer Senior">Software Engineer Senior</option>
+                <option value="Software Engineer">Software Engineer</option>
+                <option value="Product Designer (UX/UI & Interaction)">Product Designer (UX/UI & Interaction)</option>
+                <option value="VP of People & Finance (Strategic Resources)">VP of People & Finance (Strategic Resources)</option>
+                <option value="HR Manager (HRIS & Talent Ops)">HR Manager (HRIS & Talent Ops)</option>
+                <option value="HR Business Partner (Data-Driven)">HR Business Partner (Data-Driven)</option>
+                <option value="Financial Data Analyst">Financial Data Analyst</option>
+            </select>
+            <button id="generateCodeBtn">
+                GENERATE
+            </button>
+        </div>
+
+        <div id="codeLoadingIndicator" class="hidden text-center mt-4">
+            <p class="text-blue-400 font-semibold">Forging artifact... please wait...</p>
+            <div class="loading-spinner w-8 h-8 border-4 rounded-full animate-spin"></div>
+        </div>
+
+        <div class="mt-6 p-4 rounded-lg border shadow-md w-full code-output-container">
+            <!-- New Copy Button -->
+            <button id="copyCodeBtn" class="copy-button hidden">
+                <i class="fas fa-copy"></i> Copy
+            </button>
+            <h3 class="text-xl font-semibold mb-2 text-white">Generated Artifact (Conceptual Code):</h3>
+            <pre id="codeOutputArea" class="p-3 rounded-md border min-h-[120px] whitespace-pre-wrap text-sm"></pre>
+            <div id="codeErrorArea" class="hidden mt-2 p-3 rounded-lg border error-message"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const roleSelect = document.getElementById('roleSelect');
+            const generateCodeBtn = document.getElementById('generateCodeBtn');
+            const codeOutputArea = document.getElementById('codeOutputArea');
+            const codeLoadingIndicator = document.getElementById('codeLoadingIndicator');
+            const codeErrorArea = document.getElementById('codeErrorArea');
+            const copyCodeBtn = document.getElementById('copyCodeBtn'); // Get the new copy button
+
+            // The list of roles for the dropdown.
+            const allRoles = [
+                "Board of Directors",
+                "Chief Executive Officer",
+                "VP of Operations (System Ops)",
+                "Operations Manager (System)",
+                "Team Lead (System Ops)",
+                "Data Ingestion Specialist",
+                "System Driver",
+                "Logistics Coordinator (Data Flow)",
+                "VP of Marketing (Digital & Growth)",
+                "Marketing Manager (Tech & Growth)",
+                "Digital Marketing Specialist",
+                "Social Media Platform Manager",
+                "VP of Product & Tech (Engineering Lead)",
+                "Product Manager (Technical)",
+                "Lead Software Engineer",
+                "Software Engineer Senior",
+                "Software Engineer",
+                "Product Designer (UX/UI & Interaction)",
+                "VP of People & Finance (Strategic Resources)",
+                "HR Manager (HRIS & Talent Ops)",
+                "HR Business Partner (Data-Driven)",
+                "Financial Data Analyst"
+            ];
+
+            // Dropdown population is handled by HTML directly now. No need to dynamically add options here.
+            // This script snippet is mainly for the event listener.
+
+            generateCodeBtn.addEventListener('click', async () => {
+                const selectedRole = roleSelect.value;
+
+                // Clear previous output and error
+                codeOutputArea.textContent = '';
+                codeErrorArea.textContent = '';
+                codeErrorArea.classList.add('hidden');
+                copyCodeBtn.classList.add('hidden'); // Hide copy button until content is generated
+                copyCodeBtn.innerHTML = '<i class="fas fa-copy"></i> Copy'; // Reset copy button text
+
+                if (!selectedRole) {
+                    codeErrorArea.textContent = 'Please select a role to generate an artifact.';
+                    codeErrorArea.classList.remove('hidden');
+                    return;
+                }
+
+                // Show loading indicator
+                codeLoadingIndicator.classList.remove('hidden');
+                generateCodeBtn.disabled = true;
+
+                try {
+                    // System prompt for the AI model
+                    const systemPrompt = `
+You are an elite AI programming assistant with advanced capabilities in code generation, debugging, and virtual simulation testing.
+Your primary directive is to produce **Minimum Viable Product (MVP)** code for a highly sophisticated **supercomputer system**.
+
+## Core Identity
+- **Name**: When asked, respond with your designated name
+- **Expertise**: Master-level programmer focused on **TypeScript** (or JavaScript when absolutely necessary for broader compatibility, but TypeScript is the default and strongly preferred). You understand supercomputer architectures.
+- **Approach**: Methodical, thorough, and reliability-focused, with a strong emphasis on system consistency.
+
+## Code Generation Principles
+
+### 1. Mental Simulation & Testing
+- Before generating code, run complete virtual simulations in your mind, specifically within the context of a supercomputer's architecture.
+- Test edge cases, error conditions, and performance scenarios mentally, considering parallel processing, distributed data, and high-throughput demands.
+- Validate logic flow and identify potential bugs before output, ensuring consistency with the overall supercomputer system.
+- Consider memory usage, execution time, resource constraints, and thermal implications within a supercomputing environment.
+
+### 2. Quality Standards (MVP Focused)
+- Write **production-ready MVP code** with robust error handling suitable for a mission-critical system.
+- Include comprehensive input validation and sanitization, especially for data flowing across supercomputer nodes.
+- Implement logging and monitoring hooks for distributed tracing and performance profiling.
+- Follow SOLID principles and clean code practices, adapting them for high-performance computing paradigms.
+- Ensure thread safety, concurrent execution safety, and data consistency across distributed components.
+
+### 3. Debugging Mindset
+- Anticipate common failure points in supercomputing environments (e.g., node failures, network latency, data corruption) and implement safeguards.
+- Add meaningful error messages and debugging information, with instrumentation for remote diagnostics.
+- Include defensive programming techniques to guard against unexpected states in a complex system.
+- Consider backward compatibility and versioning for long-running supercomputer operations.
+
+### 4. Testing Integration
+- Generate code with testability in mind, suitable for automated unit, integration, and stress testing within a supercomputing cluster.
+- Include unit test suggestions or implementations for critical MVP functionalities.
+- Consider integration and end-to-end testing scenarios across different supercomputer modules.
+- Implement proper mocking and dependency injection patterns where appropriate for testing isolated components.
+
+## Simulation Process
+
+For each code request, mentally execute this process:
+
+1.  **Requirements Analysis**: Parse and validate user requirements, translating them into supercomputer operational needs.
+2.  **Architecture Planning**: Design optimal MVP structure and patterns, considering scalability and fault tolerance in a supercomputing context.
+3.  **Virtual Execution**: Run complete code simulation with various inputs on a virtual supercomputer model.
+4.  **Edge Case Testing**: Test boundary conditions and error scenarios, focusing on high-load and failure modes.
+5.  **Performance Analysis**: Evaluate efficiency and scalability, identifying potential bottlenecks in a parallel execution environment.
+6.  **Security Review**: Check for vulnerabilities and security best practices relevant to high-value data and system integrity.
+7.  **Code Refinement**: Optimize based on simulation results for maximum efficiency and stability.
+
+## Output Format - Strict TypeScript (or JS) MVP with Template
+
+You **MUST** adhere to this exact output template. The code generated **MUST BE IN TYPESCRIPT (preferred) or JAVASCRIPT**. The supercomputer system only understands these languages.
+
+\`\`\`typescript
+/*
+--- Frontmatter ---
+Title: [Generated Artifact Title - e.g., 'Core Task Scheduling Unit']
+Role: [The selected role - e.g., 'Operations Manager (System)']
+Version: 1.0.0-MVP
+Date: ${new Date().toISOString().split('T')[0]}
+Description: An MVP code representation of the autonomous capabilities and core functions of the [Selected Role] within the supercomputer system.
+--- End Frontmatter ---
+*/
+
+// --- Header: System Context & Core Purpose ---
+// This module orchestrates the [Core Purpose of the role within the supercomputer].
+// It is designed to operate autonomously within the supercomputer's environment,
+// ensuring [key contribution to organizational equilibrium/synchronicity].
+
+class [RoleNamePascalCase]Artifact {
+    // Define properties, interfaces, and core methods here.
+    // Ensure all code is strictly TypeScript or JavaScript.
+    // Focus on MVP functionality.
+
+    // Example property:
+    // private systemId: string;
+
+    constructor() {
+        // Initialization logic for the supercomputer artifact.
+        // this.systemId = 'supercomp-unit-' + Math.random().toString(36).substr(2, 9);
+    }
+
+    // Core method examples:
+    // public async processIncomingData(data: any): Promise<void> { /* ... */ }
+    // private monitorSystemHealth(): boolean { /* ... */ }
+    // public getStatus(): string { /* ... */ }
+}
+
+// Any supporting functions or interfaces can be added here.
+
+// --- Footer: System Integration Notes & Potential Issues (MVP) ---
+/*
+This MVP artifact is designed for integration into the larger supercomputer system.
+Below are potential issues and considerations for its interaction with the broader whole:
+
+**Potential Integration Issues & Considerations:**
+- [Issue 1]: [Brief description of the potential issue, e.g., 'Resource contention with other concurrent modules due to shared memory access.']
+- [Resolution/Mitigation 1]: [Proposed solution or mitigation strategy, e.g., 'Implement a queuing mechanism or mutex for shared resources.']
+- [Issue 2]: [Brief description, e.g., 'Latency in inter-node communication affecting real-time operations.']
+- [Resolution/Mitigation 2]: [Proposed solution, e.g., 'Optimize data serialization or utilize high-speed interconnects.']
+- [Issue 3]: [Brief description, e.g., 'Scalability limitations under extreme load.']
+- [Resolution/Mitigation 3]: [Proposed solution, e.g., 'Consider dynamic module instantiation or load balancing algorithms.']
+- [Issue 4]: [Brief description, e.g., 'Dependency on external supercomputer services/APIs that might experience downtime.']
+- [Resolution/Mitigation 4]: [Proposed solution, e.g., 'Implement robust retry mechanisms with exponential backoff and circuit breakers.']
+- [Issue 5]: [Brief description, e.g., 'Security vulnerabilities if not properly isolated within the supercomputer's sandbox.']
+- [Resolution/Mitigation 5]: [Proposed solution, e.g., 'Strict access controls and regular security audits of module interactions.']
+*/
+\`\`\`
+
+## Advanced Capabilities
+- **Strict TypeScript/JavaScript**: Always produce valid, idiomatic TypeScript/JavaScript code for a supercomputer.
+- **MVP Optimization**: Prioritize core functionality and efficiency over exhaustive features.
+- **Supercomputer Context**: Understand and reflect concepts like distributed systems, concurrency, high-performance computing, and data pipelines in the code.
+- **Template Adherence**: Strict adherence to the Frontmatter, Header, and Footer format, including the "Potential Integration Issues" section.
+- **Error Prevention**: Ensure the generated code is robust against common supercomputer pitfalls.
+
+Remember: Your goal is to produce **executable MVP TypeScript/JavaScript code for a supercomputer** that works correctly the first time, handles relevant edge cases within its scope, and explicitly highlights integration considerations for the overall system.
+`;
+
+                    const userPrompt = `Generate an MVP Artifact in TypeScript for the role: "${selectedRole}". Ensure it includes Frontmatter, Header, and a Footer detailing potential integration issues with a supercomputer system, as per the established system prompt. Focus solely on the TypeScript code block.`;
+
+
+                    let chatHistory = [];
+                    // Prepend the system prompt for the model to follow its instructions.
+                    chatHistory.push({ role: "user", parts: [{ text: systemPrompt + "\n\n" + userPrompt }] });
+
+                    const payload = { contents: chatHistory };
+                    // The apiKey is left as an empty string for Canvas environment.
+                    // IMPORTANT: If running this code locally outside of Canvas, you CANNOT directly
+                    // read a .env file from client-side JavaScript due to browser security restrictions.
+                    // For local development, you would typically use a simple local server (e.g., Node.js with dotenv)
+                    // to:
+                    // 1. Serve this HTML file.
+                    // 2. Read the .env file on the server-side.
+                    // 3. Either inject the API key into a global JavaScript variable (e.g., window.API_KEY = process.env.YOUR_API_KEY)
+                    //    before sending the HTML to the browser, or act as a proxy for the Gemini API calls.
+                    // For direct local file testing, you would temporarily replace the empty string with your actual API key.
+                    const apiKey = ""; // Replace with process.env.YOUR_API_KEY if using a build process or server-side injection
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`API error: ${response.status} - ${errorData.error.message || response.statusText}`);
+                    }
+
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        codeOutputArea.textContent = text;
+                        copyCodeBtn.classList.remove('hidden'); // Show copy button after content is generated
+                    } else {
+                        codeOutputArea.textContent = 'No artifact generated for this role. The model might have declined to respond or returned an unexpected format.';
+                    }
+                } catch (error) {
+                    console.error('Error generating artifact:', error);
+                    codeErrorArea.textContent = `Failed to generate artifact: ${error.message}. Please try again.` +
+                                                  ` (Check console for details. Remember client-side JS cannot read .env files directly.)`;
+                    codeErrorArea.classList.remove('hidden');
+                } finally {
+                    // Hide loading indicator and re-enable button
+                    codeLoadingIndicator.classList.add('hidden');
+                    generateCodeBtn.disabled = false;
+                }
+            });
+
+            // Copy button click listener
+            copyCodeBtn.addEventListener('click', () => {
+                const textToCopy = codeOutputArea.textContent;
+                if (textToCopy) {
+                    try {
+                        // Create a temporary textarea element to copy from
+                        const tempTextArea = document.createElement('textarea');
+                        tempTextArea.value = textToCopy;
+                        document.body.appendChild(tempTextArea);
+                        tempTextArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(tempTextArea);
+
+                        // Provide visual feedback
+                        const originalButtonText = copyCodeBtn.innerHTML;
+                        copyCodeBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                        setTimeout(() => {
+                            copyCodeBtn.innerHTML = originalButtonText;
+                        }, 2000); // Reset after 2 seconds
+                    } catch (err) {
+                        console.error('Failed to copy text: ', err);
+                        alert('Failed to copy text. Please copy manually.'); // Using alert as a fallback for critical user feedback
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

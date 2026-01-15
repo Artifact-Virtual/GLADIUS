@@ -1,0 +1,103 @@
+{
+  "system": {
+    "name": "Enterprise Legion",
+    "version": "1.0.0",
+    "mode": "operational",
+    "description": "Real AI-powered digital organization builder"
+  },
+  "business": {
+    "company_name": "Artifact Virtual",
+    "domain_target": "artifactvirtual.ai",
+    "revenue_target_annual": 50000,
+    "revenue_target_monthly": 4167,
+    "profit_margin_target": 88,
+    "break_even_month": 6
+  },
+  "departments": {
+    "strategy": {
+      "active": true,
+      "priority": 9,
+      "description": "Strategic planning and business development"
+    },
+    "marketing": {
+      "active": true,
+      "priority": 8,
+      "description": "Lead generation and content marketing"
+    },
+    "finance": {
+      "active": true,
+      "priority": 8,
+      "description": "Financial planning and revenue tracking"
+    },
+    "operations": {
+      "active": true,
+      "priority": 7,
+      "description": "Daily operations and automation"
+    },
+    "business_intelligence": {
+      "active": true,
+      "priority": 7,
+      "description": "Market research and analytics"
+    },
+    "communication": {
+      "active": true,
+      "priority": 6,
+      "description": "Content creation and social media"
+    }
+  },
+  "objectives": [
+    {
+      "name": "Domain Registration",
+      "description": "Register artifactvirtual.ai domain",
+      "priority": 9,
+      "target_date": "2025-07-15",
+      "status": "pending"
+    },
+    {
+      "name": "Business Entity",
+      "description": "Register business entity (LLC/Corp)",
+      "priority": 8,
+      "target_date": "2025-08-01",
+      "status": "pending"
+    },
+    {
+      "name": "Website Launch",
+      "description": "Launch professional website with AI consulting portfolio",
+      "priority": 8,
+      "target_date": "2025-07-30",
+      "status": "pending"
+    },
+    {
+      "name": "LinkedIn Presence",
+      "description": "Create LinkedIn company page with thought leadership content",
+      "priority": 7,
+      "target_date": "2025-07-10",
+      "status": "pending"
+    },
+    {
+      "name": "Lead Pipeline",
+      "description": "Build $80K qualified lead pipeline",
+      "priority": 9,
+      "target_date": "2025-09-30",
+      "status": "active"
+    }
+  ],
+  "data_paths": {
+    "_note": "Paths use ${GLADIUS_ROOT} which is resolved at runtime",
+    "base": "${GLADIUS_ROOT}/LEGION",
+    "legion": "${GLADIUS_ROOT}/LEGION/legion",
+    "database": "${GLADIUS_ROOT}/LEGION/legion/data/enterprise_operations.db",
+    "reports": "${GLADIUS_ROOT}/LEGION/reporting",
+    "logs": "${GLADIUS_ROOT}/LEGION/logs",
+    "artifact": "${GLADIUS_ROOT}/Artifact",
+    "gladius": "${GLADIUS_ROOT}/GLADIUS",
+    "sentinel": "${GLADIUS_ROOT}/SENTINEL"
+  },
+  "artifact_integration": {
+    "enabled": true,
+    "route_social_media": true,
+    "route_erp": true,
+    "route_publishing": true,
+    "use_gladius_ai": true
+  }
+}

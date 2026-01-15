@@ -1,0 +1,544 @@
+/**
+ * Global Theme Styles - AMOLED Black & White Sharp Design
+ * Centralized CSS using theme variables for consistent styling
+ */
+
+/* Import Google Fonts - Ultra Thin, Light, and Sharp */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600&family=JetBrains+Mono:wght@100;200;300;400&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+/* CSS Custom Properties from Theme - AMOLED Black & White */
+:root {
+  /* AMOLED Colors - Pure Black & White */
+  --color-primary-main: #ffffff;
+  --color-primary-light: #f5f5f5;
+  --color-primary-dark: #e0e0e0;
+  --color-primary-contrast: #000000;
+  
+  --color-secondary-main: #808080;
+  --color-secondary-light: #a0a0a0;
+  --color-secondary-dark: #606060;
+  --color-secondary-contrast: #000000;
+  
+  --color-success-main: #00ff00;
+  --color-success-light: #66ff66;
+  --color-success-dark: #00cc00;
+  --color-success-contrast: #000000;
+  
+  --color-warning-main: #ffff00;
+  --color-warning-light: #ffff66;
+  --color-warning-dark: #cccc00;
+  --color-warning-contrast: #000000;
+  
+  --color-error-main: #ff0000;
+  --color-error-light: #ff6666;
+  --color-error-dark: #cc0000;
+  --color-error-contrast: #000000;
+  
+  --color-info-main: #00ffff;
+  --color-info-light: #66ffff;
+  --color-info-dark: #00cccc;
+  --color-info-contrast: #000000;
+  
+  /* AMOLED Background - Pure Black */
+  --color-background-default: #000000;
+  --color-background-paper: #000000;
+  --color-background-dark: #000000;
+  --color-background-darker: #000000;
+  --color-background-card: #111111;
+  --color-background-elevated: #1a1a1a;
+  
+  /* AMOLED Text - Pure White with Variants */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #cccccc;
+  --color-text-disabled: #808080;
+  --color-text-light: #ffffff;
+  --color-text-muted: #999999;
+  
+  /* AMOLED Borders - Subtle Gray Lines */
+  --color-border-light: #333333;
+  --color-border-medium: #555555;
+  --color-border-dark: #777777;
+  --color-border-accent: #ffffff;
+  
+  /* Typography - Ultra Sharp & Thin */
+  --font-family-primary: "Inter", "SF Pro Display", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-mono: "JetBrains Mono", "Fira Code", "SF Mono", Consolas, monospace;
+  
+  --font-size-xs: 0.625rem;    /* 10px */
+  --font-size-sm: 0.75rem;     /* 12px */
+  --font-size-base: 0.875rem;  /* 14px */
+  --font-size-lg: 1rem;        /* 16px */
+  --font-size-xl: 1.125rem;    /* 18px */
+  --font-size-2xl: 1.25rem;    /* 20px */
+  --font-size-3xl: 1.5rem;     /* 24px */
+  --font-size-4xl: 2rem;       /* 32px */
+  --font-size-5xl: 2.5rem;     /* 40px */
+  
+  /* Ultra Thin Font Weights */
+  --font-weight-thin: 100;
+  --font-weight-light: 200;
+  --font-weight-normal: 300;
+  --font-weight-medium: 400;
+  --font-weight-semibold: 500;
+  --font-weight-bold: 600;
+  
+  /* Minimal Spacing */
+  --spacing-xs: 0.125rem;   /* 2px */
+  --spacing-sm: 0.25rem;    /* 4px */
+  --spacing-md: 0.5rem;     /* 8px */
+  --spacing-lg: 0.75rem;    /* 12px */
+  --spacing-xl: 1rem;       /* 16px */
+  --spacing-2xl: 1.5rem;    /* 24px */
+  --spacing-3xl: 2rem;      /* 32px */
+  --spacing-4xl: 3rem;      /* 48px */
+  
+  /* Sharp Borders - No Radius for Sharp Look */
+  --border-radius-none: 0;
+  --border-radius-sharp: 1px;
+  --border-radius-sm: 2px;
+  --border-radius-md: 3px;
+  --border-radius-lg: 4px;
+  
+  /* Minimal Shadows for AMOLED */
+  --shadow-none: none;
+  --shadow-sharp: 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-sm: 0 1px 2px rgba(255, 255, 255, 0.05);
+  --shadow-md: 0 2px 4px rgba(255, 255, 255, 0.1);
+  --shadow-lg: 0 4px 8px rgba(255, 255, 255, 0.15);
+  
+  /* Sharp Animations */
+  /* Sharp Animations */
+  --animation-duration-instant: 50ms;
+  --animation-duration-fast: 100ms;
+  --animation-duration-normal: 150ms;
+  --animation-duration-slow: 200ms;
+  
+  --animation-easing-sharp: cubic-bezier(0.4, 0, 0.6, 1);
+  --animation-easing-crisp: cubic-bezier(0.25, 0, 0.75, 1);
+  
+  /* Layout */
+  --layout-sidebar-width: 240px;
+  --layout-sidebar-collapsed-width: 48px;
+  --layout-header-height: 48px;
+}
+
+/* Global Reset - AMOLED Optimized */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Base Styles - AMOLED Black */
+body {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.4;
+  color: var(--color-text-primary);
+  background-color: var(--color-background-default);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Global Component Classes - AMOLED Sharp Design */
+
+/* Cards - Ultra Sharp & Minimal */
+.theme-card {
+  background-color: var(--color-background-card);
+  border-radius: var(--border-radius-sharp);
+  border: 1px solid var(--color-border-light);
+  padding: var(--spacing-lg);
+  transition: all var(--animation-duration-fast) var(--animation-easing-sharp);
+}
+
+.theme-card:hover {
+  border-color: var(--color-border-medium);
+  background-color: var(--color-background-elevated);
+}
+
+/* Buttons - Sharp & Minimal */
+.theme-button-primary {
+  background-color: var(--color-primary-main);
+  color: var(--color-primary-contrast);
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--border-radius-sharp);
+  font-weight: var(--font-weight-normal);
+  font-size: var(--font-size-sm);
+  border: 1px solid var(--color-primary-main);
+  cursor: pointer;
+  transition: all var(--animation-duration-fast) var(--animation-easing-sharp);
+  letter-spacing: 0.025em;
+}
+
+.theme-button-primary:hover {
+  background-color: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+}
+
+.theme-button-secondary {
+  background-color: transparent;
+  color: var(--color-text-primary);
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--border-radius-sharp);
+  font-weight: var(--font-weight-normal);
+  font-size: var(--font-size-sm);
+  border: 1px solid var(--color-border-medium);
+  cursor: pointer;
+  transition: all var(--animation-duration-fast) var(--animation-easing-sharp);
+  letter-spacing: 0.025em;
+}
+
+.theme-button-secondary:hover {
+  background-color: var(--color-background-elevated);
+  border-color: var(--color-border-accent);
+}
+
+/* Metrics Cards - Ultra Minimal */
+.theme-metric-card {
+  background-color: var(--color-background-card);
+  border-radius: var(--border-radius-sharp);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--color-border-light);
+  transition: all var(--animation-duration-fast) var(--animation-easing-sharp);
+}
+
+.theme-metric-card:hover {
+  border-color: var(--color-border-medium);
+  background-color: var(--color-background-elevated);
+}
+
+/* Metric Values & Labels - Sharp Typography */
+.theme-metric-value {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-light);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-xs);
+  font-family: var(--font-family-mono);
+  letter-spacing: -0.025em;
+}
+
+.theme-metric-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-normal);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Tables - AMOLED Style */
+.theme-table {
+  background-color: var(--color-background-card);
+  border-radius: var(--border-radius-sharp);
+  overflow: hidden;
+  border: 1px solid var(--color-border-light);
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.theme-table-header {
+  background-color: var(--color-background-elevated);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-primary);
+}
+
+.theme-table th,
+.theme-table td {
+  padding: var(--spacing-md);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-light);
+  font-size: var(--font-size-sm);
+}
+
+.theme-table tbody tr:hover {
+  background-color: var(--color-background-elevated);
+}
+
+/* Alerts - AMOLED Style */
+.theme-alert {
+  border-radius: var(--border-radius-sharp);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  font-weight: var(--font-weight-normal);
+  font-size: var(--font-size-sm);
+}
+
+.theme-alert-success {
+  background-color: var(--color-background-card);
+  color: var(--color-success-main);
+  border: 1px solid var(--color-success-main);
+}
+
+.theme-alert-warning {
+  background-color: var(--color-background-card);
+  color: var(--color-warning-main);
+  border: 1px solid var(--color-warning-main);
+}
+
+.theme-alert-error {
+  background-color: var(--color-background-card);
+  color: var(--color-error-main);
+  border: 1px solid var(--color-error-main);
+}
+
+.theme-alert-info {
+  background-color: var(--color-background-card);
+  color: var(--color-info-main);
+  border: 1px solid var(--color-info-main);
+}
+
+/* Status Indicators - Bright Colors on Black */
+.theme-status-operational {
+  color: var(--color-success-main);
+  font-weight: var(--font-weight-normal);
+  text-shadow: 0 0 2px var(--color-success-main);
+}
+
+.theme-status-warning {
+  color: var(--color-warning-main);
+  font-weight: var(--font-weight-normal);
+  text-shadow: 0 0 2px var(--color-warning-main);
+}
+
+.theme-status-error {
+  color: var(--color-error-main);
+  font-weight: var(--font-weight-normal);
+  text-shadow: 0 0 2px var(--color-error-main);
+}
+
+.theme-status-maintenance {
+  color: var(--color-info-main);
+  font-weight: var(--font-weight-normal);
+  text-shadow: 0 0 2px var(--color-info-main);
+}
+
+/* Loading States - AMOLED */
+.theme-loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-border-light);
+  border-radius: var(--border-radius-full);
+  border-top-color: var(--color-text-primary);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Dashboard Layout - AMOLED */
+.theme-dashboard-container {
+  min-height: 100vh;
+  background-color: var(--color-background-default);
+}
+
+.theme-dashboard-header {
+  background-color: var(--color-background-card);
+  border-bottom: 1px solid var(--color-border-light);
+  height: var(--layout-header-height);
+  padding: 0 var(--spacing-xl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.theme-dashboard-content {
+  padding: var(--spacing-xl);
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Grid System - Minimal Gaps */
+.theme-grid {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.theme-grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+.theme-grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.theme-grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.theme-grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+.theme-grid-cols-5 { grid-template-columns: repeat(5, 1fr); }
+.theme-grid-cols-6 { grid-template-columns: repeat(6, 1fr); }
+
+/* Typography - Sharp & Minimal */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.2;
+  margin: 0;
+}
+
+h1 { font-size: var(--font-size-4xl); font-weight: var(--font-weight-light); }
+h2 { font-size: var(--font-size-3xl); font-weight: var(--font-weight-light); }
+h3 { font-size: var(--font-size-2xl); font-weight: var(--font-weight-normal); }
+h4 { font-size: var(--font-size-xl); font-weight: var(--font-weight-normal); }
+h5 { font-size: var(--font-size-lg); font-weight: var(--font-weight-normal); }
+h6 { font-size: var(--font-size-base); font-weight: var(--font-weight-normal); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .theme-grid-cols-2,
+  .theme-grid-cols-3,
+  .theme-grid-cols-4,
+  .theme-grid-cols-5,
+  .theme-grid-cols-6 {
+    grid-template-columns: 1fr;
+  }
+  
+  .theme-dashboard-content {
+    padding: var(--spacing-lg);
+  }
+  
+  .theme-dashboard-header {
+    padding: 0 var(--spacing-lg);
+  }
+}
+
+/* Utility Classes - AMOLED */
+.theme-text-center { text-align: center; }
+.theme-text-right { text-align: right; }
+.theme-text-thin { font-weight: var(--font-weight-thin); }
+.theme-text-light { font-weight: var(--font-weight-light); }
+.theme-text-normal { font-weight: var(--font-weight-normal); }
+.theme-text-medium { font-weight: var(--font-weight-medium); }
+.theme-text-primary { color: var(--color-text-primary); }
+.theme-text-secondary { color: var(--color-text-secondary); }
+.theme-text-muted { color: var(--color-text-muted); }
+
+.theme-mb-xs { margin-bottom: var(--spacing-xs); }
+.theme-mb-sm { margin-bottom: var(--spacing-sm); }
+.theme-mb-md { margin-bottom: var(--spacing-md); }
+.theme-mb-lg { margin-bottom: var(--spacing-lg); }
+.theme-mb-xl { margin-bottom: var(--spacing-xl); }
+
+.theme-mt-xs { margin-top: var(--spacing-xs); }
+.theme-mt-sm { margin-top: var(--spacing-sm); }
+.theme-mt-md { margin-top: var(--spacing-md); }
+.theme-mt-lg { margin-top: var(--spacing-lg); }
+.theme-mt-xl { margin-top: var(--spacing-xl); }
+
+/* AMOLED Specific Enhancements */
+.theme-glow-text {
+  text-shadow: 0 0 8px currentColor;
+}
+
+.theme-sharp-border {
+  border: 1px solid var(--color-border-accent);
+}
+
+.theme-monospace {
+  font-family: var(--font-family-mono);
+}
+
+/* Icon Styles */
+.theme-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+}
+
+.theme-icon-sm { font-size: var(--font-size-sm); }
+.theme-icon-md { font-size: var(--font-size-base); }
+.theme-icon-lg { font-size: var(--font-size-lg); }
+.theme-icon-xl { font-size: var(--font-size-xl); }
+
+.theme-mt-sm { margin-top: var(--spacing-sm); }
+.theme-mt-md { margin-top: var(--spacing-md); }
+.theme-mt-lg { margin-top: var(--spacing-lg); }
+
+.theme-p-sm { padding: var(--spacing-sm); }
+.theme-p-md { padding: var(--spacing-md); }
+.theme-p-lg { padding: var(--spacing-lg); }
+
+/* Logo and Brand Styles - Small Logo Fix */
+.brand-logo {
+  height: 20px !important;
+  width: auto !important;
+  max-width: 80px !important;
+  object-fit: contain !important;
+  margin-right: 8px !important;
+  vertical-align: middle !important;
+  display: inline-block !important;
+}
+
+.brand-container {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.brand-text h1 {
+  font-size: 16px !important;
+  font-weight: 200 !important;
+  margin: 0 !important;
+  color: #ffffff !important;
+  letter-spacing: 0.5px !important;
+}
+
+.brand-text span {
+  font-size: 10px !important;
+  font-weight: 200 !important;
+  color: #cccccc !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+/* App Layout Styles */
+.app {
+  min-height: 100vh !important;
+  background: #000000 !important;
+  color: #ffffff !important;
+  font-family: "Inter", sans-serif !important;
+}
+
+.app-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 8px 16px !important;
+  background: #000000 !important;
+  border-bottom: 1px solid #333333 !important;
+  height: 48px !important;
+}
+
+.main-navigation {
+  display: flex !important;
+  gap: 0 !important;
+}
+
+.nav-tab {
+  background: transparent !important;
+  border: none !important;
+  color: #cccccc !important;
+  padding: 8px 12px !important;
+  font-size: 10px !important;
+  font-weight: 200 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  cursor: pointer !important;
+  border-bottom: 2px solid transparent !important;
+  transition: all 0.2s ease !important;
+}
+
+.nav-tab:hover {
+  color: #ffffff !important;
+  background: #1a1a1a !important;
+}
+
+.nav-tab.active {
+  color: #ffffff !important;
+  border-bottom-color: #ffffff !important;
+  background: #1a1a1a !important;
+}
+
+.nav-tab i {
+  margin-right: 4px !important;
+  font-size: 0.9em !important;
+}

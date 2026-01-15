@@ -1,0 +1,81 @@
+{
+  "system": {
+    "name": "Enterprise Legion",
+    "version": "1.0.0",
+    "description": "Modular, persistent, mathematically co-integrated enterprise agent framework",
+    "startup_mode": "production"
+  },
+  "orchestrator": {
+    "enabled": true,
+    "health_check_interval": 30,
+    "workflow_scheduling": true,
+    "auto_recovery": true,
+    "max_concurrent_workflows": 10
+  },
+  "agents": {
+    "initialization_timeout": 60,
+    "message_queue_size": 1000,
+    "retry_attempts": 3,
+    "heartbeat_interval": 15
+  },
+  "logging": {
+    "level": "INFO",
+    "file_path": "logs/enterprise_legion.log",
+    "max_file_size": "10MB",
+    "backup_count": 5,
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  },
+  "departments": {
+    "accounts_finance_reporting": {
+      "enabled": true,
+      "agents": ["financial_analysis", "financial_modeling", "quality_assurance", "report_generation"]
+    },
+    "automation_operations": {
+      "enabled": true,
+      "agents": ["workflow_orchestration", "resource_optimization", "task_scheduling"]
+    },
+    "business_intelligence_strategy": {
+      "enabled": true,
+      "agents": ["analytics", "market_analysis", "research", "strategic_planning"]
+    },
+    "communication_marketing": {
+      "enabled": true,
+      "agents": ["content_writing", "social_media_monitoring"]
+    },
+    "legal": {
+      "enabled": true,
+      "agents": ["compliance_checker"]
+    },
+    "org_structure": {
+      "enabled": true,
+      "agents": ["calendar_management"]
+    }
+  },
+  "workflows": {
+    "daily_operations": {
+      "enabled": true,
+      "schedule": "0 9 * * *",
+      "agents": ["financial_analysis", "market_analysis", "task_scheduling"]
+    },
+    "weekly_reporting": {
+      "enabled": true,
+      "schedule": "0 17 * * 5",
+      "agents": ["report_generation", "analytics", "strategic_planning"]
+    },
+    "monthly_review": {
+      "enabled": true,
+      "schedule": "0 9 1 * *",
+      "agents": ["financial_modeling", "market_analysis", "compliance_checker"]
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "metrics_collection": true,
+    "performance_tracking": true,
+    "alert_thresholds": {
+      "agent_response_time": 10.0,
+      "workflow_failure_rate": 0.05,
+      "system_memory_usage": 0.85
+    }
+  }
+}

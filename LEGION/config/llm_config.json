@@ -1,0 +1,75 @@
+{
+  "active_provider": "ollama",
+  "providers": {
+    "ollama": {
+      "base_url": "http://localhost:11434",
+      "model": "mistral:7b",
+      "timeout": 300,
+      "flash_attention": true,
+      "num_threads": 8,
+      "quantization": "Q4_K_M",
+      "description": "Default local provider for system requirements and general queries."
+    },
+    "llamacpp": {
+      "base_url": "http://localhost:8080",
+      "model_path": "./models/",
+      "timeout": 300,
+      "flash_attention": true,
+      "num_threads": 8,
+      "quantization": "Q4_K_M",
+      "description": "Llama.cpp for custom model training and live interaction."
+    },
+    "localai": {
+      "base_url": "http://localhost:8080",
+      "model": "gpt-3.5-turbo",
+      "timeout": 300,
+      "description": "LocalAI for local inference."
+    },
+    "llmstudio": {
+      "base_url": "http://localhost:1234",
+      "model": "local-model",
+      "timeout": 300,
+      "description": "LM Studio for local model experimentation."
+    },
+    "openai": {
+      "base_url": "https://api.openai.com/v1",
+      "model": "gpt-4",
+      "timeout": 60,
+      "description": "OpenAI for emergency cloud fallback."
+    },
+    "gemini": {
+      "base_url": "https://generativelanguage.googleapis.com/v1beta",
+      "model": "gemini-pro",
+      "timeout": 60,
+      "description": "Gemini for auxiliary cloud queries."
+    },
+    "anthropic": {
+      "base_url": "https://api.anthropic.com/v1",
+      "model": "claude-3-sonnet-20240229",
+      "timeout": 60,
+      "description": "Anthropic for cloud fallback."
+    },
+    "huggingface": {
+      "base_url": "https://api-inference.huggingface.co/models",
+      "model": "microsoft/DialoGPT-large",
+      "timeout": 60,
+      "description": "Hugging Face for cloud fallback."
+    }
+  },
+  "vector_db": {
+    "type": "pgvector",
+    "host": "localhost",
+    "port": 5432,
+    "database": "enterprise_vectors",
+    "user": "vector_user",
+    "password": "securepassword",
+    "description": "Vector database for RAG and retrieval."
+  },
+  "rag": {
+    "enabled": true,
+    "embedding_model": "ollama",
+    "chunk_size": 512,
+    "max_chunks": 100,
+    "description": "RAG configuration for enterprise data streams."
+  }
+}

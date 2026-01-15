@@ -1,0 +1,6 @@
+express
+cors
+puppeteer-extra
+puppeteer-extra-plugin-stealth
+puppeteer
+compromise

@@ -1,0 +1,279 @@
+name: Enterprise Dashboard Deployment
+
+on:
+  push:
+    branches: [ main, production ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test Suite
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Cache Node dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov
+    
+    - name: Install Node dependencies
+      run: |
+        npm ci
+    
+    - name: Run Python tests
+      run: |
+        # Create test databases
+        mkdir -p data
+        python initialize_database_schema.py
+        
+        # Run tests if they exist
+        if [ -d "tests" ]; then
+          python -m pytest tests/ -v --cov=. --cov-report=xml
+        else
+          echo "No tests directory found, running basic syntax checks"
+          python -m py_compile *.py
+        fi
+    
+    - name: Run Node.js tests
+      run: |
+        # Run tests if they exist
+        if [ -f "package.json" ] && grep -q '"test"' package.json; then
+          npm test -- --watchAll=false
+        else
+          echo "No tests configured, running build test"
+          npm run build
+        fi
+    
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      if: success()
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    name: Build Application
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    - name: Cache Node dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build production assets
+      run: |
+        export NODE_ENV=production
+        npm run build
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: build/
+        retention-days: 30
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    name: Deploy to Staging
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build-artifacts
+        path: build/
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        npm ci
+    
+    - name: Deploy to staging
+      run: |
+        # Set staging environment variables
+        export NODE_ENV=staging
+        export DEPLOYMENT_MODE=automated
+        export LOG_LEVEL=DEBUG
+        
+        # Make deployment script executable
+        chmod +x deploy.sh
+        
+        # Run deployment
+        ./deploy.sh
+    
+    - name: Run integration tests
+      run: |
+        # Wait for services to start
+        sleep 30
+        
+        # Run basic integration tests
+        curl -f http://localhost:3000 || exit 1
+        curl -f http://localhost:5000/api/health || curl -f http://localhost:5001/api/health || exit 1
+        
+        echo "Staging deployment and tests completed successfully"
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [test, build, deploy-staging]
+    name: Deploy to Production
+    if: github.ref == 'refs/heads/production'
+    environment: production
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build-artifacts
+        path: build/
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        npm ci
+    
+    - name: Deploy to production
+      run: |
+        # Set production environment variables
+        export NODE_ENV=production
+        export DEPLOYMENT_MODE=automated
+        export LOG_LEVEL=INFO
+        export BUILD_MODE=force
+        
+        # Make deployment script executable
+        chmod +x deploy.sh
+        
+        # Run production deployment
+        ./deploy.sh
+    
+    - name: Post-deployment verification
+      run: |
+        # Wait for services to start
+        sleep 60
+        
+        # Run comprehensive health checks
+        curl -f http://localhost:3000 || exit 1
+        curl -f http://localhost:5000/api/health || curl -f http://localhost:5001/api/health || exit 1
+        
+        # Verify database connectivity
+        python -c "
+        import sqlite3
+        conn = sqlite3.connect('data/enterprise_operations.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT COUNT(*) FROM business_objectives')
+        result = cursor.fetchone()
+        print(f'Database connectivity verified: {result[0]} objectives found')
+        conn.close()
+        "
+        
+        echo "Production deployment verified successfully"
+    
+    - name: Notify deployment success
+      if: success()
+      run: |
+        echo "🎉 Production deployment completed successfully!"
+        echo "Dashboard available at: http://localhost:3000"
+        echo "API available at: http://localhost:5000"
+    
+    - name: Rollback on failure
+      if: failure()
+      run: |
+        echo "❌ Production deployment failed - initiating rollback"
+        ./deploy.sh rollback
+
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scan
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run npm audit
+      run: |
+        npm audit --audit-level high
+        npm audit fix --dry-run
+    
+    - name: Run Python security scan
+      run: |
+        pip install safety bandit
+        safety check -r requirements.txt
+        bandit -r . -x tests/ || true
+    
+    - name: Upload security scan results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: security-scan-results.sarif
+      continue-on-error: true

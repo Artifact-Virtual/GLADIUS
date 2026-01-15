@@ -1,0 +1,17 @@
+# ASAS - Advanced Security Administration System
+# Python Dependencies
+
+# Core utilities
+psutil>=5.9.0
+colorama>=0.4.6
+
+# Machine Learning and Data Science
+numpy>=1.24.0
+scikit-learn>=1.3.0
+joblib>=1.3.0
+
+# Performance profiling
+memory-profiler>=0.61.0
+
+# Async HTTP client
+aiohttp>=3.8.0

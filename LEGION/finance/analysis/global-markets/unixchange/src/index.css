@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-dark-900 text-white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  }
+}
+
+@layer components {
+  .tradingview-theme {
+    --tv-color-platform-background: #0f172a;
+    --tv-color-pane-background: #1e293b;
+    --tv-color-toolbar-background: #334155;
+    --tv-color-text-primary: #ffffff;
+    --tv-color-text-secondary: #94a3b8;
+    --tv-color-border: #475569;
+  }
+
+  .chart-container {
+    @apply w-full h-full bg-dark-800 rounded-lg border border-dark-600;
+  }
+
+  .market-panel {
+    @apply bg-dark-800 border border-dark-600 rounded-lg p-4;
+  }
+
+  .price-up {
+    @apply text-green-500;
+  }
+
+  .price-down {
+    @apply text-red-500;
+  }
+
+  .price-neutral {
+    @apply text-gray-400;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-dark-700;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-dark-500 rounded-full;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-dark-400;
+  }
+}

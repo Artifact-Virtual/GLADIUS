@@ -1,0 +1,51 @@
+{
+  "timestamp": "2026-01-14T16:14:02.543676",
+  "business_status": "OPERATIONAL",
+  "agents_active": 18,
+  "departments_active": 6,
+  "performance_metrics": {
+    "total_agents": 18,
+    "active_agents": 0,
+    "workflow_triggers": 4,
+    "organizational_schedules": 3,
+    "database_size": 7524
+  },
+  "agent_health": {
+    "total_agents": 18,
+    "healthy_agents": [
+      "strategy_strategic_planner",
+      "strategy_business_analyst",
+      "strategy_market_researcher",
+      "marketing_content_creator",
+      "marketing_social_media_manager",
+      "marketing_lead_generator",
+      "finance_financial_analyst",
+      "finance_budget_manager",
+      "finance_revenue_tracker",
+      "operations_workflow_orchestrator",
+      "operations_resource_optimizer",
+      "operations_task_scheduler",
+      "business_intelligence_data_analyst",
+      "business_intelligence_market_analyst",
+      "business_intelligence_competitive_researcher",
+      "communication_content_writer",
+      "communication_social_media_monitor",
+      "communication_brand_manager"
+    ],
+    "unhealthy_agents": [],
+    "health_ratio": 1.0
+  },
+  "business_kpis": {
+    "pipeline_value": 80000,
+    "monthly_revenue_target": 4167,
+    "lead_conversion_rate": 75,
+    "content_ready": 3,
+    "active_campaigns": 5
+  },
+  "financial_summary": {
+    "year_1_target": 50000,
+    "profit_margin": 88,
+    "break_even_month": 6,
+    "roi_projection": 2300
+  }
+}

@@ -1,0 +1,228 @@
+/* Additional CSS for Chat Application */
+
+/* Fix for inline styles */
+.chat-area {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+}
+
+.chat-area.active {
+    display: flex;
+}
+
+.file-upload-area {
+    display: none;
+    position: relative;
+    margin-bottom: 12px;
+}
+
+.file-upload-area.active {
+    display: block;
+}
+
+.file-input-hidden {
+    display: none;
+}
+
+/* Message file attachment styles */
+.message-file {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-top: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.message.own .message-file {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.message-file i {
+    color: #3498db;
+}
+
+.message.own .message-file i {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.message-file button {
+    background: none;
+    border: none;
+    color: #3498db;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.message.own .message-file button {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.message-file button:hover {
+    background: rgba(52, 152, 219, 0.1);
+}
+
+.message.own .message-file button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Message sender name */
+.message-sender {
+    font-size: 12px;
+    font-weight: 600;
+    color: #7f8c8d;
+    margin-bottom: 4px;
+}
+
+/* Improved scrollbar */
+.messages-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+.sidebar-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+    background: #34495e;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+    background: #4a5f7a;
+    border-radius: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+    background: #5a6f8a;
+}
+
+/* Online indicator */
+.user-status.online {
+    color: #27ae60;
+}
+
+.user-status.offline {
+    color: #95a5a6;
+}
+
+/* Notification dot for new messages */
+.chat-item.has-unread::after,
+.room-item.has-unread::after {
+    content: '';
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    background: #e74c3c;
+    border-radius: 50%;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Tooltip */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 12px;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Improved button styles */
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+}
+
+.send-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+    border-radius: 50%;
+}
+
+.file-input-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+    border-radius: 50%;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .login-form {
+        background: #2c3e50;
+        color: white;
+    }
+    
+    .login-form h1 {
+        color: white;
+    }
+    
+    .login-form .subtitle {
+        color: #bdc3c7;
+    }
+}

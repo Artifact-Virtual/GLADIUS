@@ -1,0 +1,18 @@
+{
+  "name": "Strategic Oversight Layer",
+  "description": "Template for the Strategic Oversight Layer of the Board of Directors.",
+  "layers": [
+    {
+      "name": "Long-term Vision Alignment",
+      "description": "Ensures that the organization's long-term vision is aligned with its strategic goals."
+    },
+    {
+      "name": "Resource Allocation Optimization",
+      "description": "Optimizes the allocation of resources to achieve strategic objectives."
+    },
+    {
+      "name": "Competitive Positioning",
+      "description": "Analyzes and positions the organization competitively in the market."
+    }
+  ]
+}

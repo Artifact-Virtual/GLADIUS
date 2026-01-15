@@ -1,0 +1,35 @@
+{
+  "lead_targets": [
+    {
+      "company": "TechStart Innovations",
+      "potential": 25000,
+      "status": "qualified"
+    },
+    {
+      "company": "Metro Legal Services",
+      "potential": 40000,
+      "status": "proposal_stage"
+    },
+    {
+      "company": "Green Earth Consulting",
+      "potential": 15000,
+      "status": "initial_contact"
+    }
+  ],
+  "content_strategy": {
+    "blog_posts": 2,
+    "linkedin_articles": 3,
+    "case_studies": 1,
+    "social_media_posts": 20
+  },
+  "campaigns": {
+    "linkedin_outreach": "Active",
+    "content_marketing": "Active",
+    "seo_optimization": "Active"
+  },
+  "performance_metrics": {
+    "conversion_rate": 75,
+    "pipeline_value": 80000,
+    "monthly_leads": 12
+  }
+}
