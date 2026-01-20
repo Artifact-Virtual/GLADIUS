@@ -717,36 +717,58 @@ class MultiExpertDistiller:
                 )
                 teacher_logits = teacher_outputs.logits
             
-            # Get student logits
-            student_outputs = student_model(
-                input_ids=input_ids,
-                attention_mask=attention_mask,
-                labels=input_ids
-            )
-            student_logits = student_outputs.logits
+            # Determine minimum vocab size between student and teacher
+            # and create safe labels (tokens >= min_vocab are set to -100 to ignore in loss)
+            teacher_vocab = teacher_logits.size(-1)
+            try:
+                student_vocab = student_model.config.vocab_size
+            except Exception:
+                student_vocab = student_model.get_input_embeddings().weight.size(0)
+            min_vocab = min(student_vocab, teacher_vocab)
+            labels_safe = input_ids.clone()
+            labels_safe[labels_safe >= min_vocab] = -100
             
-            # Handle vocab size mismatch - truncate to smaller vocab
-            min_vocab = min(student_logits.size(-1), teacher_logits.size(-1))
-            student_logits = student_logits[..., :min_vocab]
-            teacher_logits = teacher_logits[..., :min_vocab]
-            
-            # KL divergence loss (distillation)
-            temperature = 2.0
-            kl_loss = torch.nn.functional.kl_div(
-                torch.nn.functional.log_softmax(student_logits / temperature, dim=-1),
-                torch.nn.functional.softmax(teacher_logits / temperature, dim=-1),
-                reduction="batchmean"
-            ) * (temperature ** 2)
-            
-            # Combined loss: distillation + cross-entropy
-            ce_loss = student_outputs.loss
-            loss = 0.5 * kl_loss + 0.5 * ce_loss
-            
-            # Backward
-            optimizer.zero_grad()
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(student_model.parameters(), 1.0)
-            optimizer.step()
+            try:
+                # Get student logits and loss (use safe labels to avoid out-of-range indices)
+                student_outputs = student_model(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    labels=labels_safe
+                )
+                student_logits = student_outputs.logits
+                
+                # Truncate logits to min_vocab for KL computation
+                student_logits = student_logits[..., :min_vocab]
+                teacher_logits = teacher_logits[..., :min_vocab]
+                
+                # KL divergence loss (distillation)
+                temperature = 2.0
+                kl_loss = torch.nn.functional.kl_div(
+                    torch.nn.functional.log_softmax(student_logits / temperature, dim=-1),
+                    torch.nn.functional.softmax(teacher_logits / temperature, dim=-1),
+                    reduction="batchmean"
+                ) * (temperature ** 2)
+                
+                # Combined loss: distillation + cross-entropy
+                ce_loss = student_outputs.loss
+                loss = 0.5 * kl_loss + 0.5 * ce_loss
+                
+                # Backward
+                optimizer.zero_grad()
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(student_model.parameters(), 1.0)
+                optimizer.step()
+            except Exception as e:
+                logger.error("Training error: %s", e)
+                import traceback
+                logger.error(traceback.format_exc())
+                # Diagnostic info for debugging
+                try:
+                    logger.error("Diagnostics - input_ids max: %s, min_vocab: %s, student_vocab: %s, teacher_vocab: %s", input_ids.max().item(), min_vocab, student_vocab, teacher_vocab)
+                except Exception:
+                    pass
+                # Skip this problematic batch and continue
+                continue
             
             total_loss += loss.item()
             steps += 1
@@ -997,6 +1019,12 @@ def main():
         return
     
     trainer = MultiExpertDistiller()
+    if args.resume:
+        logger.info("Resuming from checkpoint...")
+        try:
+            trainer.load_checkpoint()
+        except FileNotFoundError:
+            logger.warning("No checkpoint found to resume; starting fresh.")
     trainer.train_full_pipeline(max_hours=args.hours)
 
 

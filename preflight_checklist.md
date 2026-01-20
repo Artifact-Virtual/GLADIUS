@@ -11,6 +11,13 @@ Use this checklist before every deployment or autonomous cycle to guarantee that
 
 ---
 
+# Quick Launch Dashboard
+
+python3 -m venv .venv && . .venv/bin/activate
+pip install -U pip
+pip install -r requirements.txt
+python train_pipeline.py --resume --max-hours 24 --save-interval 1000 --eval-interval 500
+
 ## 0. Global Environment & Credentials
 
 - [ ] Host clock synced (≤60 s skew) _(cmd: `timedatectl status`)_
