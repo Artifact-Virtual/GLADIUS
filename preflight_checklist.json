@@ -1,0 +1,1070 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-01-20T18:11:39.968Z",
+  "description": "Machine-readable preflight checklist for GLADIUS Enterprise subsystems.",
+  "modules": [
+    {
+      "id": "global",
+      "name": "Global Environment & Credentials",
+      "severity": "critical",
+      "tasks": [
+        {
+          "id": "global-clock",
+          "description": "Host clock synced (≤60 s skew).",
+          "component": "environment",
+          "type": "verify",
+          "commands": ["timedatectl status"],
+          "success_criteria": "System clock synchronized (System clock synchronized: yes).",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "global-disk",
+          "description": "Ensure ≥10 GB free in workspace.",
+          "component": "storage",
+          "type": "verify",
+          "commands": ["df -h /home/adam/worxpace/gladius"],
+          "success_criteria": "Available column shows ≥10 GB.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "global-env-validate",
+          "description": "Validate .env derived from template.",
+          "component": "configuration",
+          "type": "command",
+          "commands": ["./scripts/validate_env.sh"],
+          "success_criteria": "Validator exits 0 with no missing keys.",
+          "config_keys": [".env"],
+          "dependencies": [],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "global-secrets",
+          "description": "SECRET_KEY, DASHBOARD_SECRET_KEY, JWT_SECRET_KEY, LEGION_SECRET_KEY regenerated.",
+          "component": "credentials",
+          "type": "config",
+          "commands": [],
+          "success_criteria": "All keys populated in .env and stored in secret manager.",
+          "config_keys": ["SECRET_KEY", "DASHBOARD_SECRET_KEY", "JWT_SECRET_KEY", "LEGION_SECRET_KEY"],
+          "dependencies": ["global-env-validate"],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "global-smtp",
+          "description": "SMTP credentials populated and tested.",
+          "component": "communications",
+          "type": "command",
+          "commands": ["python3 scripts/test_smtp_consensus.py --send-test-email"],
+          "success_criteria": "Test email delivered and command exits 0.",
+          "config_keys": ["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_SSL"],
+          "dependencies": ["global-secrets"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "global-discord",
+          "description": "Discord webhook + channel IDs valid.",
+          "component": "communications",
+          "type": "config",
+          "commands": [],
+          "success_criteria": "Webhook responds 204 and channel IDs match Discord server.",
+          "config_keys": ["DISCORD_WEBHOOK_URL", "DISCORD_CONSENSUS_CHANNEL_ID"],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "global-social",
+          "description": "Social API tokens (Twitter, LinkedIn, Facebook, Instagram) active.",
+          "component": "communications",
+          "type": "config",
+          "commands": [],
+          "success_criteria": "Tokens stored and verified against their APIs.",
+          "config_keys": ["TWITTER_TOKEN", "LINKEDIN_TOKEN", "FACEBOOK_TOKEN", "INSTAGRAM_TOKEN"],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "global-ollama",
+          "description": "Optional Ollama / GGUF fallback reachable if enabled.",
+          "component": "inference",
+          "type": "verify",
+          "commands": ["ollama list"],
+          "success_criteria": "Command succeeds and GLADIUS fallback model present when GLADIUS_FALLBACK=ollama.",
+          "config_keys": ["GLADIUS_FALLBACK"],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "global-venv",
+          "description": "Project virtualenv exists and activates.",
+          "component": "tooling",
+          "type": "verify",
+          "commands": ["test -d .venv && source .venv/bin/activate"],
+          "success_criteria": ".venv directory present and activation script works.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "global-git",
+          "description": "Repository status acknowledged.",
+          "component": "governance",
+          "type": "verify",
+          "commands": ["git status -sb"],
+          "success_criteria": "No unexpected changes or they are documented.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        }
+      ]
+    },
+    {
+      "id": "dependencies",
+      "name": "Dependencies & Assets",
+      "severity": "high",
+      "tasks": [
+        {
+          "id": "deps-root",
+          "description": "Install root Python requirements.",
+          "component": "python",
+          "type": "command",
+          "commands": ["pip install -r requirements.txt"],
+          "success_criteria": "pip exits 0.",
+          "config_keys": [],
+          "dependencies": ["global-venv"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "deps-sentinel",
+          "description": "Install SENTINEL requirements.",
+          "component": "python",
+          "type": "command",
+          "commands": ["pip install -r SENTINEL/requirements.txt"],
+          "success_criteria": "pip exits 0.",
+          "config_keys": [],
+          "dependencies": ["deps-root"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "deps-legion",
+          "description": "Install LEGION backend requirements.",
+          "component": "python",
+          "type": "command",
+          "commands": ["pip install -r LEGION/requirements.txt"],
+          "success_criteria": "pip exits 0.",
+          "config_keys": [],
+          "dependencies": ["deps-root"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "deps-artifact",
+          "description": "Install Artifact deployment dependencies.",
+          "component": "python",
+          "type": "command",
+          "commands": ["pip install -r Artifact/deployment/requirements.txt"],
+          "success_criteria": "pip exits 0 or file absent.",
+          "config_keys": [],
+          "dependencies": ["deps-root"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "deps-gladius-train",
+          "description": "Install GLADIUS training requirements.",
+          "component": "python",
+          "type": "command",
+          "commands": ["pip install -r GLADIUS/training/requirements.txt"],
+          "success_criteria": "pip exits 0.",
+          "config_keys": [],
+          "dependencies": ["deps-root"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "deps-arty",
+          "description": "Install Arty workspace npm packages.",
+          "component": "node",
+          "type": "command",
+          "commands": ["cd Artifact/arty && npm install"],
+          "success_criteria": "npm exits 0.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "deps-legion-frontend",
+          "description": "Install LEGION dashboard npm packages.",
+          "component": "node",
+          "type": "command",
+          "commands": ["cd LEGION && npm install"],
+          "success_criteria": "npm exits 0.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "assets-gladius-models",
+          "description": "GLADIUS weights available and checksumed.",
+          "component": "model",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "Files exist under GLADIUS/models and match recorded hashes.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "assets-qwen",
+          "description": "Qwen operational checkpoints present.",
+          "component": "model",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "Artifact/models/qwen contains latest weights + state.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "assets-arty-db",
+          "description": "Arty storage initialized.",
+          "component": "database",
+          "type": "command",
+          "commands": ["cd Artifact/arty/store && node init-databases.js"],
+          "success_criteria": "Initialization script exits 0 and DB files exist.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "assets-sqlite",
+          "description": "SQLite databases present and backed up.",
+          "component": "database",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "data/*.db, LEGION/data, SENTINEL/services stores exist.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "assets-logs",
+          "description": "logs/ directory writable.",
+          "component": "logging",
+          "type": "command",
+          "commands": ["touch logs/.write_test && rm logs/.write_test"],
+          "success_criteria": "Write succeeds.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": true
+        }
+      ]
+    },
+    {
+      "id": "sentinel",
+      "name": "SENTINEL Guardian",
+      "severity": "critical",
+      "tasks": [
+        {
+          "id": "sentinel-env",
+          "description": "SENTINEL enabled and kill password set.",
+          "component": "configuration",
+          "type": "config",
+          "commands": [],
+          "success_criteria": "SENTINEL_ENABLED=true and SENTINEL_KILL_PASSWORD populated.",
+          "config_keys": ["SENTINEL_ENABLED", "SENTINEL_KILL_PASSWORD"],
+          "dependencies": ["global-env-validate"],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "sentinel-targets",
+          "description": "Target definitions current.",
+          "component": "targets",
+          "type": "command",
+          "commands": ["python3 SENTINEL/asas_cli.py target-list"],
+          "success_criteria": "Output matches expected protected assets.",
+          "config_keys": [],
+          "dependencies": ["sentinel-env"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "sentinel-constitution",
+          "description": "Constitutional rule files up to date.",
+          "component": "governance",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "Configs in SENTINEL/config/constitution/ versioned and current.",
+          "config_keys": [],
+          "dependencies": ["sentinel-env"],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "sentinel-watchdog",
+          "description": "Watchdog PID alive.",
+          "component": "process",
+          "type": "command",
+          "commands": ["./scripts/start_sentinel.sh status"],
+          "success_criteria": "Status shows watchdog running.",
+          "config_keys": [],
+          "dependencies": ["sentinel-env"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "sentinel-daemon",
+          "description": "Learning daemon active.",
+          "component": "process",
+          "type": "command",
+          "commands": ["pgrep -f learning_daemon.py"],
+          "success_criteria": "Command returns PID.",
+          "config_keys": [],
+          "dependencies": ["sentinel-watchdog"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "sentinel-guardian",
+          "description": "Process guardian tracking critical services.",
+          "component": "process",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "Guardian registry includes Infra API, Dashboard, Syndicate, LEGION.",
+          "config_keys": [],
+          "dependencies": ["sentinel-watchdog"],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "sentinel-threat",
+          "description": "Threat engine self-test passes.",
+          "component": "security",
+          "type": "command",
+          "commands": ["python3 SENTINEL/threat_engine.py --self-test"],
+          "success_criteria": "Self-test returns success.",
+          "config_keys": [],
+          "dependencies": ["sentinel-env"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "sentinel-kill",
+          "description": "Kill-switch dry-run verified.",
+          "component": "safety",
+          "type": "command",
+          "commands": ["./scripts/start_sentinel.sh stop $SENTINEL_KILL_PASSWORD --dry-run"],
+          "success_criteria": "Dry-run acknowledged without terminating sentinel.",
+          "config_keys": ["SENTINEL_KILL_PASSWORD"],
+          "dependencies": ["sentinel-env"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "sentinel-cli-status",
+          "description": "asas_cli status clean.",
+          "component": "cli",
+          "type": "command",
+          "commands": ["python3 SENTINEL/asas_cli.py status"],
+          "success_criteria": "All modules OK.",
+          "config_keys": [],
+          "dependencies": ["sentinel-watchdog"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "sentinel-cli-scan",
+          "description": "Full scan completed.",
+          "component": "cli",
+          "type": "command",
+          "commands": ["python3 SENTINEL/asas_cli.py scan --type full"],
+          "success_criteria": "Scan completes without critical findings.",
+          "config_keys": [],
+          "dependencies": ["sentinel-cli-status"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "sentinel-cli-targets",
+          "description": "Target list reviewed.",
+          "component": "cli",
+          "type": "command",
+          "commands": ["python3 SENTINEL/asas_cli.py target-list"],
+          "success_criteria": "Targets match mission plan.",
+          "config_keys": [],
+          "dependencies": ["sentinel-targets"],
+          "editable": true,
+          "executable": true
+        }
+      ]
+    },
+    {
+      "id": "gladius",
+      "name": "GLADIUS Core",
+      "severity": "high",
+      "tasks": [
+        {
+          "id": "gladius-enabled",
+          "description": "GLADIUS enabled in .env.",
+          "component": "configuration",
+          "type": "config",
+          "commands": [],
+          "success_criteria": "GLADIUS_ENABLED=true.",
+          "config_keys": ["GLADIUS_ENABLED"],
+          "dependencies": ["global-env-validate"],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "gladius-router",
+          "description": "Pattern router tests pass.",
+          "component": "router",
+          "type": "command",
+          "commands": ["python3 -m pytest GLADIUS/router -k pattern_router"],
+          "success_criteria": "Pytest exits 0.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "gladius-growth",
+          "description": "Growth tracker reachable.",
+          "component": "growth",
+          "type": "command",
+          "commands": ["python3 GLADIUS/growth/growth_tracker.py status"],
+          "success_criteria": "Status returns without error.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "gladius-weights",
+          "description": "Latest safetensors verified.",
+          "component": "model",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "Checksum matches recorded hash.",
+          "config_keys": [],
+          "dependencies": ["assets-gladius-models"],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "gladius-datasets",
+          "description": "Training datasets available.",
+          "component": "data",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "Files present under GLADIUS/training.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "gladius-gguf",
+          "description": "GGUF/Ollama export path configured (if needed).",
+          "component": "deployment",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "Export path set and accessible when GLADIUS_FALLBACK=ollama.",
+          "config_keys": ["GLADIUS_FALLBACK"],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "gladius-interactive",
+          "description": "Interactive CLI status check.",
+          "component": "interface",
+          "type": "command",
+          "commands": ["python3 GLADIUS/interactive.py --status"],
+          "success_criteria": "Command exits 0 and reports ready.",
+          "config_keys": [],
+          "dependencies": ["gladius-enabled"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "gladius-speak",
+          "description": "Speak interface ping.",
+          "component": "interface",
+          "type": "command",
+          "commands": ["python3 GLADIUS/speak.py --ping"],
+          "success_criteria": "Ping returns success.",
+          "config_keys": [],
+          "dependencies": ["gladius-enabled"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "gladius-continuous",
+          "description": "Continuous mode dry-run.",
+          "component": "interface",
+          "type": "command",
+          "commands": ["python3 GLADIUS/continuous.py --dry-run"],
+          "success_criteria": "Dry-run completes without exception.",
+          "config_keys": [],
+          "dependencies": ["gladius-enabled"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "gladius-training",
+          "description": "Training harness smoke test.",
+          "component": "training",
+          "type": "command",
+          "commands": ["python3 GLADIUS/training/gladius_1b_trainer.py --dry-run"],
+          "success_criteria": "Dry-run completes successfully.",
+          "config_keys": [],
+          "dependencies": ["deps-gladius-train"],
+          "editable": true,
+          "executable": true
+        }
+      ]
+    },
+    {
+      "id": "legion",
+      "name": "LEGION Enterprise",
+      "severity": "high",
+      "tasks": [
+        {
+          "id": "legion-deps",
+          "description": "start_enterprise.py dependency check passes.",
+          "component": "framework",
+          "type": "command",
+          "commands": ["python3 LEGION/start_enterprise.py --check"],
+          "success_criteria": "Script exits 0.",
+          "config_keys": [],
+          "dependencies": ["deps-legion", "deps-legion-frontend"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "legion-backend",
+          "description": "Backend API health endpoint green.",
+          "component": "api",
+          "type": "command",
+          "commands": ["python3 LEGION/backend_api.py --health"],
+          "success_criteria": "Health status OK.",
+          "config_keys": [],
+          "dependencies": ["legion-deps"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "legion-server",
+          "description": "Websocket/server health check.",
+          "component": "server",
+          "type": "command",
+          "commands": ["python3 LEGION/server.py --health"],
+          "success_criteria": "Health status OK.",
+          "config_keys": [],
+          "dependencies": ["legion-deps"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "legion-cli",
+          "description": "LEGION CLI system status.",
+          "component": "cli",
+          "type": "command",
+          "commands": ["cd LEGION/legion && python3 cli.py system status"],
+          "success_criteria": "All services reporting operational.",
+          "config_keys": [],
+          "dependencies": ["legion-backend"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "legion-db",
+          "description": "SQLite migrations applied.",
+          "component": "database",
+          "type": "command",
+          "commands": ["python3 LEGION/initialize_database_schema.py"],
+          "success_criteria": "Script exits 0.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "legion-integrations",
+          "description": "Integration credentials validated.",
+          "component": "integrations",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "LEGION/config contains valid API keys.",
+          "config_keys": ["LEGION/config/*"],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "legion-rate-limiter",
+          "description": "Rate limiter configured.",
+          "component": "infrastructure",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "LEGION/rate_limiter.py shows policy for active APIs.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "legion-frontend",
+          "description": "Dashboard build succeeds.",
+          "component": "frontend",
+          "type": "command",
+          "commands": ["cd LEGION && npm run build"],
+          "success_criteria": "npm exits 0.",
+          "config_keys": [],
+          "dependencies": ["deps-legion-frontend"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "legion-assets",
+          "description": "Public assets compiled.",
+          "component": "frontend",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "`LEGION/public` contains latest artifacts.",
+          "config_keys": [],
+          "dependencies": ["legion-frontend"],
+          "editable": true,
+          "executable": false
+        }
+      ]
+    },
+    {
+      "id": "artifact",
+      "name": "Artifact Layer",
+      "severity": "high",
+      "tasks": [
+        {
+          "id": "artifact-infra",
+          "description": "Infra API reachable on port 7000.",
+          "component": "api",
+          "type": "command",
+          "commands": ["curl -sSf http://127.0.0.1:7000/docs"],
+          "success_criteria": "HTTP 200.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "artifact-health",
+          "description": "Dashboard backend health check.",
+          "component": "api",
+          "type": "command",
+          "commands": ["curl -sSf http://127.0.0.1:5000/health"],
+          "success_criteria": "HTTP 200 with healthy=true.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "artifact-webui",
+          "description": "Web UI template server responds.",
+          "component": "frontend",
+          "type": "command",
+          "commands": ["curl -sSf http://127.0.0.1:5002/api/status"],
+          "success_criteria": "HTTP 200.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "artifact-syndicate",
+          "description": "Syndicate daemon scheduled.",
+          "component": "automation",
+          "type": "command",
+          "commands": ["python3 Artifact/syndicate/run.py --interval-min 15 --dry-run"],
+          "success_criteria": "Dry-run completes with no fatal errors.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "artifact-automata",
+          "description": "Automata social connectors ready.",
+          "component": "automation",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "All configured platforms show valid tokens and scheduled posts.",
+          "config_keys": [],
+          "dependencies": ["global-social"],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "qwen-state",
+          "description": "Qwen checkpoint state readable.",
+          "component": "model",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "Artifact/models/qwen/checkpoints/qwen_state.json accessible.",
+          "config_keys": [],
+          "dependencies": ["assets-qwen"],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "qwen-status",
+          "description": "Qwen trainer status ready.",
+          "component": "model",
+          "type": "command",
+          "commands": ["python3 Artifact/qwen_operational.py --status"],
+          "success_criteria": "Status shows ready/training.",
+          "config_keys": [],
+          "dependencies": ["qwen-state"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "qwen-training-data",
+          "description": "Qwen training data current.",
+          "component": "data",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "Artifact/data/training contains latest datasets.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "qwen-resources",
+          "description": "Compute available for LoRA fine-tune.",
+          "component": "infrastructure",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "GPU/CPU resources reserved if training scheduled.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "artifact-erp",
+          "description": "ERP integration credentials valid.",
+          "component": "integrations",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "Artifact/deployment/automata/erp_integrations/.env populated.",
+          "config_keys": ["ERP_*"],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "artifact-publishing",
+          "description": "Publishing endpoints reachable (Discord, Email, Social).",
+          "component": "communications",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "Each connector test ping succeeds.",
+          "config_keys": [],
+          "dependencies": ["global-smtp", "global-discord", "global-social"],
+          "editable": true,
+          "executable": false
+        }
+      ]
+    },
+    {
+      "id": "arty",
+      "name": "ARTY Autonomous Research Team",
+      "severity": "medium",
+      "tasks": [
+        {
+          "id": "arty-research-config",
+          "description": "Research `.env` and config populated.",
+          "component": "configuration",
+          "type": "config",
+          "commands": [],
+          "success_criteria": "Artifact/arty/research/.env + config.json filled.",
+          "config_keys": ["Artifact/arty/research/.env", "Artifact/arty/research/config.json"],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "arty-research-cycle",
+          "description": "Research cycle run succeeds.",
+          "component": "engine",
+          "type": "command",
+          "commands": ["cd Artifact/arty && npm run research:cycle"],
+          "success_criteria": "npm exits 0 and artifacts produced.",
+          "config_keys": [],
+          "dependencies": ["deps-arty"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "arty-storage",
+          "description": "SQLite + pgvector reachable.",
+          "component": "database",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "Store connection tests pass.",
+          "config_keys": [],
+          "dependencies": ["assets-arty-db"],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "arty-discord-config",
+          "description": "Discord bot tokens/config valid.",
+          "component": "communications",
+          "type": "config",
+          "commands": [],
+          "success_criteria": "Artifact/arty/discord/.env populated with bot token + guild.",
+          "config_keys": ["DISCORD_TOKEN"],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "arty-discord-commands",
+          "description": "Discord commands deployed.",
+          "component": "communications",
+          "type": "command",
+          "commands": ["cd Artifact/arty/discord && npm run deploy-commands"],
+          "success_criteria": "Deploy exits 0.",
+          "config_keys": [],
+          "dependencies": ["arty-discord-config"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "arty-discord-runtime",
+          "description": "Discord bot online.",
+          "component": "communications",
+          "type": "command",
+          "commands": ["cd Artifact/arty/discord && npm start"],
+          "success_criteria": "Bot logs show successful login.",
+          "config_keys": [],
+          "dependencies": ["arty-discord-commands"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "arty-linkedin-config",
+          "description": "LinkedIn credentials configured.",
+          "component": "communications",
+          "type": "config",
+          "commands": [],
+          "success_criteria": "Artifact/arty/linkedin/.env populated with API keys.",
+          "config_keys": ["LINKEDIN_ACCESS_TOKEN"],
+          "dependencies": [],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "arty-linkedin-scheduler",
+          "description": "LinkedIn scheduler running.",
+          "component": "communications",
+          "type": "command",
+          "commands": ["cd Artifact/arty/linkedin && npm start"],
+          "success_criteria": "Scheduler reports ready.",
+          "config_keys": [],
+          "dependencies": ["arty-linkedin-config"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "arty-linkedin-queue",
+          "description": "Publishing queue populated with research content.",
+          "component": "communications",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "Queue entries exist for next cycle.",
+          "config_keys": [],
+          "dependencies": ["arty-research-cycle"],
+          "editable": true,
+          "executable": false
+        }
+      ]
+    },
+    {
+      "id": "observability",
+      "name": "Observability, QA & Safety",
+      "severity": "high",
+      "tasks": [
+        {
+          "id": "observability-grafana",
+          "description": "Grafana dashboards live (port 3001).",
+          "component": "monitoring",
+          "type": "command",
+          "commands": ["curl -sSf http://127.0.0.1:3001/login"],
+          "success_criteria": "HTTP 200/302 response.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "observability-prometheus",
+          "description": "Prometheus scraping exporters (port 9090).",
+          "component": "monitoring",
+          "type": "command",
+          "commands": ["curl -sSf http://127.0.0.1:9090/-/ready"],
+          "success_criteria": "ready\n",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "observability-logs",
+          "description": "Log rotation functioning.",
+          "component": "logging",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "Log sizes within quota and rotation service enabled.",
+          "config_keys": [],
+          "dependencies": ["assets-logs"],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "observability-comm-tests",
+          "description": "SMTP + Discord tests executed.",
+          "component": "communications",
+          "type": "command",
+          "commands": ["python3 scripts/test_smtp_consensus.py --send-test-email --test-discord"],
+          "success_criteria": "Both tests exit 0.",
+          "config_keys": [],
+          "dependencies": ["global-smtp", "global-discord"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "observability-tests",
+          "description": "Sentinel & Legion integration tests pass.",
+          "component": "qa",
+          "type": "command",
+          "commands": [
+            "python3 SENTINEL/tests/test_sentinel.py",
+            "python3 LEGION/tests/test_legion_integration.py"
+          ],
+          "success_criteria": "Both commands exit 0.",
+          "config_keys": [],
+          "dependencies": ["sentinel-env", "legion-deps"],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "observability-syndicate",
+          "description": "Syndicate research outputs spot-checked.",
+          "component": "qa",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "Latest reports reviewed for accuracy.",
+          "config_keys": [],
+          "dependencies": ["artifact-syndicate"],
+          "editable": true,
+          "executable": false
+        },
+        {
+          "id": "observability-backups",
+          "description": "Backups taken (data/, logs/, Artifact/arty/store/, models/).",
+          "component": "resilience",
+          "type": "command",
+          "commands": ["./scripts/backup.sh"],
+          "success_criteria": "Backup artifacts timestamped in backups/.",
+          "config_keys": [],
+          "dependencies": [],
+          "editable": true,
+          "executable": true
+        },
+        {
+          "id": "observability-safety",
+          "description": "Kill/rollback procedures reviewed with on-call.",
+          "component": "resilience",
+          "type": "verify",
+          "commands": [],
+          "success_criteria": "On-call acknowledges current SOP.",
+          "config_keys": [],
+          "dependencies": ["sentinel-kill"],
+          "editable": true,
+          "executable": false
+        }
+      ]
+    }
+  ],
+  "launch_sequence": [
+    {
+      "order": 1,
+      "task_id": "launch-sentinel",
+      "description": "Start SENTINEL guardian.",
+      "command": "./scripts/start_sentinel.sh detached",
+      "blocking": true
+    },
+    {
+      "order": 2,
+      "task_id": "launch-start",
+      "description": "Start GLADIUS stack.",
+      "command": "./gladius.sh start",
+      "blocking": true
+    },
+    {
+      "order": 3,
+      "task_id": "launch-health",
+      "description": "Run health check.",
+      "command": "./gladius.sh health",
+      "blocking": true
+    },
+    {
+      "order": 4,
+      "task_id": "launch-cycle",
+      "description": "Optional single-cycle validation.",
+      "command": "./gladius.sh cycle",
+      "blocking": false
+    },
+    {
+      "order": 5,
+      "task_id": "launch-autonomous",
+      "description": "Optional autonomous mode.",
+      "command": "./gladius.sh autonomous",
+      "blocking": false
+    },
+    {
+      "order": 6,
+      "task_id": "launch-monitor",
+      "description": "Monitor Grafana + Sentinel for 10 minutes.",
+      "command": "observe dashboards",
+      "blocking": true
+    }
+  ]
+}

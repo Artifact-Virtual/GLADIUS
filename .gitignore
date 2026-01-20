@@ -199,3 +199,16 @@ obsidian_sync/gladius/.dev/todo.md
 # COPILOT SHARED BLUEBOARD (DEV NOTES)
 # ─────────────────────────────────────────────────────────────────────────────────
 obsidian_sync/gladius/.dev/todo.md
+LEGION/reporting/executive/*
+Artifact/research_outputs/index.json
+Artifact/research_outputs/index.json
+Artifact/research_outputs/*
+LEGION/business_intelligence/data/*
+LEGION/communication/data/*
+LEGION/strategy/data/*
+.gitignore
+LEGION/finance/data/*
+LEGION/operations/data/*
+LEGION/marketing/data/*
+arty/config.json
+Artifact/research_outputs/*

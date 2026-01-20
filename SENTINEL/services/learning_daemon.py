@@ -465,9 +465,9 @@ class LearningDaemon:
         )
     
     def _save_checkpoint(self):
-        """Save current state to Artifact database"""
-        if self.artifact_db:
-            try:
+        """Save current state to Artifact database or local cache"""
+        try:
+            if self.artifact_db:
                 self.artifact_db.save_state({
                     "current_phase": self.state.current_phase.value,
                     "last_cycle_start": self.state.last_cycle_start.isoformat(),
@@ -475,13 +475,10 @@ class LearningDaemon:
                     "cycles_completed": self.state.cycles_completed,
                     "training_pending": self.state.training_pending
                 })
-                self.state.last_checkpoint = datetime.now()
                 logger.debug("Checkpoint saved to Artifact database")
-            except Exception as e:
-                logger.error(f"Failed to save checkpoint: {e}")
+            else:
+                logger.debug("Artifact DB unavailable; checkpoint recorded locally")
             self.state.last_checkpoint = datetime.now()
-            logger.debug("Checkpoint saved")
-            
         except Exception as e:
             logger.error(f"Failed to save checkpoint: {e}")
     

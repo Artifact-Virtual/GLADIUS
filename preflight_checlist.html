@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Preflight Check</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&family=Space+Mono&display=swap"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #010208;
+        --surface: rgba(14, 19, 32, 0.9);
+        --surface-alt: rgba(24, 33, 57, 0.9);
+        --border: rgba(255, 255, 255, 0.06);
+        --accent: #a855f7;
+        --accent-strong: #c084fc;
+        --muted: #9ba4c7;
+        --text: #f8fbff;
+        --card-radius: 18px;
+        --transition: 220ms ease;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--text);
+        background: radial-gradient(circle at 20% 20%, rgba(128, 90, 213, 0.4), transparent 40%),
+          radial-gradient(circle at 80% 0%, rgba(14, 165, 233, 0.25), transparent 35%),
+          var(--bg);
+      }
+
+      header {
+        padding: 2.5rem clamp(1.5rem, 5vw, 4rem);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(16px);
+        background: linear-gradient(120deg, rgba(2, 8, 23, 0.9), rgba(2, 6, 23, 0.4));
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      header .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        color: var(--muted);
+        font-family: "Space Mono", monospace;
+        font-size: 0.9rem;
+      }
+
+      main {
+        padding: 1rem clamp(1.5rem, 5vw, 4rem) 4rem;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+        gap: 2rem;
+        align-items: start;
+      }
+
+      @media (max-width: 1100px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      section {
+        background: var(--surface);
+        border-radius: var(--card-radius);
+        border: 1px solid var(--border);
+        padding: 1.75rem;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 3rem);
+        letter-spacing: 0.05em;
+      }
+
+      h2 {
+        margin: 0 0 1.2rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        gap: 1.5rem;
+      }
+
+      .module-card {
+        border: 1px solid var(--border);
+        padding: 1.25rem;
+        border-radius: calc(var(--card-radius) - 6px);
+        background: var(--surface-alt);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .module-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0.15;
+        background: radial-gradient(circle at top right, var(--accent), transparent 60%);
+        pointer-events: none;
+      }
+
+      .module-card header {
+        padding: 0;
+        position: relative;
+        backdrop-filter: none;
+        border: none;
+        margin-bottom: 1rem;
+      }
+
+      .module-title {
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+      }
+
+      .progress-bar {
+        height: 6px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+        margin-top: 0.75rem;
+      }
+
+      .progress-bar span {
+        display: block;
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+        transition: width var(--transition);
+      }
+
+      .task-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 0.45rem;
+      }
+
+      .task {
+        display: flex;
+        gap: 0.65rem;
+        align-items: flex-start;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 0.85rem;
+        padding: 0.65rem 0.8rem;
+        border: 1px solid transparent;
+        transition: border var(--transition), background var(--transition);
+      }
+
+      .task:hover {
+        border-color: rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .task label {
+        cursor: pointer;
+        flex: 1;
+        line-height: 1.4;
+      }
+
+      .task small {
+        display: block;
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+
+      input[type="checkbox"] {
+        accent-color: var(--accent);
+        width: 1rem;
+        height: 1rem;
+        margin-top: 0.3rem;
+      }
+
+      .summary-panel {
+        position: sticky;
+        top: calc(4rem + 24px);
+        display: grid;
+        gap: 1.5rem;
+      }
+
+      .stat-board {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .stat {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.9rem 1.1rem;
+        border-radius: var(--card-radius);
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid var(--border);
+        font-family: "Space Mono", monospace;
+      }
+
+      .radial-progress {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto;
+        position: relative;
+      }
+
+      .radial-progress svg {
+        transform: rotate(-90deg);
+      }
+
+      .radial-progress circle {
+        fill: none;
+        stroke-width: 10;
+        stroke-linecap: round;
+      }
+
+      .radial-progress .bg {
+        stroke: rgba(255, 255, 255, 0.1);
+      }
+
+      .radial-progress .meter {
+        stroke: url(#grad);
+        stroke-dasharray: 440;
+        stroke-dashoffset: 440;
+        transition: stroke-dashoffset 600ms ease;
+      }
+
+      .radial-progress span {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      button {
+        border: none;
+        border-radius: 999px;
+        padding: 0.7rem 1.1rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text);
+        cursor: pointer;
+        transition: transform var(--transition), background var(--transition);
+      }
+
+      button.primary {
+        background: linear-gradient(120deg, var(--accent), var(--accent-strong));
+        color: #05060a;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+      }
+
+      .search {
+        width: 100%;
+        padding: 0.9rem 1.15rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(0, 0, 0, 0.4);
+        color: var(--text);
+        font-family: "Space Mono", monospace;
+      }
+
+      .search:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.3);
+      }
+
+      pre.mermaid {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: var(--card-radius);
+        padding: 0.5rem;
+        overflow: auto;
+      }
+
+      .timeline {
+        border-left: 2px solid rgba(255, 255, 255, 0.1);
+        margin-left: 0.5rem;
+        padding-left: 1rem;
+        display: grid;
+        gap: 1rem;
+      }
+
+      .timeline-item {
+        position: relative;
+        padding-left: 1.5rem;
+      }
+
+      .timeline-item::before {
+        content: attr(data-order);
+        position: absolute;
+        left: -2.5rem;
+        top: 0;
+        width: 1.8rem;
+        height: 1.8rem;
+        border-radius: 50%;
+        background: var(--accent);
+        color: #05060a;
+        display: grid;
+        place-items: center;
+        font-weight: 600;
+        font-size: 0.85rem;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.15rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+      }
+
+      .badge.critical {
+        border-color: rgba(248, 113, 113, 0.6);
+        color: #fca5a5;
+      }
+
+      .badge.high {
+        border-color: rgba(251, 191, 36, 0.6);
+        color: #fde68a;
+      }
+
+      .badge.medium {
+        border-color: rgba(34, 197, 94, 0.5);
+        color: #bbf7d0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Preflight Check</h1>
+      <div class="meta">
+        <span>Last Sync · 2026-01-20T18:16:16.549Z</span>
+        <span>Checklist version · 2.0</span>
+        <span>Operator Console · obsidian://Preflight</span>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <h2>Mission Checklist</h2>
+        <input class="search" id="searchField" placeholder="Filter tasks (e.g. 'SMTP', 'Qwen', 'Grafana')…" />
+        <div class="controls" style="margin-top: 1rem">
+          <button class="primary" id="markAllBtn">Mark all complete</button>
+          <button id="resetAllBtn">Reset checklist</button>
+          <button id="exportBtn">Export state</button>
+        </div>
+        <div class="grid" id="moduleGrid" style="margin-top: 1.5rem"></div>
+      </section>
+
+      <aside class="summary-panel">
+        <section>
+          <h2>Flight Status</h2>
+          <div class="radial-progress">
+            <svg viewBox="0 0 160 160">
+              <defs>
+                <linearGradient id="grad" gradientTransform="rotate(90)">
+                  <stop offset="0%" stop-color="#a855f7" />
+                  <stop offset="100%" stop-color="#22d3ee" />
+                </linearGradient>
+              </defs>
+              <circle class="bg" cx="80" cy="80" r="70"></circle>
+              <circle class="meter" cx="80" cy="80" r="70"></circle>
+            </svg>
+            <span id="overallPercent">0%</span>
+          </div>
+          <div class="stat-board">
+            <div class="stat">
+              <span>Modules</span>
+              <strong id="moduleCount">0</strong>
+            </div>
+            <div class="stat">
+              <span>Total tasks</span>
+              <strong id="taskCount">0</strong>
+            </div>
+            <div class="stat">
+              <span>Completed</span>
+              <strong id="doneCount">0</strong>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>System Map</h2>
+          <pre class="mermaid" id="systemMap">
+graph TD
+  root["GLADIUS Enterprise"]
+  root --> env["0 · Environment"]
+  root --> sentinel["1 · SENTINEL Guardian"]
+  root --> gladius["2 · GLADIUS Core"]
+  root --> legion["3 · LEGION Enterprise"]
+  root --> artifact["4 · Artifact Layer"]
+  root --> arty["5 · ARTY Workspace"]
+  root --> observability["6 · Observability"]
+
+  sentinel --> s1["Watchdog + Learning"]
+  sentinel --> s2["Process Guardian"]
+  sentinel --> s3["Threat Engine"]
+
+  gladius --> g1["Router · Tools"]
+  gladius --> g2["Models · Training"]
+  gladius --> g3["Interfaces"]
+
+  legion --> l1["Agent Orchestrator"]
+  legion --> l2["APIs + Dashboards"]
+  legion --> l3["Enterprise Data"]
+
+  artifact --> a1["Infra API · Automata"]
+  artifact --> a2["Qwen Operational"]
+  artifact --> a3["ERP + Publishing"]
+
+  arty --> ar1["Research Engine"]
+  arty --> ar2["Discord Bot"]
+  arty --> ar3["LinkedIn Automation"]
+
+  observability --> o1["Grafana"]
+  observability --> o2["Prometheus"]
+  observability --> o3["QA + Backups"]
+          </pre>
+        </section>
+
+        <section>
+          <h2>Launch Timeline</h2>
+          <div class="timeline" id="launchTimeline"></div>
+        </section>
+      </aside>
+    </main>
+
+    <script>
+      mermaid.initialize({ startOnLoad: true, theme: "dark" });
+
+      const CHECKLIST = {
+        generatedAt: "2026-01-20T18:16:16.549Z",
+        modules: [
+          {
+            id: "global",
+            name: "0 · Global Environment & Credentials",
+            severity: "critical",
+            tasks: [
+              { id: "global-clock", label: "Host clock synced (≤60 s skew).", meta: "timedatectl status" },
+              { id: "global-disk", label: "≥10 GB free under workspace.", meta: "df -h /home/adam/worxpace/gladius" },
+              { id: "global-env-validate", label: "`.env` copied + passes ./scripts/validate_env.sh" },
+              { id: "global-secrets", label: "SECRET_KEY / DASHBOARD / JWT / LEGION keys regenerated." },
+              { id: "global-smtp", label: "SMTP creds tested via scripts/test_smtp_consensus.py --send-test-email" },
+              { id: "global-discord", label: "Discord webhook + channel IDs configured and reachable." },
+              { id: "global-social", label: "Social tokens (Twitter, LinkedIn, FB, IG) valid." },
+              { id: "global-ollama", label: "Ollama / GGUF runtime reachable if fallback enabled." },
+              { id: "global-venv", label: ".venv exists and activates for shared scripts." },
+              { id: "global-git", label: "Repository state acknowledged (`git status -sb`)." }
+            ]
+          },
+          {
+            id: "deps",
+            name: "1 · Dependencies & Assets",
+            severity: "high",
+            tasks: [
+              { id: "deps-root", label: "pip install -r requirements.txt" },
+              { id: "deps-sentinel", label: "pip install -r SENTINEL/requirements.txt" },
+              { id: "deps-legion", label: "pip install -r LEGION/requirements.txt" },
+              { id: "deps-artifact", label: "pip install -r Artifact/deployment/requirements.txt" },
+              { id: "deps-gladius-train", label: "pip install -r GLADIUS/training/requirements.txt" },
+              { id: "deps-arty", label: "cd Artifact/arty && npm install" },
+              { id: "deps-legion-frontend", label: "cd LEGION && npm install" },
+              { id: "assets-gladius-models", label: "GLADIUS weights stored + checksums verified." },
+              { id: "assets-qwen", label: "Artifact/models/qwen contains latest checkpoints." },
+              { id: "assets-arty-db", label: "Arty store initialized (node init-databases.js)." },
+              { id: "assets-sqlite", label: "All SQLite DBs present & backed up." },
+              { id: "assets-logs", label: "logs/ directory writable." }
+            ]
+          },
+          {
+            id: "sentinel",
+            name: "2 · SENTINEL Guardian",
+            severity: "critical",
+            tasks: [
+              { id: "sentinel-env", label: "SENTINEL_ENABLED=true & kill password set." },
+              { id: "sentinel-targets", label: "Target definitions current (asas_cli target-list)." },
+              { id: "sentinel-constitution", label: "Constitutional files updated." },
+              { id: "sentinel-watchdog", label: "Watchdog PID alive (scripts/start_sentinel.sh status)." },
+              { id: "sentinel-daemon", label: "Learning daemon active (pgrep learning_daemon.py)." },
+              { id: "sentinel-guardian", label: "Process guardian tracking critical services." },
+              { id: "sentinel-threat", label: "Threat engine self-test passes." },
+              { id: "sentinel-kill", label: "Kill-switch dry-run verified." },
+              { id: "sentinel-cli-status", label: "asas_cli status clean." },
+              { id: "sentinel-cli-scan", label: "asas_cli scan --type full completed." },
+              { id: "sentinel-cli-targets", label: "asas_cli target-list reviewed." }
+            ]
+          },
+          {
+            id: "gladius",
+            name: "3 · GLADIUS Core",
+            severity: "high",
+            tasks: [
+              { id: "gladius-enabled", label: "GLADIUS_ENABLED=true." },
+              { id: "gladius-router", label: "Pattern router tests pass." },
+              { id: "gladius-growth", label: "Growth tracker accessible." },
+              { id: "gladius-weights", label: "Latest safetensors verified." },
+              { id: "gladius-datasets", label: "Training datasets accessible." },
+              { id: "gladius-gguf", label: "GGUF / Ollama export path configured (if needed)." },
+              { id: "gladius-interactive", label: "python GLADIUS/interactive.py --status" },
+              { id: "gladius-speak", label: "python GLADIUS/speak.py --ping" },
+              { id: "gladius-continuous", label: "python GLADIUS/continuous.py --dry-run" },
+              { id: "gladius-training", label: "python GLADIUS/training/gladius_1b_trainer.py --dry-run" }
+            ]
+          },
+          {
+            id: "legion",
+            name: "4 · LEGION Enterprise",
+            severity: "high",
+            tasks: [
+              { id: "legion-deps", label: "python LEGION/start_enterprise.py --check" },
+              { id: "legion-backend", label: "python LEGION/backend_api.py --health" },
+              { id: "legion-server", label: "python LEGION/server.py --health" },
+              { id: "legion-cli", label: "cd LEGION/legion && python cli.py system status" },
+              { id: "legion-db", label: "python LEGION/initialize_database_schema.py" },
+              { id: "legion-integrations", label: "Integration credentials validated." },
+              { id: "legion-rate-limiter", label: "Rate limiter policies current." },
+              { id: "legion-frontend", label: "npm run build (LEGION dashboards)." },
+              { id: "legion-assets", label: "`LEGION/public` contains fresh build artifacts." }
+            ]
+          },
+          {
+            id: "artifact",
+            name: "5 · Artifact Layer",
+            severity: "high",
+            tasks: [
+              { id: "artifact-infra", label: "Infra API reachable on port 7000." },
+              { id: "artifact-health", label: "Dashboard backend /health green." },
+              { id: "artifact-webui", label: "Web UI template server responds on 5002." },
+              { id: "artifact-syndicate", label: "Syndicate daemon configured (run.py --interval)." },
+              { id: "artifact-automata", label: "Automata social connectors ready." },
+              { id: "qwen-state", label: "Qwen state file readable." },
+              { id: "qwen-status", label: "python Artifact/qwen_operational.py --status" },
+              { id: "qwen-training-data", label: "Training data up to date." },
+              { id: "qwen-resources", label: "Compute available for LoRA ops." },
+              { id: "artifact-erp", label: "ERP integration credentials valid." },
+              { id: "artifact-publishing", label: "Publishing endpoints (Discord/Email/Social) reachable." }
+            ]
+          },
+          {
+            id: "arty",
+            name: "6 · ARTY Autonomous Research",
+            severity: "medium",
+            tasks: [
+              { id: "arty-research-config", label: "Artifact/arty/research configs populated." },
+              { id: "arty-research-cycle", label: "npm run research:cycle ok." },
+              { id: "arty-storage", label: "SQLite + pgvector reachable." },
+              { id: "arty-discord-config", label: "Discord bot config valid." },
+              { id: "arty-discord-commands", label: "Discord commands deployed." },
+              { id: "arty-discord-runtime", label: "Discord bot online." },
+              { id: "arty-linkedin-config", label: "LinkedIn credentials configured." },
+              { id: "arty-linkedin-scheduler", label: "LinkedIn scheduler running." },
+              { id: "arty-linkedin-queue", label: "Publishing queue populated with research content." }
+            ]
+          },
+          {
+            id: "observability",
+            name: "7 · Observability / QA / Safety",
+            severity: "high",
+            tasks: [
+              { id: "observability-grafana", label: "Grafana dashboards live (3001)." },
+              { id: "observability-prometheus", label: "Prometheus ready endpoint (9090)." },
+              { id: "observability-logs", label: "Log rotation confirmed." },
+              { id: "observability-comm-tests", label: "SMTP + Discord tests executed." },
+              { id: "observability-tests", label: "Sentinel + LEGION integration tests pass." },
+              { id: "observability-syndicate", label: "Syndicate outputs spot-checked." },
+              { id: "observability-backups", label: "Backups taken (data, logs, models, Arty store)." },
+              { id: "observability-safety", label: "Kill / rollback procedures reviewed with on-call." }
+            ]
+          }
+        ],
+        launchSequence: [
+          { id: "launch-sentinel", title: "Start Sentinel guardian", command: "./scripts/start_sentinel.sh detached", blocking: true },
+          { id: "launch-start", title: "Boot GLADIUS stack", command: "./gladius.sh start", blocking: true },
+          { id: "launch-health", title: "Health check", command: "./gladius.sh health", blocking: true },
+          { id: "launch-cycle", title: "Optional single cycle", command: "./gladius.sh cycle", blocking: false },
+          { id: "launch-autonomous", title: "Optional autonomous mode", command: "./gladius.sh autonomous", blocking: false },
+          { id: "launch-monitor", title: "Monitor Grafana + Sentinel (10 min)", command: "Observe dashboards", blocking: true }
+        ]
+      };
+
+      const STORAGE_KEY = "gladius_preflight_v2";
+      const state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+      const moduleGrid = document.getElementById("moduleGrid");
+      const moduleCount = document.getElementById("moduleCount");
+      const taskCount = document.getElementById("taskCount");
+      const doneCount = document.getElementById("doneCount");
+      const overallPercent = document.getElementById("overallPercent");
+      const meter = document.querySelector(".meter");
+      const searchField = document.getElementById("searchField");
+
+      const renderModules = () => {
+        moduleGrid.innerHTML = "";
+        CHECKLIST.modules.forEach((module) => {
+          const card = document.createElement("div");
+          card.className = "module-card";
+          card.dataset.moduleId = module.id;
+
+          const totalTasks = module.tasks.length;
+          const completed = module.tasks.filter((t) => state[t.id]).length;
+          const percent = Math.round((completed / totalTasks) * 100);
+
+          card.innerHTML = `
+            <header>
+              <div class="module-title">${module.name}</div>
+              <div class="badge ${module.severity}">${module.severity}</div>
+              <div class="progress-bar"><span style="width:${percent}%"></span></div>
+            </header>
+            <ul class="task-list">
+              ${module.tasks
+                .map(
+                  (task) => `
+                <li class="task">
+                  <input type="checkbox" id="${task.id}" data-task="${task.id}" ${state[task.id] ? "checked" : ""}>
+                  <label for="${task.id}">
+                    ${task.label}
+                    ${task.meta ? `<small>${task.meta}</small>` : ""}
+                  </label>
+                </li>`
+                )
+                .join("")}
+            </ul>
+          `;
+
+          moduleGrid.appendChild(card);
+        });
+      };
+
+      const updateStats = () => {
+        const totalTasks = CHECKLIST.modules.reduce((sum, module) => sum + module.tasks.length, 0);
+        const completed = Object.values(state).filter(Boolean).length;
+        const percent = totalTasks ? Math.round((completed / totalTasks) * 100) : 0;
+        moduleCount.textContent = CHECKLIST.modules.length;
+        taskCount.textContent = totalTasks;
+        doneCount.textContent = completed;
+        overallPercent.textContent = `${percent}%`;
+        meter.style.strokeDashoffset = 440 - (440 * percent) / 100;
+        document
+          .querySelectorAll(".module-card")
+          .forEach((card) => {
+            const module = CHECKLIST.modules.find((m) => m.id === card.dataset.moduleId);
+            const total = module.tasks.length;
+            const done = module.tasks.filter((t) => state[t.id]).length;
+            const pct = Math.round((done / total) * 100);
+            card.querySelector(".progress-bar span").style.width = `${pct}%`;
+          });
+      };
+
+      const persist = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+      const wireCheckboxes = () => {
+        document.querySelectorAll('input[type="checkbox"][data-task]').forEach((checkbox) => {
+          checkbox.addEventListener("change", (e) => {
+            state[e.target.dataset.task] = e.target.checked;
+            persist();
+            updateStats();
+          });
+        });
+      };
+
+      const renderLaunchTimeline = () => {
+        const timeline = document.getElementById("launchTimeline");
+        timeline.innerHTML = CHECKLIST.launchSequence
+          .map(
+            (step, index) => `
+            <div class="timeline-item" data-order="${index + 1}">
+              <div class="badge ${step.blocking ? "critical" : "medium"}">${step.blocking ? "Blocking" : "Optional"}</div>
+              <div style="font-weight:600;margin-top:0.3rem">${step.title}</div>
+              <small style="color:var(--muted);font-family:'Space Mono',monospace;">${step.command}</small>
+            </div>
+          `
+          )
+          .join("");
+      };
+
+      const applySearch = () => {
+        const query = searchField.value.toLowerCase().trim();
+        document.querySelectorAll(".task").forEach((taskEl) => {
+          const label = taskEl.textContent.toLowerCase();
+          taskEl.style.display = query && !label.includes(query) ? "none" : "";
+        });
+      };
+
+      document.getElementById("markAllBtn").addEventListener("click", () => {
+        CHECKLIST.modules.forEach((module) =>
+          module.tasks.forEach((task) => {
+            state[task.id] = true;
+            const checkbox = document.querySelector(`input[data-task="${task.id}"]`);
+            if (checkbox) checkbox.checked = true;
+          })
+        );
+        persist();
+        updateStats();
+      });
+
+      document.getElementById("resetAllBtn").addEventListener("click", () => {
+        Object.keys(state).forEach((key) => delete state[key]);
+        document.querySelectorAll('input[type="checkbox"][data-task]').forEach((checkbox) => (checkbox.checked = false));
+        persist();
+        updateStats();
+      });
+
+      document.getElementById("exportBtn").addEventListener("click", () => {
+        const payload = {
+          generatedAt: CHECKLIST.generatedAt,
+          exportedAt: new Date().toISOString(),
+          status: state
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `gladius_preflight_state_${Date.now()}.json`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      });
+
+      searchField.addEventListener("input", applySearch);
+
+      renderModules();
+      wireCheckboxes();
+      renderLaunchTimeline();
+      updateStats();
+    </script>
+  </body>
+</html>

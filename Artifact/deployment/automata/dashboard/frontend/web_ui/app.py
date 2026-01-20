@@ -18,6 +18,13 @@ from flask_socketio import SocketIO, emit
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+# Ensure Syndicate db manager is importable
+SYNDICATE_ROOT = Path(__file__).resolve().parents[5] / "syndicate"
+if SYNDICATE_ROOT.exists():
+    sys.path.insert(0, str(SYNDICATE_ROOT))
+else:
+    raise FileNotFoundError(f"Syndicate directory not found at {SYNDICATE_ROOT}")
+
 from db_manager import get_db
 
 # Initialize Flask app

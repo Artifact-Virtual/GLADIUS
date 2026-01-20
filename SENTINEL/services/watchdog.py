@@ -78,6 +78,7 @@ class Watchdog:
     
     def __init__(self, config_path: Optional[str] = None):
         self.base_path = Path(__file__).parent
+        self.gladius_root = self.base_path.parents[1]
         self.config_path = config_path or self.base_path / "config" / "watchdog_config.json"
         
         # Managed processes
@@ -129,6 +130,14 @@ class Watchdog:
         
         return default_config
     
+    def _expand_value(self, value: Any) -> Any:
+        """Expand template variables in config values"""
+        if isinstance(value, str):
+            return value.replace("${GLADIUS_ROOT}", str(self.gladius_root))
+        if isinstance(value, list):
+            return [self._expand_value(v) for v in value]
+        return value
+
     def _init_processes(self):
         """Initialize managed processes from config"""
         for proc_config in self.config.get("processes", []):
@@ -136,10 +145,14 @@ class Watchdog:
             if not name:
                 continue
             
+            raw_command = proc_config.get("command", [])
+            command = self._expand_value(raw_command)
+            working_dir = self._expand_value(proc_config.get("working_dir", str(self.base_path.parent)))
+            
             self.processes[name] = ManagedProcess(
                 name=name,
-                command=proc_config.get("command", []),
-                working_dir=proc_config.get("working_dir", str(self.base_path.parent)),
+                command=command,
+                working_dir=working_dir,
                 state=ProcessState.STOPPED,
                 pid=None,
                 restart_count=0,
