@@ -479,11 +479,7 @@ class LearningDaemon:
                 logger.debug("Checkpoint saved to Artifact database")
             except Exception as e:
                 logger.error(f"Failed to save checkpoint: {e}")
-            self.state.last_checkpoint = datetime.now()
-            logger.debug("Checkpoint saved")
-            
-        except Exception as e:
-            logger.error(f"Failed to save checkpoint: {e}")
+                self.state.last_checkpoint = datetime.now()
     
     def verify_kill_password(self, password: str) -> bool:
         """Verify the kill password"""
