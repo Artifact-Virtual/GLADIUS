@@ -151,8 +151,8 @@ async def test_tool_execution():
     print("-" * 80)
     
     # Test workspace file operations
+    temp_dir = Path(tempfile.mkdtemp())
     try:
-        temp_dir = Path(tempfile.mkdtemp())
         test_file = temp_dir / "test.txt"
         test_content = "GLADIUS test content"
         
@@ -184,6 +184,11 @@ async def test_tool_execution():
         
     except Exception as e:
         test_fail("Execution", "File Operations", str(e))
+    finally:
+        # Ensure cleanup even if exception occurs
+        import shutil
+        if temp_dir.exists():
+            shutil.rmtree(temp_dir)
 
 
 # ============================================================================
@@ -508,9 +513,12 @@ async def test_database_operations():
     print("\n🗄️  Database Operations Tests")
     print("-" * 80)
     
+    # Create test database using secure temp file
+    fd, test_db_path = tempfile.mkstemp(suffix=".db")
+    test_db = Path(test_db_path)
+    
     try:
-        # Create test database
-        test_db = Path(tempfile.mktemp(suffix=".db"))
+        os.close(fd)  # Close the file descriptor
         
         conn = sqlite3.connect(test_db)
         cursor = conn.cursor()
@@ -575,6 +583,10 @@ async def test_database_operations():
         
     except Exception as e:
         test_fail("Database", "Operations Error", str(e))
+    finally:
+        # Ensure cleanup even if exception occurs
+        if test_db.exists():
+            test_db.unlink()
 
 
 async def test_memory_management():

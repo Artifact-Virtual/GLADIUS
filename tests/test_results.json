@@ -48,17 +48,17 @@
     {
       "category": "Routing",
       "name": "Query: 'read file config.json...'",
-      "msg": "Routed to read_file (0.35ms)"
+      "msg": "Routed to read_file (0.28ms)"
     },
     {
       "category": "Routing",
       "name": "Query: 'list files in /tmp...'",
-      "msg": "Routed to list_dir (0.34ms)"
+      "msg": "Routed to list_dir (0.36ms)"
     },
     {
       "category": "Routing",
       "name": "Query: 'remember that the API key is x...'",
-      "msg": "Routed to remember (0.27ms)"
+      "msg": "Routed to remember (0.26ms)"
     },
     {
       "category": "Routing",
@@ -128,7 +128,7 @@
     {
       "category": "Learning",
       "name": "Checkpoint Save",
-      "msg": "Cycle 2 persisted"
+      "msg": "Cycle 5 persisted"
     },
     {
       "category": "Knowledge",
@@ -394,6 +394,6 @@
       "msg": "0.50 for simple query"
     }
   ],
-  "start_time": "2026-01-20T17:34:13.205456",
-  "end_time": "2026-01-20T17:34:13.356435"
+  "start_time": "2026-01-20T17:36:07.241011",
+  "end_time": "2026-01-20T17:36:07.398890"
 }
