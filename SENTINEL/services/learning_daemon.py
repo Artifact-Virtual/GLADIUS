@@ -476,12 +476,12 @@ class LearningDaemon:
                     "training_pending": self.state.training_pending
                 })
                 logger.debug("Checkpoint saved to Artifact database")
-            else:
-                logger.debug("Artifact DB unavailable; checkpoint recorded locally")
-            self.state.last_checkpoint = datetime.now()
-        except Exception as e:
-            logger.error(f"Failed to save checkpoint: {e}")
-    
+              else:
+                  logger.debug("Artifact DB unavailable; checkpoint recorded locally")
+              # Update last checkpoint timestamp regardless of storage location
+              self.state.last_checkpoint = datetime.now()
+          except Exception as e:
+              logger.error(f"Failed to save checkpoint: {e}")
     def verify_kill_password(self, password: str) -> bool:
         """Verify the kill password"""
         stored_hash = os.getenv(self.KILL_PASSWORD_ENV)
