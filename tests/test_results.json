@@ -1,0 +1,399 @@
+{
+  "passed": [
+    {
+      "category": "Tools",
+      "name": "Router Init",
+      "msg": "Router initialized successfully"
+    },
+    {
+      "category": "Tools",
+      "name": "Pattern Discovery",
+      "msg": "Found 7 tool patterns"
+    },
+    {
+      "category": "Tools",
+      "name": "Tool: search",
+      "msg": "Pattern available"
+    },
+    {
+      "category": "Tools",
+      "name": "Tool: read_file",
+      "msg": "Pattern available"
+    },
+    {
+      "category": "Tools",
+      "name": "Tool: list_dir",
+      "msg": "Pattern available"
+    },
+    {
+      "category": "Tools",
+      "name": "Tool: remember",
+      "msg": "Pattern available"
+    },
+    {
+      "category": "Tools",
+      "name": "Tool: recall",
+      "msg": "Pattern available"
+    },
+    {
+      "category": "Tools",
+      "name": "Tool: get_context",
+      "msg": "Pattern available"
+    },
+    {
+      "category": "Routing",
+      "name": "Query: 'search for gold prices...'",
+      "msg": "Routed to search (0.10ms)"
+    },
+    {
+      "category": "Routing",
+      "name": "Query: 'read file config.json...'",
+      "msg": "Routed to read_file (0.28ms)"
+    },
+    {
+      "category": "Routing",
+      "name": "Query: 'list files in /tmp...'",
+      "msg": "Routed to list_dir (0.36ms)"
+    },
+    {
+      "category": "Routing",
+      "name": "Query: 'remember that the API key is x...'",
+      "msg": "Routed to remember (0.26ms)"
+    },
+    {
+      "category": "Routing",
+      "name": "Query: 'recall what you know about gol...'",
+      "msg": "Routed to recall (0.21ms)"
+    },
+    {
+      "category": "Execution",
+      "name": "Write File",
+      "msg": "Created test.txt"
+    },
+    {
+      "category": "Execution",
+      "name": "Read File",
+      "msg": "Content matches"
+    },
+    {
+      "category": "Execution",
+      "name": "List Directory",
+      "msg": "Found 1 file(s)"
+    },
+    {
+      "category": "Execution",
+      "name": "Cleanup",
+      "msg": "Temporary files removed"
+    },
+    {
+      "category": "Discovery",
+      "name": "Researcher Init",
+      "msg": "WebResearcher initialized"
+    },
+    {
+      "category": "Discovery",
+      "name": "Keywords",
+      "msg": "Ready to search 3 topics"
+    },
+    {
+      "category": "Discovery",
+      "name": "arXiv Integration",
+      "msg": "Method available"
+    },
+    {
+      "category": "Discovery",
+      "name": "GitHub Integration",
+      "msg": "Method available"
+    },
+    {
+      "category": "Discovery",
+      "name": "Cleanup",
+      "msg": "Researcher closed"
+    },
+    {
+      "category": "Learning",
+      "name": "Daemon Init",
+      "msg": "LearningDaemon initialized"
+    },
+    {
+      "category": "Learning",
+      "name": "State Database",
+      "msg": "Artifact DB adapter available"
+    },
+    {
+      "category": "Learning",
+      "name": "State Load",
+      "msg": "Phase: idle"
+    },
+    {
+      "category": "Learning",
+      "name": "Checkpoint Save",
+      "msg": "Cycle 5 persisted"
+    },
+    {
+      "category": "Knowledge",
+      "name": "Storage Backend",
+      "msg": "Artifact DB available"
+    },
+    {
+      "category": "Knowledge",
+      "name": "Load State",
+      "msg": "State retrieved successfully"
+    },
+    {
+      "category": "Knowledge",
+      "name": "Store & Retrieve",
+      "msg": "Data persisted successfully"
+    },
+    {
+      "category": "Inference",
+      "name": "Complex Query",
+      "msg": "'I need to find information about gold pr...' -> search (0.50 confidence)"
+    },
+    {
+      "category": "Inference",
+      "name": "Complex Query",
+      "msg": "'Search the database for recent transacti...' -> search (0.50 confidence)"
+    },
+    {
+      "category": "Inference",
+      "name": "Complex Query",
+      "msg": "'Look up the file config.json and tell me...' -> search (0.50 confidence)"
+    },
+    {
+      "category": "Inference",
+      "name": "Response Speed",
+      "msg": "0.00ms"
+    },
+    {
+      "category": "Context",
+      "name": "Statistics",
+      "msg": "Tracking 0 calls"
+    },
+    {
+      "category": "Context",
+      "name": "Ollama Fallback",
+      "msg": "Enabled"
+    },
+    {
+      "category": "Context",
+      "name": "Pattern Fallback",
+      "msg": "Enabled"
+    },
+    {
+      "category": "Actionability",
+      "name": "Tool Name",
+      "msg": "Provided: search"
+    },
+    {
+      "category": "Actionability",
+      "name": "Arguments",
+      "msg": "Provided: 2 args"
+    },
+    {
+      "category": "Actionability",
+      "name": "Source",
+      "msg": "Routing source: fallback"
+    },
+    {
+      "category": "Workspace",
+      "name": "Create Directory",
+      "msg": "Created data"
+    },
+    {
+      "category": "Workspace",
+      "name": "Create File",
+      "msg": "Created test.json"
+    },
+    {
+      "category": "Workspace",
+      "name": "Read File",
+      "msg": "Data verified"
+    },
+    {
+      "category": "Workspace",
+      "name": "List Files",
+      "msg": "Found 1 file(s)"
+    },
+    {
+      "category": "Workspace",
+      "name": "Modify File",
+      "msg": "Modification successful"
+    },
+    {
+      "category": "Workspace",
+      "name": "Delete File",
+      "msg": "Deletion successful"
+    },
+    {
+      "category": "Workspace",
+      "name": "Cleanup",
+      "msg": "Test workspace removed"
+    },
+    {
+      "category": "Database",
+      "name": "Create Table",
+      "msg": "Table created"
+    },
+    {
+      "category": "Database",
+      "name": "Insert Data",
+      "msg": "Record inserted"
+    },
+    {
+      "category": "Database",
+      "name": "Query Data",
+      "msg": "Record retrieved successfully"
+    },
+    {
+      "category": "Database",
+      "name": "Update Data",
+      "msg": "Record updated"
+    },
+    {
+      "category": "Database",
+      "name": "Delete Data",
+      "msg": "Record deleted"
+    },
+    {
+      "category": "Database",
+      "name": "Cleanup",
+      "msg": "Test database removed"
+    },
+    {
+      "category": "Memory",
+      "name": "State Persistence",
+      "msg": "State persisted across instances"
+    },
+    {
+      "category": "Memory",
+      "name": "Storage Backend",
+      "msg": "Artifact DB adapter available"
+    },
+    {
+      "category": "Memory",
+      "name": "State Structure",
+      "msg": "All required fields present"
+    },
+    {
+      "category": "Integration",
+      "name": "Bridge Init",
+      "msg": "ArtifactBridge initialized"
+    },
+    {
+      "category": "Integration",
+      "name": "Discovery",
+      "msg": "Found 9 integrations"
+    },
+    {
+      "category": "Integration",
+      "name": "Platform: discord",
+      "msg": "Available"
+    },
+    {
+      "category": "Integration",
+      "name": "Platform: twitter",
+      "msg": "Available"
+    },
+    {
+      "category": "Integration",
+      "name": "Platform: linkedin",
+      "msg": "Available"
+    },
+    {
+      "category": "Integration",
+      "name": "Platform: facebook",
+      "msg": "Available"
+    },
+    {
+      "category": "Integration",
+      "name": "Platform: instagram",
+      "msg": "Available"
+    },
+    {
+      "category": "Integration",
+      "name": "Platform: youtube",
+      "msg": "Available"
+    },
+    {
+      "category": "Integration",
+      "name": "Platform: erp",
+      "msg": "Available"
+    },
+    {
+      "category": "Integration",
+      "name": "Platform: publishing",
+      "msg": "Available"
+    },
+    {
+      "category": "Integration",
+      "name": "Platform: gladius",
+      "msg": "Available"
+    },
+    {
+      "category": "Integration",
+      "name": "GLADIUS Router",
+      "msg": "Connected"
+    },
+    {
+      "category": "Workflow",
+      "name": "Query Parsing",
+      "msg": "Parsed: 'search for gold market analysis'"
+    },
+    {
+      "category": "Workflow",
+      "name": "Tool Selection",
+      "msg": "Selected: search"
+    },
+    {
+      "category": "Workflow",
+      "name": "Argument Extraction",
+      "msg": "Args: {'query': 'gold market analysis', 'k': 5}"
+    },
+    {
+      "category": "Workflow",
+      "name": "Tool Execution",
+      "msg": "Execution simulated successfully"
+    },
+    {
+      "category": "Workflow",
+      "name": "Response Time",
+      "msg": "0.01ms"
+    },
+    {
+      "category": "Recovery",
+      "name": "Invalid Query",
+      "msg": "Handled gracefully"
+    },
+    {
+      "category": "Recovery",
+      "name": "Nonsense Query",
+      "msg": "Fallback activated"
+    },
+    {
+      "category": "Recovery",
+      "name": "Post-Error Recovery",
+      "msg": "Router still functional"
+    },
+    {
+      "category": "Continuous",
+      "name": "Sequential Operations",
+      "msg": "5/5 successful (100.0%)"
+    },
+    {
+      "category": "Continuous",
+      "name": "Call Tracking",
+      "msg": "5 calls tracked"
+    }
+  ],
+  "failed": [],
+  "warnings": [
+    {
+      "category": "Inference",
+      "name": "Confidence Medium",
+      "msg": "0.50 for simple query"
+    }
+  ],
+  "start_time": "2026-01-20T17:36:07.241011",
+  "end_time": "2026-01-20T17:36:07.398890"
+}
