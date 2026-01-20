@@ -20,5 +20,24 @@
   ],
   "ready_for_execution": true,
   "message_composed": true,
-  "integration_understood": true
+  "integration_understood": true,
+  "final_execution": {
+    "completed": true,
+    "all_phases": [
+      "Discovery",
+      "Investigation",
+      "Composition",
+      "Configuration",
+      "Execution"
+    ],
+    "result": {
+      "success": true,
+      "message": "Email saved to /home/runner/work/GLADIUS/GLADIUS/tests/emails/email_20260120_210454.json",
+      "mode": "simulation",
+      "file": "/home/runner/work/GLADIUS/GLADIUS/tests/emails/email_20260120_210454.json",
+      "html_file": "/home/runner/work/GLADIUS/GLADIUS/tests/emails/email_20260120_210454.html",
+      "timestamp": "2026-01-20T21:04:54.606568"
+    },
+    "timestamp": "2026-01-20T21:04:54.606769"
+  }
 }
