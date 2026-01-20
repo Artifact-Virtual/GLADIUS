@@ -95,7 +95,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('--server', default=DEFAULT_SERVER)
     p.add_argument('--username', default='admin')
-    p.add_argument('--password', default='devpass')
+    p.add_argument('--password', required=True, help='Dashboard password (required for security - do not use defaults)')
     p.add_argument('--store-dir', default=str(Path(__file__).parent.parent / 'arty' / 'store'))
     p.add_argument('--out-dir', default=str(DEFAULT_OUT))
     p.add_argument('--run-ingest', action='store_true')

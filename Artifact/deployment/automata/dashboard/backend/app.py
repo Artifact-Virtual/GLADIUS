@@ -28,8 +28,15 @@ from automata.core.manager import EnterpriseManager
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('DASHBOARD_SECRET_KEY', 'dev-secret-key-change-in-production')
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'jwt-secret-key-change-in-production')
+
+# Security: All secret keys must be set via environment variables - no defaults allowed
+required_keys = ['DASHBOARD_SECRET_KEY', 'JWT_SECRET_KEY']
+missing_keys = [key for key in required_keys if key not in os.environ]
+if missing_keys:
+    raise ValueError(f"Required environment variables not set: {', '.join(missing_keys)}. Add to .env file for security.")
+
+app.config['SECRET_KEY'] = os.environ['DASHBOARD_SECRET_KEY']
+app.config['JWT_SECRET_KEY'] = os.environ['JWT_SECRET_KEY']
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 
 # Enable CORS for all routes
@@ -86,8 +93,10 @@ def login():
     if dev_allowed:
         try:
             data = request.get_json() or {}
-            dev_pw = os.getenv('DASHBOARD_DEV_PASSWORD', 'devpass')
-            if data.get('password') == dev_pw:
+            dev_pw = os.getenv('DASHBOARD_DEV_PASSWORD')
+            if not dev_pw:
+                logger.warning("DASHBOARD_ALLOW_DEV_LOGIN is enabled but DASHBOARD_DEV_PASSWORD not set")
+            elif data.get('password') == dev_pw:
                 access_token = create_access_token(identity=admin_username)
                 return jsonify({'success': True, 'access_token': access_token, 'username': admin_username}), 200
         except Exception:
