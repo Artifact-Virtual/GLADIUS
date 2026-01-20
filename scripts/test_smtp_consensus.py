@@ -13,16 +13,15 @@ import asyncio
 import argparse
 from pathlib import Path
 
-# Add project paths
+# Add project paths - dynamically detect the project root
 SCRIPT_DIR = Path(__file__).parent
 PROJECT_ROOT = SCRIPT_DIR.parent
-GLADIUS_MAIN = Path("/home/adam/worxpace/gladius")
 
 sys.path.insert(0, str(PROJECT_ROOT / "Artifact" / "syndicate" / "src"))
 
-# Load .env
+# Load .env from project root
 from dotenv import load_dotenv
-load_dotenv(GLADIUS_MAIN / ".env")
+load_dotenv(PROJECT_ROOT / ".env")
 
 
 def test_smtp_config():

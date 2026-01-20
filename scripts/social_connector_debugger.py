@@ -21,18 +21,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
-# Add project paths
+# Add project paths - dynamically detect the project root
 SCRIPT_DIR = Path(__file__).parent
 PROJECT_ROOT = SCRIPT_DIR.parent
 AUTOMATA_DIR = PROJECT_ROOT / "Artifact" / "deployment" / "automata"
-GLADIUS_MAIN = Path("/home/adam/worxpace/gladius")
 
 sys.path.insert(0, str(AUTOMATA_DIR))
 sys.path.insert(0, str(PROJECT_ROOT / "Artifact" / "deployment"))
 
-# Load .env from main gladius directory
+# Load .env from project root
 from dotenv import load_dotenv
-load_dotenv(GLADIUS_MAIN / ".env")
+load_dotenv(PROJECT_ROOT / ".env")
 
 # Configure logging
 logging.basicConfig(

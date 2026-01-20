@@ -48,7 +48,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('--server', default=DEFAULT_SERVER)
     p.add_argument('--username', default='admin')
-    p.add_argument('--password', default='devpass')
+    p.add_argument('--password', required=True, help='Dashboard password (required for security - do not use defaults)')
     p.add_argument('--platform', default='LinkedIn')
     p.add_argument('--topic', default='Recent market insights')
     p.add_argument('--content-type', default='article')

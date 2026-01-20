@@ -22,7 +22,10 @@ from db_manager import get_db
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'syndicate-secret-key-change-in-production')
+# Security: SECRET_KEY must be set via environment variable - no default allowed
+if 'SECRET_KEY' not in os.environ:
+    raise ValueError("SECRET_KEY environment variable must be set for security. Add to .env file.")
+app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 app.config['JSON_SORT_KEYS'] = False
 
 # Initialize SocketIO for real-time updates
