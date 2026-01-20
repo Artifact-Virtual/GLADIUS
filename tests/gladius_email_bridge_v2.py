@@ -16,6 +16,7 @@ import sys
 import json
 import smtplib
 import ssl
+import requests
 from pathlib import Path
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -23,6 +24,7 @@ from email.header import Header
 from email.utils import formataddr
 from datetime import datetime
 from typing import Dict, Any, Optional
+import html
 
 # Setup paths
 GLADIUS_ROOT = Path(__file__).parent.parent
@@ -46,13 +48,14 @@ class GladiusEmailBridgeV2:
     - test: Validate and log without sending
     """
     
-    def __init__(self, mode: str = "auto"):
+    def __init__(self, mode: str = "auto", discord_webhook: Optional[str] = None):
         """
         Initialize email bridge.
         
         Args:
             mode: Execution mode - 'live', 'simulation', 'test', or 'auto'
                   'auto' will use live if credentials available, else simulation
+            discord_webhook: Optional Discord webhook URL to forward emails to
         """
         # Load SMTP configuration from environment
         self.smtp_host = os.getenv("SMTP_HOST", "smtp.hostinger.com")
@@ -62,6 +65,9 @@ class GladiusEmailBridgeV2:
         self.from_email = os.getenv("FROM_EMAIL", os.getenv("SMTP_USER", "gladius@artifactvirtual.com"))
         self.sender_name = "GLADIUS AI System"
         
+        # Discord webhook configuration
+        self.discord_webhook = discord_webhook or os.getenv("DISCORD_WEBHOOK_URL", "")
+        
         # Determine execution mode
         if mode == "auto":
             self.mode = "live" if self._has_credentials() else "simulation"
@@ -69,6 +75,8 @@ class GladiusEmailBridgeV2:
             self.mode = mode
         
         print(f"✓ GladiusEmailBridge initialized in '{self.mode}' mode")
+        if self.discord_webhook:
+            print(f"✓ Discord webhook forwarding enabled")
     
     def _has_credentials(self) -> bool:
         """Check if SMTP credentials are configured"""
@@ -225,9 +233,93 @@ class GladiusEmailBridgeV2:
             "content": content
         }
     
+    def _forward_to_discord(self, to_email: str, subject: str, content: str) -> Dict[str, Any]:
+        """
+        Forward email content to Discord webhook.
+        
+        This trains GLADIUS for Discord integration and allows
+        receiving responses for further learning.
+        
+        Args:
+            to_email: Original recipient
+            subject: Email subject
+            content: Email body (HTML)
+            
+        Returns:
+            Dict with success status and message
+        """
+        if not self.discord_webhook:
+            return {"success": False, "message": "No Discord webhook configured"}
+        
+        try:
+            # Convert HTML to plain text for Discord (strip tags)
+            import re
+            text_content = re.sub('<[^<]+?>', '', content)
+            # Clean up extra whitespace
+            text_content = '\n'.join(line.strip() for line in text_content.split('\n') if line.strip())
+            
+            # Limit to Discord's 2000 character limit for embed description
+            # Use multiple embeds if needed
+            max_length = 1900  # Leave room for formatting
+            
+            # Create Discord embed
+            embed = {
+                "title": f"📧 {subject}",
+                "description": f"**To:** {to_email}\n**From:** GLADIUS AI System\n\n",
+                "color": 6750207,  # Purple color
+                "timestamp": datetime.now().isoformat(),
+                "footer": {
+                    "text": "GLADIUS Autonomous Learning System"
+                }
+            }
+            
+            # Add content in chunks if needed
+            if len(text_content) > max_length:
+                # First embed with beginning
+                embed["description"] += text_content[:max_length] + "\n\n*[Content truncated - see files for full message]*"
+                embeds = [embed]
+            else:
+                embed["description"] += text_content
+                embeds = [embed]
+            
+            # Prepare Discord payload
+            payload = {
+                "content": f"🎯 **GLADIUS Autonomous Learning Complete**\nEmail drafted and ready for review.",
+                "embeds": embeds,
+                "username": "GLADIUS AI"
+            }
+            
+            # Send to Discord
+            response = requests.post(
+                self.discord_webhook,
+                json=payload,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if response.status_code in [200, 204]:
+                print(f"✅ Email forwarded to Discord successfully!")
+                return {
+                    "success": True,
+                    "message": "Email forwarded to Discord",
+                    "webhook": "Discord webhook",
+                    "timestamp": datetime.now().isoformat()
+                }
+            else:
+                print(f"⚠️  Discord webhook returned status {response.status_code}")
+                return {
+                    "success": False,
+                    "message": f"Discord webhook error: {response.status_code}",
+                    "response": response.text[:200]
+                }
+                
+        except Exception as e:
+            print(f"❌ Discord forwarding error: {e}")
+            return {"success": False, "message": f"Discord error: {e}"}
+    
     def send_email(self, to_email: str, subject: str, content: str, cc_email: Optional[str] = None) -> Dict[str, Any]:
         """
         Send an email using configured mode.
+        Also forwards to Discord webhook if configured.
         
         Args:
             to_email: Recipient email address
@@ -239,14 +331,24 @@ class GladiusEmailBridgeV2:
             Dict with success status and message
         """
         
+        # Send via primary mode
         if self.mode == "live":
-            return self._send_live(to_email, subject, content, cc_email)
+            result = self._send_live(to_email, subject, content, cc_email)
         elif self.mode == "simulation":
-            return self._send_simulation(to_email, subject, content, cc_email)
+            result = self._send_simulation(to_email, subject, content, cc_email)
         elif self.mode == "test":
-            return self._send_test(to_email, subject, content, cc_email)
+            result = self._send_test(to_email, subject, content, cc_email)
         else:
-            return {"success": False, "message": f"Unknown mode: {self.mode}"}
+            result = {"success": False, "message": f"Unknown mode: {self.mode}"}
+        
+        # Also forward to Discord if webhook is configured
+        if self.discord_webhook and result.get("success"):
+            discord_result = self._forward_to_discord(to_email, subject, content)
+            result["discord_forwarded"] = discord_result.get("success", False)
+            if discord_result.get("success"):
+                print(f"📱 Email also sent to Discord for training")
+        
+        return result
     
     def _send_live(self, to_email: str, subject: str, content: str, cc_email: Optional[str] = None) -> Dict[str, Any]:
         """Send email via SMTP"""
@@ -382,7 +484,7 @@ class GladiusEmailBridgeV2:
         return result
 
 
-def execute_autonomous_learning():
+def execute_autonomous_learning(discord_webhook: Optional[str] = None):
     """
     Execute GLADIUS autonomous learning with upgraded system.
     
@@ -391,7 +493,10 @@ def execute_autonomous_learning():
     2. Investigation
     3. Composition
     4. Configuration
-    5. Execution (now with fallback modes)
+    5. Execution (now with fallback modes and Discord forwarding)
+    
+    Args:
+        discord_webhook: Optional Discord webhook URL for forwarding emails
     """
     
     print("\n" + "="*80)
@@ -400,8 +505,12 @@ def execute_autonomous_learning():
     
     print("🎯 Objective: Send status update via autonomous discovery\n")
     
-    # Create the upgraded bridge
-    bridge = GladiusEmailBridgeV2(mode="auto")
+    # Default Discord webhook if not provided
+    if discord_webhook is None:
+        discord_webhook = "https://discord.com/api/webhooks/1463278624281989152/TgZH97Ilas36yYlbLQRwPf7o3Tnsf83XrrVLMxx9ECVRlx8JhrTqVxzFEw5Yx0iUrpcX"
+    
+    # Create the upgraded bridge with Discord forwarding
+    bridge = GladiusEmailBridgeV2(mode="auto", discord_webhook=discord_webhook)
     
     print("\n📋 Learning Phases:")
     print("  ✅ Phase 1: Discovery (Legion email integration found)")
@@ -428,6 +537,10 @@ def execute_autonomous_learning():
         
         print(f"📧 Email execution mode: {result['mode']}")
         print(f"📅 Timestamp: {result['timestamp']}")
+        
+        if result.get('discord_forwarded'):
+            print(f"📱 Discord: Forwarded to webhook ✓")
+            print(f"   Training GLADIUS for Discord integration")
         
         if result['mode'] == 'simulation':
             print(f"\n📄 Email saved for review:")

@@ -32,12 +32,13 @@
     ],
     "result": {
       "success": true,
-      "message": "Email saved to /home/runner/work/GLADIUS/GLADIUS/tests/emails/email_20260120_210454.json",
+      "message": "Email saved to /home/runner/work/GLADIUS/GLADIUS/tests/emails/email_20260120_211436.json",
       "mode": "simulation",
-      "file": "/home/runner/work/GLADIUS/GLADIUS/tests/emails/email_20260120_210454.json",
-      "html_file": "/home/runner/work/GLADIUS/GLADIUS/tests/emails/email_20260120_210454.html",
-      "timestamp": "2026-01-20T21:04:54.606568"
+      "file": "/home/runner/work/GLADIUS/GLADIUS/tests/emails/email_20260120_211436.json",
+      "html_file": "/home/runner/work/GLADIUS/GLADIUS/tests/emails/email_20260120_211436.html",
+      "timestamp": "2026-01-20T21:14:36.560654",
+      "discord_forwarded": false
     },
-    "timestamp": "2026-01-20T21:04:54.606769"
+    "timestamp": "2026-01-20T21:14:36.563330"
   }
 }
