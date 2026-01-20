@@ -247,7 +247,7 @@ class MultiExpertDistiller:
             num_hidden_layers=12,
             num_attention_heads=12,
             num_key_value_heads=4,
-            vocab_size=min(self.architecture.vocab_size, 120_000),
+            vocab_size=max(self.architecture.vocab_size, 151_665),
             max_position_embeddings=1024,
             rope_theta=self.architecture.rope_theta,
             rms_norm_eps=self.architecture.rms_norm_eps,
