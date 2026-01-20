@@ -26,7 +26,10 @@ except ImportError:
 
 # Initialize Flask app and CORS
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'enterprise_websocket_secret_key'
+# Security: SECRET_KEY must be set via environment variable for WebSocket security
+if 'LEGION_SECRET_KEY' not in os.environ:
+    raise ValueError("LEGION_SECRET_KEY environment variable must be set for security. Add to .env file.")
+app.config['SECRET_KEY'] = os.environ['LEGION_SECRET_KEY']
 CORS(app)
 
 # Initialize SocketIO for WebSocket support with security

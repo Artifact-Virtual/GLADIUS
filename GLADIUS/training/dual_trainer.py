@@ -10,28 +10,27 @@ Dual training system that trains both:
 This allows the system to operate NOW with Qwen while building GLADIUS in parallel.
 
 Usage:
-    python dual_trainer.py [--qwen-only] [--primary-only] [--epochs EPOCHS]
+    python dual_trainer.py [--qwen-only] [--primary-only] [--max-hours HOURS]
 """
 
 import sys
 import argparse
 from pathlib import Path
-from gladius_moe_trainer import GladiusMoETrainer, logger
+from gladius_moe_trainer import MultiExpertDistiller, logger
 
 
-def train_qwen_operational(epochs=3, batch_size=4):
+def train_qwen_operational(max_hours=24.0):
     """Train Qwen operational model for infrastructure use."""
     logger.info("=" * 70)
     logger.info("Training Qwen Operational (Infrastructure AI)")
     logger.info("=" * 70)
     
     try:
-        # For now, we'll use the MOE trainer which includes Qwen
-        trainer = GladiusMoETrainer()
+        # The MultiExpertDistiller already includes Qwen as one of the experts
+        trainer = MultiExpertDistiller()
         
-        logger.info("Training Qwen for operational infrastructure...")
-        # The MOE trainer already trains Qwen as one of the experts
-        trainer.train(epochs=epochs, batch_size=batch_size)
+        logger.info("Training with Qwen expert for operational infrastructure...")
+        trainer.train_full_pipeline(max_hours=max_hours)
         
         logger.info("Qwen operational training completed")
         return True
@@ -41,17 +40,17 @@ def train_qwen_operational(epochs=3, batch_size=4):
         return False
 
 
-def train_primary_model(epochs=3, batch_size=4):
+def train_primary_model(max_hours=48.0):
     """Train GLADIUS primary custom architecture."""
     logger.info("=" * 70)
     logger.info("Training GLADIUS Primary (Custom Architecture)")
     logger.info("=" * 70)
     
     try:
-        trainer = GladiusMoETrainer()
+        trainer = MultiExpertDistiller()
         
         logger.info("Training GLADIUS primary model...")
-        trainer.train(epochs=epochs, batch_size=batch_size)
+        trainer.train_full_pipeline(max_hours=max_hours)
         
         logger.info("GLADIUS primary training completed")
         return True
@@ -68,32 +67,33 @@ def main():
                        help="Train only Qwen operational model")
     parser.add_argument("--primary-only", action="store_true",
                        help="Train only GLADIUS primary model")
-    parser.add_argument("--epochs", type=int, default=3,
-                       help="Number of training epochs")
-    parser.add_argument("--batch-size", type=int, default=4,
-                       help="Training batch size")
+    parser.add_argument("--max-hours", type=float, default=72.0,
+                       help="Maximum training hours (default: 72, split if training both)")
     
     args = parser.parse_args()
     
     logger.info("=" * 70)
     logger.info("GLADIUS DUAL TRAINING SYSTEM")
     logger.info("=" * 70)
-    logger.info("Track 1: Qwen2.5-1.5B + LoRA (Operational)")
+    logger.info("Track 1: Qwen2.5-1.5B (Operational)")
     logger.info("Track 2: GLADIUS Primary (Custom Architecture)")
     logger.info("=" * 70)
     
     success = True
     
     if args.qwen_only:
-        success = train_qwen_operational(args.epochs, args.batch_size)
+        success = train_qwen_operational(args.max_hours)
     elif args.primary_only:
-        success = train_primary_model(args.epochs, args.batch_size)
+        success = train_primary_model(args.max_hours)
     else:
-        # Train both in sequence
+        # Train both in sequence, split time
         logger.info("Training both models in sequence...")
-        success = train_qwen_operational(args.epochs, args.batch_size)
+        qwen_hours = args.max_hours * 0.3  # Qwen gets 30% of time
+        primary_hours = args.max_hours * 0.7  # Primary gets 70% of time
+        
+        success = train_qwen_operational(qwen_hours)
         if success:
-            success = train_primary_model(args.epochs, args.batch_size)
+            success = train_primary_model(primary_hours)
     
     if success:
         logger.info("=" * 70)

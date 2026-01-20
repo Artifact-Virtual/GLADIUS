@@ -14,24 +14,20 @@ Architecture:
 - Multi-expert distillation
 
 Usage:
-    python gladius_1b_trainer.py [--epochs EPOCHS] [--export-gguf]
+    python gladius_1b_trainer.py [--max-hours HOURS] [--export-gguf]
 """
 
 import sys
 import argparse
 from pathlib import Path
-from gladius_moe_trainer import GladiusMoETrainer, logger
+from gladius_moe_trainer import MultiExpertDistiller, logger
 
 
 def main():
     """Main 1B training entry point."""
     parser = argparse.ArgumentParser(description="GLADIUS 1B Parameter Trainer")
-    parser.add_argument("--epochs", type=int, default=5,
-                       help="Number of training epochs (default: 5)")
-    parser.add_argument("--batch-size", type=int, default=4,
-                       help="Training batch size (default: 4)")
-    parser.add_argument("--learning-rate", type=float, default=2e-5,
-                       help="Learning rate (default: 2e-5)")
+    parser.add_argument("--max-hours", type=float, default=72.0,
+                       help="Maximum training hours (default: 72)")
     parser.add_argument("--export-gguf", action="store_true",
                        help="Export to GGUF format after training")
     parser.add_argument("--resume", action="store_true",
@@ -46,27 +42,25 @@ def main():
     logger.info("Architecture: Custom transformer with GQA + RoPE")
     logger.info("Strategy: Multi-expert knowledge distillation")
     logger.info("=" * 70)
-    logger.info(f"Epochs: {args.epochs}")
-    logger.info(f"Batch size: {args.batch_size}")
-    logger.info(f"Learning rate: {args.learning_rate}")
+    logger.info(f"Max hours: {args.max_hours}")
     logger.info(f"Export GGUF: {args.export_gguf}")
     logger.info(f"Resume: {args.resume}")
     logger.info("=" * 70)
     
     try:
-        # Initialize the MOE trainer - it builds the 1B model
-        trainer = GladiusMoETrainer()
+        # Initialize the MultiExpertDistiller - it builds the 1B model
+        trainer = MultiExpertDistiller()
+        
+        # Load checkpoint if resuming
+        if args.resume:
+            logger.info("Attempting to resume from checkpoint...")
+            trainer.load_checkpoint()
         
         logger.info("Initializing 1B parameter model...")
         logger.info("Loading expert teachers for distillation...")
         
         # Run training
-        result = trainer.train(
-            epochs=args.epochs,
-            batch_size=args.batch_size,
-            learning_rate=args.learning_rate,
-            resume=args.resume
-        )
+        trainer.train_full_pipeline(max_hours=args.max_hours)
         
         if args.export_gguf:
             logger.info("=" * 70)
