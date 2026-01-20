@@ -1,0 +1,12 @@
+{
+  "discovery": [
+    {
+      "what": "Legion Email Integration",
+      "how": "Found at /home/runner/work/GLADIUS/GLADIUS/LEGION/nerve_centre/integrations/email.py",
+      "timestamp": "2026-01-20T17:54:53.306823"
+    }
+  ],
+  "integration": [],
+  "execution": [],
+  "communication": []
+}
