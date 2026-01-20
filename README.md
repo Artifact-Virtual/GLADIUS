@@ -64,6 +64,58 @@
 
 ## Quick Start
 
+### Prerequisites
+
+- Python 3.10+
+- Node.js 18+ (for dashboards)
+- SQLite3
+- Ollama (optional, for LLM fallback)
+
+### Initial Setup
+
+**1. Configure Environment**
+
+```bash
+# Copy the environment template
+cp .env.example .env
+
+# Generate secure random keys
+SECRET_KEY=$(openssl rand -hex 32)
+DASHBOARD_SECRET_KEY=$(openssl rand -hex 32)
+JWT_SECRET_KEY=$(openssl rand -hex 32)
+LEGION_SECRET_KEY=$(openssl rand -hex 32)
+
+# Edit .env and add the generated keys plus your API credentials
+nano .env  # or use your preferred editor
+```
+
+**2. Validate Configuration**
+
+```bash
+# Run the validation script to check your .env setup
+./scripts/validate_env.sh
+```
+
+**3. Start the System**
+
+```bash
+# Start everything
+./gladius.sh start
+
+# Check system health
+./gladius.sh health
+
+# Run a full cycle (research → analyze → publish)
+./gladius.sh cycle
+
+# Run autonomous mode (indefinite)
+./gladius.sh autonomous
+```
+
+---
+
+## System Commands
+
 ```bash
 # Start everything
 ./gladius.sh start

@@ -31,14 +31,21 @@ NC='\033[0m'
 # Create log directory
 mkdir -p "$LOG_DIR"
 
-# Load environment
-if [ -f "$GLADIUS_ROOT/.env" ]; then
-    export $(grep -E '^SENTINEL_' "$GLADIUS_ROOT/.env" | xargs)
+# Load environment - REQUIRED for security
+if [ ! -f "$GLADIUS_ROOT/.env" ]; then
+    echo -e "${RED}ERROR: .env file not found at $GLADIUS_ROOT/.env${NC}"
+    echo "Please create .env from .env.example and configure required variables"
+    exit 1
 fi
 
-# Set kill password hash if not set
+export $(grep -E '^SENTINEL_' "$GLADIUS_ROOT/.env" | xargs)
+
+# Verify kill password is set - CRITICAL for security
 if [ -z "$SENTINEL_KILL_PASSWORD" ]; then
-    export SENTINEL_KILL_PASSWORD="bacaf2c00e6271497158bcd42f2c49fc5d10f0a82d24b2dd6389c03be3121583"
+    echo -e "${RED}ERROR: SENTINEL_KILL_PASSWORD not set in .env${NC}"
+    echo "This is required for Turing-safe operation"
+    echo "Add SENTINEL_KILL_PASSWORD=YourSecurePassword to .env"
+    exit 1
 fi
 
 start_foreground() {
