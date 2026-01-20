@@ -202,6 +202,8 @@ class MultiExpertDistiller:
         self.experts: Dict[str, Any] = {}
         self.tokenizer = None
         self.student_model = None
+        self.cpu_mode = False
+        self.expert_catalog = [ExpertModel(**asdict(exp)) for exp in EXPERT_TEACHERS]
         
         # Detect hardware
         self._detect_hardware()
@@ -223,12 +225,41 @@ class MultiExpertDistiller:
                 gpu_mem = torch.cuda.get_device_properties(0).total_memory / 1e9
                 self.state.hardware = f"CUDA ({gpu_name}, {gpu_mem:.1f}GB)"
                 self.device = "cuda"
+                self.cpu_mode = False
             else:
                 self.state.hardware = "CPU"
                 self.device = "cpu"
+                self.cpu_mode = True
+                self._apply_cpu_optimizations()
         except:
             self.state.hardware = "CPU (torch not loaded)"
             self.device = "cpu"
+            self.cpu_mode = True
+            self._apply_cpu_optimizations()
+
+    def _apply_cpu_optimizations(self):
+        """Adjust architecture and settings for CPU-only environments."""
+        logger.warning("GPU not detected. Enabling CPU-optimized configuration for GLADIUS training.")
+        # Reduce architecture footprint for CPU training
+        self.architecture = GladiusArchitecture(
+            hidden_size=768,
+            intermediate_size=2048,
+            num_hidden_layers=12,
+            num_attention_heads=12,
+            num_key_value_heads=4,
+            vocab_size=min(self.architecture.vocab_size, 120_000),
+            max_position_embeddings=1024,
+            rope_theta=self.architecture.rope_theta,
+            rms_norm_eps=self.architecture.rms_norm_eps,
+            initializer_range=self.architecture.initializer_range,
+            use_cache=self.architecture.use_cache,
+            tie_word_embeddings=self.architecture.tie_word_embeddings,
+        )
+        # Limit expert distillation set to top performers to reduce memory pressure
+        if len(self.expert_catalog) > 2:
+            self.expert_catalog = self.expert_catalog[:2]
+            logger.warning("Limiting expert distillation to top 2 experts for CPU mode.")
+        self.state.hardware = (self.state.hardware or "CPU") + " [optimized CPU mode]"
     
     def _signal_handler(self, signum, frame):
         logger.info("Shutdown signal received, saving state...")
@@ -239,6 +270,23 @@ class MultiExpertDistiller:
         self.state.last_checkpoint = datetime.now().isoformat()
         self.state.save(self.state_path)
         logger.info(f"Checkpoint saved ({reason}): step {self.state.step}")
+    
+    def has_checkpoint(self) -> bool:
+        """Return True if a saved state exists."""
+        return self.state_path.exists()
+    
+    def load_checkpoint(self) -> None:
+        """Reload training state from disk."""
+        if not self.state_path.exists():
+            raise FileNotFoundError(f"No checkpoint found at {self.state_path}")
+        self.state = TrainingState.load(self.state_path)
+        logger.info(
+            "Checkpoint loaded: phase=%s step=%s epochs=%s experts=%s",
+            self.state.phase,
+            self.state.step,
+            self.state.epoch,
+            ", ".join(self.state.experts_distilled) or "none",
+        )
     
     def check_dependencies(self) -> bool:
         """Ensure all required packages are installed"""
@@ -254,11 +302,38 @@ class MultiExpertDistiller:
         if missing:
             logger.info(f"Installing missing packages: {missing}")
             try:
-                subprocess.run([
-                    sys.executable, "-m", "pip", "install", "-q",
-                    "torch", "transformers>=4.40.0", "datasets>=2.18.0",
-                    "accelerate>=0.28.0", "sentencepiece", "protobuf"
-                ], check=True)
+                if "torch" in missing:
+                    if self.device == "cuda":
+                        torch_cmd = [
+                            sys.executable, "-m", "pip", "install", "-q",
+                            "torch==2.2.1", "torchvision==0.17.1", "torchaudio==2.2.1",
+                            "--index-url", "https://download.pytorch.org/whl/cu121"
+                        ]
+                    else:
+                        torch_cmd = [
+                            sys.executable, "-m", "pip", "install", "-q",
+                            "--extra-index-url", "https://download.pytorch.org/whl/cpu",
+                            "torch==2.2.1+cpu", "torchvision==0.17.1+cpu", "torchaudio==2.2.1+cpu"
+                        ]
+                    logger.info("Installing PyTorch stack optimized for %s", self.device.upper())
+                    subprocess.run(torch_cmd, check=True)
+                    missing = [pkg for pkg in missing if pkg != "torch"]
+                if missing:
+                    remapped = []
+                    for pkg in missing:
+                        if pkg == "transformers":
+                            remapped.append("transformers>=4.40.0")
+                        elif pkg == "datasets":
+                            remapped.append("datasets>=2.18.0")
+                        elif pkg == "accelerate":
+                            remapped.append("accelerate>=0.28.0")
+                        else:
+                            remapped.append(pkg)
+                    subprocess.run([
+                        sys.executable, "-m", "pip", "install", "-q",
+                        *remapped,
+                        "sentencepiece", "protobuf"
+                    ], check=True)
                 return True
             except Exception as e:
                 logger.error(f"Failed to install: {e}")
@@ -707,7 +782,7 @@ class MultiExpertDistiller:
         logger.info("=" * 70)
         logger.info(f"Architecture: {self.architecture.num_hidden_layers}L, {self.architecture.hidden_size}H")
         logger.info(f"Target parameters: {self.architecture.total_params:,}")
-        logger.info(f"Experts: {[e.name for e in EXPERT_TEACHERS]}")
+        logger.info(f"Experts: {[e.name for e in self.expert_catalog]}")
         logger.info(f"Hardware: {self.state.hardware}")
         logger.info(f"Max hours: {max_hours}")
         logger.info("=" * 70)
@@ -745,7 +820,7 @@ class MultiExpertDistiller:
             self._save_checkpoint("model_created")
             
             # Phase 1-4: Distill from each expert
-            for i, expert in enumerate(EXPERT_TEACHERS):
+            for i, expert in enumerate(self.expert_catalog):
                 if not self.running:
                     break
                 

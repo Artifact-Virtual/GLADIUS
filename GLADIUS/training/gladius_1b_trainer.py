@@ -53,8 +53,11 @@ def main():
         
         # Load checkpoint if resuming
         if args.resume:
-            logger.info("Attempting to resume from checkpoint...")
-            trainer.load_checkpoint()
+            if trainer.has_checkpoint():
+                logger.info("Attempting to resume from checkpoint...")
+                trainer.load_checkpoint()
+            else:
+                logger.warning("Resume requested but no checkpoint found; starting fresh.")
         
         logger.info("Initializing 1B parameter model...")
         logger.info("Loading expert teachers for distillation...")
