@@ -1,0 +1,12 @@
+# Core dependencies
+# Nanocode v4 uses only Python standard library for core functionality
+# The only external dependency is the Anthropic API (accessed via urllib)
+
+# Optional: If you want to use the anthropic SDK instead of urllib
+# anthropic>=0.18.0
+
+# Development dependencies (optional)
+# pytest>=7.0.0
+# black>=23.0.0
+# flake8>=6.0.0
+# mypy>=1.0.0

@@ -1,0 +1,11 @@
+{
+  "allowed_commands": [
+    "ls",
+    "cat",
+    "pwd",
+    "echo",
+    "grep"
+  ],
+  "write_enabled": true,
+  "max_file_size": 200000
+}
