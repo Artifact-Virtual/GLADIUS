@@ -1082,10 +1082,122 @@ EOF
 }
 
 # =============================================================================
+# RUN - Full system startup with training and visualization
+# =============================================================================
+
+do_run() {
+    print_header
+    echo -e "${BLUE}╔═══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║                  GLADIUS FULL SYSTEM RUN                      ║${NC}"
+    echo -e "${BLUE}╚═══════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    
+    # Step 1: Hardware detection
+    echo -e "${CYAN}[1/5] Hardware Detection${NC}"
+    echo "─────────────────────────────────────────────────────────────────"
+    "$PYTHON" "$GLADIUS_ROOT/GLADIUS/utils/hardware.py" 2>/dev/null || echo -e "  ${YELLOW}⚠️${NC}  Hardware detection module not available"
+    echo ""
+    
+    # Step 2: Start all services
+    echo -e "${CYAN}[2/5] Starting Core Services${NC}"
+    echo "─────────────────────────────────────────────────────────────────"
+    do_start
+    
+    # Step 3: Check if Ollama is running with gladius model
+    echo ""
+    echo -e "${CYAN}[3/5] GLADIUS Model Check${NC}"
+    echo "─────────────────────────────────────────────────────────────────"
+    if command -v ollama &> /dev/null; then
+        if ollama list 2>/dev/null | grep -q "gladius"; then
+            echo -e "  ${GREEN}✅${NC} GLADIUS model available in Ollama"
+            local model_info=$(ollama list 2>/dev/null | grep "gladius" | head -1)
+            echo -e "  ${CYAN}→${NC} $model_info"
+        else
+            echo -e "  ${YELLOW}⚠️${NC}  GLADIUS model not found in Ollama"
+            echo -e "  ${CYAN}→${NC} Using fallback model (qwen2.5:0.5b)"
+        fi
+    else
+        echo -e "  ${YELLOW}⚠️${NC}  Ollama not installed"
+    fi
+    echo ""
+    
+    # Step 4: Trigger initial training check (background)
+    echo -e "${CYAN}[4/5] Training System Check${NC}"
+    echo "─────────────────────────────────────────────────────────────────"
+    if [ -f "$GLADIUS_ROOT/GLADIUS/training/dual_trainer.py" ]; then
+        echo -e "  ${GREEN}✅${NC} Dual Training System available"
+        echo -e "  ${CYAN}→${NC} Qwen2.5-1.5B LoRA + GLADIUS Primary"
+        
+        # Check for existing checkpoints
+        if [ -d "$GLADIUS_ROOT/GLADIUS/tmp/checkpoints" ]; then
+            local checkpoint_count=$(ls -1 "$GLADIUS_ROOT/GLADIUS/tmp/checkpoints" 2>/dev/null | wc -l)
+            if [ "$checkpoint_count" -gt 0 ]; then
+                echo -e "  ${GREEN}✅${NC} Found $checkpoint_count training checkpoints"
+            fi
+        fi
+        
+        # Check for LoRA adapter
+        if [ -d "$GLADIUS_ROOT/GLADIUS/models/qwen/gladius-qwen-lora" ]; then
+            echo -e "  ${GREEN}✅${NC} GLADIUS LoRA adapter found"
+        else
+            echo -e "  ${YELLOW}⚠️${NC}  No LoRA adapter yet - training recommended"
+        fi
+    else
+        echo -e "  ${YELLOW}⚠️${NC}  Training system not found"
+    fi
+    echo ""
+    
+    # Step 5: Launch visualization (Web UI)
+    echo -e "${CYAN}[5/5] Visualization${NC}"
+    echo "─────────────────────────────────────────────────────────────────"
+    if check_port 5002; then
+        echo -e "  ${GREEN}✅${NC} Web UI running at http://localhost:5002"
+    else
+        echo -e "  ${YELLOW}⚠️${NC}  Web UI not running"
+    fi
+    
+    if check_port 3001; then
+        echo -e "  ${GREEN}✅${NC} Grafana running at http://localhost:3001"
+    fi
+    echo ""
+    
+    # Final status
+    echo -e "${GREEN}╔═══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}║                    GLADIUS SYSTEM ALIVE                       ║${NC}"
+    echo -e "${GREEN}╚═══════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    echo -e "  ${BLUE}▌ GLADIUS AI${NC}"
+    echo -e "    ${CYAN}Interactive Mode${NC}    ./gladius.sh interact"
+    echo -e "    ${CYAN}Speak Mode${NC}          ./gladius.sh speak"
+    echo -e "    ${CYAN}Build Mode${NC}          ./gladius.sh interact --execute"
+    echo ""
+    echo -e "  ${BLUE}▌ TRAINING${NC}"
+    echo -e "    ${CYAN}Quick LoRA${NC}          ./gladius.sh train"
+    echo -e "    ${CYAN}Dual Training${NC}       ./gladius.sh train-dual"
+    echo -e "    ${CYAN}1B Training${NC}         ./gladius.sh train-1b"
+    echo ""
+    echo -e "  ${BLUE}▌ AUTONOMOUS${NC}"
+    echo -e "    ${CYAN}Single Cycle${NC}        ./gladius.sh cycle"
+    echo -e "    ${CYAN}Continuous${NC}          ./gladius.sh continuous"
+    echo -e "    ${CYAN}Full Autonomous${NC}     ./gladius.sh autonomous"
+    echo ""
+    echo -e "  ${BLUE}▌ ACCESS POINTS${NC}"
+    echo -e "    ${CYAN}Web UI${NC}              http://localhost:5002"
+    echo -e "    ${CYAN}API Docs${NC}            http://localhost:7000/docs"
+    if check_port 3001; then
+        echo -e "    ${CYAN}Grafana${NC}             http://localhost:3001"
+    fi
+    echo ""
+}
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
 case "${1:-help}" in
+    run)
+        do_run
+        ;;
     start)
         do_start "$2"
         ;;
@@ -1179,6 +1291,9 @@ case "${1:-help}" in
         echo -e "${BLUE}GLADIUS Control Script${NC}"
         echo ""
         echo "Usage: ./gladius.sh <command> [options]"
+        echo ""
+        echo -e "${CYAN}Quick Start:${NC}"
+        echo "  run                Full system startup (services + training check + viz)"
         echo ""
         echo -e "${CYAN}Core Commands:${NC}"
         echo "  start              Start all services + health check"

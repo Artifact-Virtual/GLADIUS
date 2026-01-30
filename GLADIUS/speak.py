@@ -109,15 +109,36 @@ Be concise, intelligent, and proactive."""
                 
                 from peft import PeftModel
                 
+                # Detect hardware - MUST check for GPU and downgrade to CPU if unavailable
                 device = "cuda" if torch.cuda.is_available() else "cpu"
+                use_gpu = device == "cuda"
                 
-                # Load base + LoRA adapter
-                base = AutoModelForCausalLM.from_pretrained(
-                    "Qwen/Qwen2.5-1.5B",
-                    device_map="auto",
-                    trust_remote_code=True,
-                    torch_dtype=torch.float16 if device == "cuda" else torch.float32,
-                )
+                if self.verbose:
+                    if use_gpu:
+                        gpu_name = torch.cuda.get_device_name(0)
+                        gpu_mem = torch.cuda.get_device_properties(0).total_memory / 1e9
+                        print(f"{Colors.GREEN}● GPU detected: {gpu_name} ({gpu_mem:.1f}GB){Colors.NC}")
+                    else:
+                        print(f"{Colors.YELLOW}● No GPU detected, using CPU mode{Colors.NC}")
+                
+                # Configure model loading based on hardware
+                if use_gpu:
+                    # GPU mode: use float16 and auto device mapping
+                    base = AutoModelForCausalLM.from_pretrained(
+                        "Qwen/Qwen2.5-1.5B",
+                        device_map="auto",
+                        trust_remote_code=True,
+                        torch_dtype=torch.float16,
+                    )
+                else:
+                    # CPU mode: use float32, no device_map, low memory usage
+                    base = AutoModelForCausalLM.from_pretrained(
+                        "Qwen/Qwen2.5-1.5B",
+                        device_map=None,  # No auto mapping for CPU
+                        trust_remote_code=True,
+                        torch_dtype=torch.float32,
+                        low_cpu_mem_usage=True,
+                    )
                 
                 self.direct_model = PeftModel.from_pretrained(base, str(lora_path))
                 self.direct_tokenizer = AutoTokenizer.from_pretrained(str(lora_path))
@@ -126,10 +147,11 @@ Be concise, intelligent, and proactive."""
                     self.direct_tokenizer.pad_token = self.direct_tokenizer.eos_token
                 
                 self.direct_model.eval()
+                self.device = device  # Store device for inference
                 
                 if self.verbose:
                     params = sum(p.numel() for p in self.direct_model.parameters())
-                    print(f"{Colors.GREEN}● GLADIUS direct loaded: {params:,} params on {device}{Colors.NC}")
+                    print(f"{Colors.GREEN}● GLADIUS direct loaded: {params:,} params on {device.upper()}{Colors.NC}")
             else:
                 if self.verbose:
                     print(f"{Colors.YELLOW}● No trained GLADIUS model found, using Ollama{Colors.NC}")
@@ -264,12 +286,19 @@ Be concise, intelligent, and proactive."""
             prompt += f"<|im_start|>user\n{message}<|im_end|>\n<|im_start|>assistant\n"
             
             inputs = self.direct_tokenizer(prompt, return_tensors="pt")
-            inputs = {k: v.to(self.direct_model.device) for k, v in inputs.items()}
+            
+            # Handle device placement - CPU or GPU
+            device = getattr(self, 'device', 'cpu')
+            if hasattr(self.direct_model, 'device'):
+                device = self.direct_model.device
+            inputs = {k: v.to(device) for k, v in inputs.items()}
             
             with torch.no_grad():
+                # Adjust generation params for CPU (reduce memory pressure)
+                max_tokens = 512 if device != 'cpu' else 256
                 outputs = self.direct_model.generate(
                     **inputs,
-                    max_new_tokens=512,
+                    max_new_tokens=max_tokens,
                     temperature=0.7,
                     top_p=0.9,
                     do_sample=True,
@@ -300,7 +329,8 @@ Be concise, intelligent, and proactive."""
                 "response": response_text,
                 "model": "gladius-direct",
                 "latency_ms": latency_ms,
-                "direct": True
+                "direct": True,
+                "device": str(device)
             }
             
         except Exception as e:

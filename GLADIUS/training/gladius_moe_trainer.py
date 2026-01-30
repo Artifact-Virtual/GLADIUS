@@ -217,7 +217,7 @@ class MultiExpertDistiller:
         logger.info(f"Hardware: {self.state.hardware}")
     
     def _detect_hardware(self):
-        """Detect available hardware"""
+        """Detect available hardware - MUST check for GPU and downgrade to CPU if unavailable"""
         try:
             import torch
             if torch.cuda.is_available():
@@ -226,13 +226,23 @@ class MultiExpertDistiller:
                 self.state.hardware = f"CUDA ({gpu_name}, {gpu_mem:.1f}GB)"
                 self.device = "cuda"
                 self.cpu_mode = False
+                logger.info(f"GPU detected: {gpu_name} with {gpu_mem:.1f}GB memory")
+                logger.info("Using GPU mode with float16 precision")
             else:
+                logger.warning("No GPU detected - GLADIUS will use CPU mode")
                 self.state.hardware = "CPU"
                 self.device = "cpu"
                 self.cpu_mode = True
                 self._apply_cpu_optimizations()
-        except:
+        except ImportError:
+            logger.warning("PyTorch not installed - GLADIUS will use CPU mode")
             self.state.hardware = "CPU (torch not loaded)"
+            self.device = "cpu"
+            self.cpu_mode = True
+            self._apply_cpu_optimizations()
+        except Exception as e:
+            logger.warning(f"Hardware detection failed ({e}) - defaulting to CPU mode")
+            self.state.hardware = "CPU (detection failed)"
             self.device = "cpu"
             self.cpu_mode = True
             self._apply_cpu_optimizations()
@@ -240,6 +250,7 @@ class MultiExpertDistiller:
     def _apply_cpu_optimizations(self):
         """Adjust architecture and settings for CPU-only environments."""
         logger.warning("GPU not detected. Enabling CPU-optimized configuration for GLADIUS training.")
+        logger.info("CPU optimizations: reduced model size, fewer experts, float32 precision")
         # Reduce architecture footprint for CPU training
         self.architecture = GladiusArchitecture(
             hidden_size=768,
@@ -255,6 +266,7 @@ class MultiExpertDistiller:
             use_cache=self.architecture.use_cache,
             tie_word_embeddings=self.architecture.tie_word_embeddings,
         )
+        logger.info(f"CPU model size: ~{self.architecture.total_params:,} parameters")
         # Limit expert distillation set to top performers to reduce memory pressure
         if len(self.expert_catalog) > 2:
             self.expert_catalog = self.expert_catalog[:2]
