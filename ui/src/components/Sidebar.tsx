@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Zap, Shield, Users, Package, FileText, Settings } from 'lucide-react';
+import { Home, Zap, Shield, Users, Package, FileText, Settings, Activity, BarChart2 } from 'lucide-react';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -9,6 +9,8 @@ const Sidebar = () => {
     { path: '/gladius', icon: Zap, label: 'GLADIUS' },
     { path: '/sentinel', icon: Shield, label: 'SENTINEL' },
     { path: '/legion', icon: Users, label: 'LEGION' },
+    { path: '/syndicate', icon: BarChart2, label: 'SYNDICATE' },
+    { path: '/arty', icon: Activity, label: 'ARTY' },
     { path: '/artifact', icon: Package, label: 'Artifact' },
     { path: '/logs', icon: FileText, label: 'Logs' },
     { path: '/settings', icon: Settings, label: 'Settings' },

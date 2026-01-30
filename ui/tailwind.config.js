@@ -16,6 +16,18 @@ export default {
         error: '#FF3366',
         text: '#E8E9ED',
         'text-dim': '#9CA3AF',
+        bg: {
+          primary: '#0A0E27',
+          secondary: '#1A1F3A',
+          accent: '#2D3748',
+        },
+        'text-primary': '#E8E9ED',
+        'text-secondary': '#9CA3AF',
+        status: {
+          online: '#00FF87',
+          offline: '#FF3366',
+          warning: '#FFB800',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

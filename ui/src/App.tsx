@@ -11,6 +11,8 @@ const Sentinel = React.lazy(() => import('./pages/Sentinel'));
 const Agents = React.lazy(() => import('./pages/Agents'));
 const Logs = React.lazy(() => import('./pages/Logs'));
 const Artifact = React.lazy(() => import('./pages/Artifact'));
+const Arty = React.lazy(() => import('./pages/Arty'));
+const Syndicate = React.lazy(() => import('./pages/Syndicate'));
 
 function App() {
   return (
@@ -32,6 +34,8 @@ function App() {
               <Route path="/agents" element={<Agents />} />
               <Route path="/logs" element={<Logs />} />
               <Route path="/artifact" element={<Artifact />} />
+              <Route path="/arty" element={<Arty />} />
+              <Route path="/syndicate" element={<Syndicate />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </React.Suspense>
