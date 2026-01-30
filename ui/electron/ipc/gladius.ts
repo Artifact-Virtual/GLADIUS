@@ -1,8 +1,10 @@
 import { ipcMain } from 'electron';
 import { spawn, ChildProcess } from 'child_process';
 import path from 'path';
+import { getPythonExecutable, sanitizeInput, validateNumber } from './utils';
 
 const GLADIUS_PATH = path.join(__dirname, '../../../GLADIUS');
+const PYTHON = getPythonExecutable();
 
 interface GladiusResponse {
   success: boolean;
@@ -17,7 +19,7 @@ export function setupGladiusHandlers() {
   ipcMain.handle('gladius:status', async (): Promise<GladiusResponse> => {
     try {
       console.log('[GLADIUS] Checking status...');
-      const pythonProcess = spawn('python3', [
+      const pythonProcess = spawn(PYTHON, [
         path.join(GLADIUS_PATH, 'gladius_cli.py'),
         'status'
       ]);
@@ -61,10 +63,10 @@ export function setupGladiusHandlers() {
       console.log('[GLADIUS] Starting benchmark...', config);
       const args = ['benchmark'];
       
-      if (config.dataset) args.push('--dataset', config.dataset);
-      if (config.metric) args.push('--metric', config.metric);
+      if (config.dataset) args.push('--dataset', sanitizeInput(config.dataset));
+      if (config.metric) args.push('--metric', sanitizeInput(config.metric));
 
-      const pythonProcess = spawn('python3', [
+      const pythonProcess = spawn(PYTHON, [
         path.join(GLADIUS_PATH, 'gladius_cli.py'),
         ...args
       ]);
@@ -113,11 +115,15 @@ export function setupGladiusHandlers() {
       console.log('[GLADIUS] Starting training...', config);
       const args = ['train'];
       
-      if (config.dataset) args.push('--dataset', config.dataset);
-      if (config.epochs) args.push('--epochs', config.epochs.toString());
-      if (config.batchSize) args.push('--batch-size', config.batchSize.toString());
+      if (config.dataset) args.push('--dataset', sanitizeInput(config.dataset));
+      
+      const epochs = validateNumber(config.epochs, 1, 1000);
+      if (epochs) args.push('--epochs', epochs.toString());
+      
+      const batchSize = validateNumber(config.batchSize, 1, 1024);
+      if (batchSize) args.push('--batch-size', batchSize.toString());
 
-      const pythonProcess = spawn('python3', [
+      const pythonProcess = spawn(PYTHON, [
         path.join(GLADIUS_PATH, 'gladius_cli.py'),
         ...args
       ]);
@@ -164,10 +170,10 @@ export function setupGladiusHandlers() {
   ipcMain.handle('gladius:interact', async (_, message: string): Promise<GladiusResponse> => {
     try {
       console.log('[GLADIUS] Sending interaction:', message);
-      const pythonProcess = spawn('python3', [
+      const pythonProcess = spawn(PYTHON, [
         path.join(GLADIUS_PATH, 'gladius_cli.py'),
         'interact',
-        '--message', message
+        '--message', sanitizeInput(message)
       ]);
 
       return new Promise((resolve) => {

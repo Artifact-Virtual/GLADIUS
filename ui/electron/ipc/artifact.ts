@@ -2,8 +2,10 @@ import { ipcMain } from 'electron';
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+import { getPythonExecutable, sanitizeInput, sanitizeArray, validatePath } from './utils';
 
 const ARTIFACT_PATH = path.join(__dirname, '../../../Artifact');
+const PYTHON = getPythonExecutable();
 
 interface ArtifactResponse {
   success: boolean;
@@ -16,7 +18,7 @@ export function setupArtifactHandlers() {
   ipcMain.handle('artifact:status', async (): Promise<ArtifactResponse> => {
     try {
       console.log('[ARTIFACT] Checking status...');
-      const pythonProcess = spawn('python3', [
+      const pythonProcess = spawn(PYTHON, [
         path.join(ARTIFACT_PATH, 'artifact_cli.py'),
         'status'
       ]);
@@ -60,10 +62,10 @@ export function setupArtifactHandlers() {
       console.log('[ARTIFACT] Listing artifacts...', filter);
       const args = ['list'];
       
-      if (filter?.type) args.push('--type', filter.type);
-      if (filter?.tag) args.push('--tag', filter.tag);
+      if (filter?.type) args.push('--type', sanitizeInput(filter.type));
+      if (filter?.tag) args.push('--tag', sanitizeInput(filter.tag));
 
-      const pythonProcess = spawn('python3', [
+      const pythonProcess = spawn(PYTHON, [
         path.join(ARTIFACT_PATH, 'artifact_cli.py'),
         ...args
       ]);
@@ -105,10 +107,10 @@ export function setupArtifactHandlers() {
   ipcMain.handle('artifact:get', async (_, artifactId: string): Promise<ArtifactResponse> => {
     try {
       console.log('[ARTIFACT] Getting artifact:', artifactId);
-      const pythonProcess = spawn('python3', [
+      const pythonProcess = spawn(PYTHON, [
         path.join(ARTIFACT_PATH, 'artifact_cli.py'),
         'get',
-        '--id', artifactId
+        '--id', sanitizeInput(artifactId)
       ]);
 
       return new Promise((resolve) => {
@@ -150,13 +152,20 @@ export function setupArtifactHandlers() {
       console.log('[ARTIFACT] Creating artifact...', config);
       const args = ['create'];
       
-      if (config.name) args.push('--name', config.name);
-      if (config.type) args.push('--type', config.type);
-      if (config.path) args.push('--path', config.path);
-      if (config.description) args.push('--description', config.description);
-      if (config.tags) args.push('--tags', config.tags.join(','));
+      if (config.name) args.push('--name', sanitizeInput(config.name));
+      if (config.type) args.push('--type', sanitizeInput(config.type));
+      
+      if (config.path) {
+        if (!validatePath(config.path)) {
+          return { success: false, error: 'Invalid path: path traversal not allowed' };
+        }
+        args.push('--path', config.path);
+      }
+      
+      if (config.description) args.push('--description', sanitizeInput(config.description));
+      if (config.tags) args.push('--tags', sanitizeArray(config.tags).join(','));
 
-      const pythonProcess = spawn('python3', [
+      const pythonProcess = spawn(PYTHON, [
         path.join(ARTIFACT_PATH, 'artifact_cli.py'),
         ...args
       ]);
@@ -199,10 +208,10 @@ export function setupArtifactHandlers() {
   ipcMain.handle('artifact:delete', async (_, artifactId: string): Promise<ArtifactResponse> => {
     try {
       console.log('[ARTIFACT] Deleting artifact:', artifactId);
-      const pythonProcess = spawn('python3', [
+      const pythonProcess = spawn(PYTHON, [
         path.join(ARTIFACT_PATH, 'artifact_cli.py'),
         'delete',
-        '--id', artifactId
+        '--id', sanitizeInput(artifactId)
       ]);
 
       return new Promise((resolve) => {
@@ -236,11 +245,15 @@ export function setupArtifactHandlers() {
   // Export artifact
   ipcMain.handle('artifact:export', async (_, artifactId: string, destination: string): Promise<ArtifactResponse> => {
     try {
+      if (!validatePath(destination)) {
+        return { success: false, error: 'Invalid destination path: path traversal not allowed' };
+      }
+
       console.log('[ARTIFACT] Exporting artifact:', artifactId, 'to:', destination);
-      const pythonProcess = spawn('python3', [
+      const pythonProcess = spawn(PYTHON, [
         path.join(ARTIFACT_PATH, 'artifact_cli.py'),
         'export',
-        '--id', artifactId,
+        '--id', sanitizeInput(artifactId),
         '--destination', destination
       ]);
 

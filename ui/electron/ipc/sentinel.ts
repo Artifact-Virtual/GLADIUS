@@ -1,8 +1,10 @@
 import { ipcMain } from 'electron';
 import { spawn, ChildProcess } from 'child_process';
 import path from 'path';
+import { getPythonExecutable, sanitizeInput, validateNumber } from './utils';
 
 const SENTINEL_PATH = path.join(__dirname, '../../../SENTINEL');
+const PYTHON = getPythonExecutable();
 
 interface SentinelResponse {
   success: boolean;
@@ -55,10 +57,12 @@ export function setupSentinelHandlers() {
       console.log('[SENTINEL] Starting...', config);
       const args = ['start'];
       
-      if (config?.port) args.push('--port', config.port.toString());
-      if (config?.logLevel) args.push('--log-level', config.logLevel);
+      const port = validateNumber(config?.port, 1024, 65535);
+      if (port) args.push('--port', port.toString());
+      
+      if (config?.logLevel) args.push('--log-level', sanitizeInput(config.logLevel));
 
-      sentinelProcess = spawn('python3', [
+      sentinelProcess = spawn(PYTHON, [
         path.join(SENTINEL_PATH, 'sentinel_cli.py'),
         ...args
       ], {
@@ -150,12 +154,14 @@ export function setupSentinelHandlers() {
   ipcMain.handle('sentinel:scan', async (_, target: string, options?: any): Promise<SentinelResponse> => {
     try {
       console.log('[SENTINEL] Starting scan on:', target);
-      const args = ['scan', '--target', target];
+      const args = ['scan', '--target', sanitizeInput(target)];
       
-      if (options?.depth) args.push('--depth', options.depth.toString());
-      if (options?.profile) args.push('--profile', options.profile);
+      const depth = validateNumber(options?.depth, 1, 10);
+      if (depth) args.push('--depth', depth.toString());
+      
+      if (options?.profile) args.push('--profile', sanitizeInput(options.profile));
 
-      const pythonProcess = spawn('python3', [
+      const pythonProcess = spawn(PYTHON, [
         path.join(SENTINEL_PATH, 'sentinel_cli.py'),
         ...args
       ]);

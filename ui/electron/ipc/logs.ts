@@ -3,6 +3,7 @@ import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Tail } from 'tail';
+import { validateFilename } from './utils';
 
 const PROJECT_ROOT = path.join(__dirname, '../../..');
 const LOGS_PATH = path.join(PROJECT_ROOT, 'logs');
@@ -53,6 +54,10 @@ export function setupLogHandlers(mainWindow: BrowserWindow) {
   // Read log file content
   ipcMain.handle('logs:read', async (_, logName: string, lines?: number): Promise<LogResponse> => {
     try {
+      if (!validateFilename(logName)) {
+        return { success: false, error: 'Invalid log filename' };
+      }
+
       console.log('[LOGS] Reading log:', logName);
       const logPath = path.join(LOGS_PATH, logName);
 
@@ -92,6 +97,10 @@ export function setupLogHandlers(mainWindow: BrowserWindow) {
   // Start streaming a log file
   ipcMain.handle('logs:stream-start', async (_, logName: string): Promise<LogResponse> => {
     try {
+      if (!validateFilename(logName)) {
+        return { success: false, error: 'Invalid log filename' };
+      }
+
       console.log('[LOGS] Starting stream for:', logName);
       const logPath = path.join(LOGS_PATH, logName);
 

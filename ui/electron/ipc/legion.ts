@@ -1,8 +1,10 @@
 import { ipcMain } from 'electron';
 import { spawn, ChildProcess } from 'child_process';
 import path from 'path';
+import { getPythonExecutable, sanitizeInput, validateAgentId } from './utils';
 
 const LEGION_PATH = path.join(__dirname, '../../../LEGION');
+const PYTHON = getPythonExecutable();
 
 interface LegionResponse {
   success: boolean;
@@ -17,7 +19,7 @@ export function setupLegionHandlers() {
   ipcMain.handle('legion:status', async (): Promise<LegionResponse> => {
     try {
       console.log('[LEGION] Checking status...');
-      const pythonProcess = spawn('python3', [
+      const pythonProcess = spawn(PYTHON, [
         path.join(LEGION_PATH, 'legion_cli.py'),
         'status'
       ]);
@@ -66,7 +68,7 @@ export function setupLegionHandlers() {
   ipcMain.handle('legion:list-agents', async (): Promise<LegionResponse> => {
     try {
       console.log('[LEGION] Listing agents...');
-      const pythonProcess = spawn('python3', [
+      const pythonProcess = spawn(PYTHON, [
         path.join(LEGION_PATH, 'legion_cli.py'),
         'list'
       ]);
@@ -110,11 +112,11 @@ export function setupLegionHandlers() {
       console.log('[LEGION] Creating agent...', config);
       const args = ['create'];
       
-      if (config.name) args.push('--name', config.name);
-      if (config.type) args.push('--type', config.type);
-      if (config.role) args.push('--role', config.role);
+      if (config.name) args.push('--name', sanitizeInput(config.name));
+      if (config.type) args.push('--type', sanitizeInput(config.type));
+      if (config.role) args.push('--role', sanitizeInput(config.role));
 
-      const pythonProcess = spawn('python3', [
+      const pythonProcess = spawn(PYTHON, [
         path.join(LEGION_PATH, 'legion_cli.py'),
         ...args
       ]);
@@ -156,13 +158,17 @@ export function setupLegionHandlers() {
   // Deploy agent
   ipcMain.handle('legion:deploy-agent', async (_, agentId: string, config?: any): Promise<LegionResponse> => {
     try {
+      if (!validateAgentId(agentId)) {
+        return { success: false, error: 'Invalid agent ID format' };
+      }
+
       console.log('[LEGION] Deploying agent:', agentId);
       const args = ['deploy', '--agent-id', agentId];
       
-      if (config?.target) args.push('--target', config.target);
-      if (config?.mode) args.push('--mode', config.mode);
+      if (config?.target) args.push('--target', sanitizeInput(config.target));
+      if (config?.mode) args.push('--mode', sanitizeInput(config.mode));
 
-      const pythonProcess = spawn('python3', [
+      const pythonProcess = spawn(PYTHON, [
         path.join(LEGION_PATH, 'legion_cli.py'),
         ...args
       ], {
