@@ -9,6 +9,7 @@ Usage:
     python3 GLADIUS/interactive.py           # Start interactive session
     python3 GLADIUS/interactive.py --query "What tools do you have?"
     python3 GLADIUS/interactive.py --status  # Show system status
+    python3 GLADIUS/interactive.py --execute # Execute tool calls (not just route)
 
 Author: Artifact Virtual Systems
 """
@@ -186,7 +187,56 @@ def query_gladius(query: str, verbose: bool = False) -> Dict[str, Any]:
             "success": False
         }
 
-def interactive_loop():
+
+def execute_tool(tool_name: str, arguments: Dict[str, Any], original_query: str = "") -> Dict[str, Any]:
+    """
+    Execute a routed tool and return results.
+    
+    Supports:
+    - build: BUILD_CLASS autonomous coding kernel
+    - build_workspace: List build workspace files
+    - build_memory: Get build history
+    """
+    try:
+        if tool_name == "build":
+            from GLADIUS.tools.build_class_tool import tool_build
+            goal = arguments.get("goal", "")
+            # If goal looks like just a filename, use the original query instead
+            if goal and (goal.endswith('.py') or goal.endswith('.js') or len(goal.split()) < 3):
+                goal = original_query if original_query else goal
+            return tool_build(goal)
+        
+        elif tool_name == "build_workspace":
+            from GLADIUS.tools.build_class_tool import tool_build_workspace
+            return tool_build_workspace()
+        
+        elif tool_name == "build_memory":
+            from GLADIUS.tools.build_class_tool import tool_build_memory
+            limit = arguments.get("limit", 5)
+            return tool_build_memory(limit)
+        
+        elif tool_name == "build_read":
+            from GLADIUS.tools.build_class_tool import tool_build_read
+            path = arguments.get("path", "")
+            return tool_build_read(path)
+        
+        else:
+            return {
+                "success": False,
+                "error": f"Tool '{tool_name}' execution not implemented yet",
+                "tool": tool_name,
+                "arguments": arguments
+            }
+            
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "tool": tool_name
+        }
+
+
+def interactive_loop(execute_mode: bool = False):
     """Run interactive GLADIUS session."""
     print_header()
     
@@ -293,6 +343,35 @@ def interactive_loop():
                     print(f"  {Colors.CYAN}Confidence:{Colors.NC} {result.confidence:.0%}")
                     print(f"  {Colors.CYAN}Latency:{Colors.NC} {result.latency_ms:.2f}ms")
                     print(f"  {Colors.CYAN}Source:{Colors.NC} {result.source}")
+                    
+                    # Execute tool if in execute mode
+                    if execute_mode and result.tool_name:
+                        print(f"\n{Colors.YELLOW}Executing tool...{Colors.NC}")
+                        exec_result = execute_tool(result.tool_name, result.arguments, user_input)
+                        
+                        if exec_result.get("success"):
+                            print(f"{Colors.GREEN}● Execution successful{Colors.NC}")
+                            # Print relevant results
+                            if "plan" in exec_result:
+                                print(f"\n{Colors.CYAN}Plan:{Colors.NC}")
+                                print(exec_result["plan"][:500])
+                            if "summary" in exec_result:
+                                print(f"\n{Colors.CYAN}Summary:{Colors.NC}")
+                                print(exec_result["summary"])
+                            if "log" in exec_result:
+                                print(f"\n{Colors.CYAN}Execution Log:{Colors.NC}")
+                                for entry in exec_result["log"][:5]:
+                                    print(f"  - {entry}")
+                            if "files" in exec_result:
+                                print(f"\n{Colors.CYAN}Workspace Files:{Colors.NC}")
+                                for f in exec_result["files"][:10]:
+                                    print(f"  - {f.get('path', f)}")
+                            if "memory" in exec_result:
+                                print(f"\n{Colors.CYAN}Build Memory ({exec_result.get('count', 0)} entries):{Colors.NC}")
+                                for m in exec_result["memory"][:5]:
+                                    print(f"  - {m.get('goal', m)[:60]}...")
+                        else:
+                            print(f"{Colors.RED}● Execution failed:{Colors.NC} {exec_result.get('error', 'Unknown error')}")
                 else:
                     print(f"\n{Colors.RED}● Error:{Colors.NC} {result.error}")
                 
@@ -329,6 +408,11 @@ def main():
         action="store_true",
         help="Verbose output"
     )
+    parser.add_argument(
+        "--execute", "-x",
+        action="store_true",
+        help="Execute tool calls (not just route)"
+    )
     
     args = parser.parse_args()
     
@@ -352,12 +436,31 @@ def main():
                 print(f"  {Colors.CYAN}Args:{Colors.NC} {json.dumps(result['arguments'], indent=2)}")
                 print(f"  {Colors.CYAN}Confidence:{Colors.NC} {result['confidence']:.0%}")
                 print(f"  {Colors.CYAN}Latency:{Colors.NC} {result['latency_ms']:.2f}ms")
+                
+                # Execute if requested
+                if args.execute and result.get('tool'):
+                    print(f"\n{Colors.YELLOW}Executing tool...{Colors.NC}")
+                    exec_result = execute_tool(result['tool'], result['arguments'], args.query)
+                    
+                    if args.json:
+                        print(json.dumps(exec_result, indent=2))
+                    else:
+                        if exec_result.get("success"):
+                            print(f"{Colors.GREEN}● Execution successful{Colors.NC}")
+                            if "plan" in exec_result:
+                                print(f"\n{Colors.CYAN}Plan:{Colors.NC}\n{exec_result['plan'][:1000]}")
+                            if "summary" in exec_result:
+                                print(f"\n{Colors.CYAN}Summary:{Colors.NC}\n{exec_result['summary']}")
+                            if "workspace" in exec_result:
+                                print(f"\n{Colors.CYAN}Workspace:{Colors.NC} {exec_result['workspace']}")
+                        else:
+                            print(f"{Colors.RED}● Execution failed:{Colors.NC} {exec_result.get('error')}")
             else:
                 print(f"{Colors.RED}● Error:{Colors.NC} {result.get('error')}")
         return
     
     # Interactive mode
-    interactive_loop()
+    interactive_loop(execute_mode=args.execute)
 
 if __name__ == "__main__":
     main()

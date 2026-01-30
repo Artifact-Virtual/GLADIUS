@@ -118,6 +118,26 @@ class NativeToolRouter:
             r"select\s+.+\s+from\s+(\w+)",
             r"read\s+from\s+(\w+)",
         ],
+        "build": [
+            r"build\s+(.+)",
+            r"create\s+(?:a\s+)?(?:new\s+)?(.+)",
+            r"generate\s+(.+)",
+            r"construct\s+(.+)",
+            r"make\s+(?:a\s+)?(.+)",
+            r"code\s+(?:a\s+)?(.+)",
+            r"develop\s+(.+)",
+            r"write\s+(?:a\s+)?(?:new\s+)?(.+)",
+        ],
+        "build_workspace": [
+            r"(?:list|show)\s+build\s+(?:workspace|files)",
+            r"what(?:'s|\s+is)\s+in\s+(?:the\s+)?build\s+workspace",
+            r"build\s+workspace\s+files",
+        ],
+        "build_memory": [
+            r"(?:show|get|list)\s+build\s+(?:history|memory)",
+            r"what\s+(?:have\s+)?(?:i|you)\s+built",
+            r"recent\s+builds",
+        ],
     }
     
     def __init__(
@@ -195,7 +215,10 @@ class NativeToolRouter:
 - get_context(query: str, k: int): Get context
 - read_db(name: str, query: str): Read from database
 - list_databases(): List databases
-- get_tools(): List available tools"""
+- get_tools(): List available tools
+- build(goal: str): Build/create/generate software using BUILD_CLASS autonomous coding kernel
+- build_workspace(): List files in build workspace
+- build_memory(limit: int): Get build history"""
         
         self.system_prompt = f"""You are a tool router. Given a user query, output a JSON object with the tool to call.
 
@@ -205,7 +228,8 @@ Available tools:
 Output format:
 {{"tool": "<tool_name>", "args": {{...}}}}
 
-IMPORTANT: Only output the JSON, no explanation."""
+IMPORTANT: Only output the JSON, no explanation.
+IMPORTANT: For requests to build/create/generate/make software, code, scripts, or applications, use the 'build' tool."""
     
     def route(
         self,
@@ -526,6 +550,12 @@ IMPORTANT: Only output the JSON, no explanation."""
                         args = {"query": arg_value, "k": 3}
                     elif tool_name == "read_db":
                         args = {"name": match.group(1), "query": "SELECT * FROM sqlite_master LIMIT 5"}
+                    elif tool_name == "build":
+                        args = {"goal": arg_value}
+                    elif tool_name == "build_workspace":
+                        args = {}
+                    elif tool_name == "build_memory":
+                        args = {"limit": 5}
                     else:
                         args = {"query": arg_value}
                     

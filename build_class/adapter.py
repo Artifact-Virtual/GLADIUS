@@ -164,6 +164,94 @@ class LlamaCppAdapter(BaseAdapter):
         except Exception as e:
             raise Exception(f"Request failed: {str(e)}")
 
+class OllamaAdapter(BaseAdapter):
+    """
+    Ollama adapter - uses Ollama's native API.
+    Works with locally running Ollama server.
+    """
+    
+    def __init__(self):
+        self.server_url = os.environ.get("OLLAMA_URL", "http://localhost:11434")
+        self.model = os.environ.get("LLAMA_MODEL", os.environ.get("OLLAMA_MODEL", "gladius:latest"))
+        self.timeout = int(os.environ.get("LLAMA_TIMEOUT", "120"))
+        
+        # Check server availability
+        try:
+            req = urllib.request.Request(f"{self.server_url}/api/tags", method="GET")
+            urllib.request.urlopen(req, timeout=5)
+            print(f"[INFO] Ollama server available at {self.server_url}")
+            print(f"[INFO] Using model: {self.model}")
+        except Exception as e:
+            print(f"[WARNING] Ollama server not reachable: {e}")
+    
+    def call(self, system, messages, tools):
+        """Call Ollama API"""
+        try:
+            # Build prompt from system and messages
+            prompt = ""
+            if system:
+                prompt = f"System: {system}\n\n"
+            
+            for msg in messages:
+                role = msg.get("role", "user")
+                content = msg.get("content", "")
+                if role == "user":
+                    prompt += f"User: {content}\n"
+                elif role == "assistant":
+                    prompt += f"Assistant: {content}\n"
+            
+            prompt += "Assistant:"
+            
+            # Add tool information if available
+            if tools:
+                tool_desc = "Available tools: " + ", ".join(tools)
+                prompt = prompt.replace("System:", f"System: {tool_desc}\n")
+            
+            payload = {
+                "model": self.model,
+                "prompt": prompt,
+                "stream": False,
+                "options": {
+                    "temperature": 0.7,
+                    "num_predict": 2048
+                }
+            }
+            
+            data = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(
+                f"{self.server_url}/api/generate",
+                data=data,
+                headers={"Content-Type": "application/json"},
+                method="POST"
+            )
+            
+            response = urllib.request.urlopen(req, timeout=self.timeout)
+            result = json.loads(response.read().decode('utf-8'))
+            response_text = result.get("response", "")
+            
+            # Check if response contains tool calls (JSON format)
+            if tools and "{" in response_text and "}" in response_text:
+                try:
+                    # Try to extract JSON tool call
+                    start = response_text.find("{")
+                    end = response_text.rfind("}") + 1
+                    json_str = response_text[start:end]
+                    tool_call = json.loads(json_str)
+                    
+                    if "name" in tool_call or "tool" in tool_call:
+                        return [{
+                            "type": "tool_use",
+                            "name": tool_call.get("name", tool_call.get("tool")),
+                            "input": tool_call.get("input", tool_call.get("args", {}))
+                        }]
+                except:
+                    pass
+            
+            return [{"type": "text", "text": response_text}]
+            
+        except Exception as e:
+            return [{"type": "text", "text": f"Error: {str(e)}"}]
+
 class AnthropicAdapter(BaseAdapter):
     def __init__(self):
         self.key = os.environ.get("ANTHROPIC_API_KEY", "")

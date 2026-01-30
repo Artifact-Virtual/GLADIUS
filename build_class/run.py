@@ -90,9 +90,19 @@ def get_adapter():
             print(f"[ERROR] Failed to initialize Mock adapter: {e}")
             sys.exit(1)
     
+    elif adapter_type == "ollama":
+        # Ollama adapter
+        try:
+            from adapter import OllamaAdapter
+            adapter = OllamaAdapter()
+            return adapter
+        except Exception as e:
+            print(f"[ERROR] Failed to initialize Ollama adapter: {e}")
+            sys.exit(1)
+    
     else:
         print(f"[ERROR] Unknown adapter type: {adapter_type}")
-        print("Supported types: 'llamacpp' (primary), 'anthropic', 'mock'")
+        print("Supported types: 'llamacpp' (primary), 'anthropic', 'ollama', 'mock'")
         sys.exit(1)
 
 # Import and initialize
