@@ -51,8 +51,8 @@ class GladiusInterface:
     3. Fallback to base model (qwen2.5:0.5b or llama3.2)
     """
     
-    GLADIUS_MODEL = "gladius1.1:494M"
-    FALLBACK_MODELS = ["qwen2.5:0.5b", "llama3.2"]
+    GLADIUS_MODEL = "gladius1.1:71M-native"
+    FALLBACK_MODELS = ["gladius1.1:71M-native"]
     
     def __init__(self, verbose: bool = False, direct: bool = True):
         self.verbose = verbose
