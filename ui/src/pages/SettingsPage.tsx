@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, Save, RefreshCw, Server, Brain, Shield, Users, Database, Bell, Globe, Moon, Sun, Terminal } from 'lucide-react';
+import { Settings, Save, RefreshCw, Server, Brain, Shield, Users, Database, Bell, Globe, Moon, Sun, Terminal, Power, Cpu, HardDrive } from 'lucide-react';
 
 interface ModuleConfig {
   sentinel: boolean;
@@ -17,8 +17,24 @@ interface SystemConfig {
   fallbackToCpu: boolean;
 }
 
+interface GpuInfo {
+  cuda_available: boolean;
+  device_count: number;
+  device_name: string | null;
+  memory_total: number;
+}
+
+interface SystemStats {
+  platform: string;
+  cpus: number;
+  totalMemory: number;
+  freeMemory: number;
+}
+
 const SettingsPage = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [gpuInfo, setGpuInfo] = useState<GpuInfo | null>(null);
+  const [systemStats, setSystemStats] = useState<SystemStats | null>(null);
   const [modules, setModules] = useState<ModuleConfig>({
     sentinel: true,
     legion: false,
@@ -41,18 +57,81 @@ const SettingsPage = () => {
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadSettings();
+    checkGpu();
+    getSystemStats();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const result = await (window as any).electronAPI?.system?.getConfig?.();
+      if (result?.success && result?.data) {
+        if (result.data.modules) setModules(result.data.modules);
+        if (result.data.system) setSystemConfig(result.data.system);
+        if (result.data.llama) setLlamaConfig(result.data.llama);
+      }
+    } catch (error) {
+      console.error('Failed to load settings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkGpu = async () => {
+    try {
+      const result = await (window as any).electronAPI?.system?.checkGpu?.();
+      if (result?.success) {
+        setGpuInfo(result.data);
+      }
+    } catch (error) {
+      console.error('GPU check failed:', error);
+    }
+  };
+
+  const getSystemStats = async () => {
+    try {
+      const result = await (window as any).electronAPI?.system?.stats?.();
+      if (result?.success) {
+        setSystemStats(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to get system stats:', error);
+    }
+  };
 
   const saveSettings = async () => {
     setSaving(true);
     try {
-      // In a real implementation, this would call the backend
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await (window as any).electronAPI?.system?.setConfig?.({
+        modules,
+        system: systemConfig,
+        llama: llamaConfig
+      });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (error) {
       console.error('Failed to save settings:', error);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const startAllServices = async () => {
+    try {
+      await (window as any).electronAPI?.system?.startAll?.();
+    } catch (error) {
+      console.error('Failed to start services:', error);
+    }
+  };
+
+  const stopAllServices = async () => {
+    try {
+      await (window as any).electronAPI?.system?.stopAll?.();
+    } catch (error) {
+      console.error('Failed to stop services:', error);
     }
   };
 
@@ -260,6 +339,112 @@ const SettingsPage = () => {
                 className="w-full px-4 py-2 bg-primary/50 border border-primary rounded-lg focus:outline-none focus:border-accent"
               />
             </div>
+          </div>
+        </div>
+
+        {/* System Info */}
+        <div className="card">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <HardDrive className="text-accent" size={20} />
+            System Information
+          </h3>
+          
+          <div className="space-y-3">
+            <div className="p-3 bg-primary/30 rounded-lg">
+              <p className="text-text-dim text-sm">Platform</p>
+              <p className="font-medium capitalize">{systemStats?.platform || 'Loading...'}</p>
+            </div>
+            <div className="p-3 bg-primary/30 rounded-lg">
+              <p className="text-text-dim text-sm">CPU Cores</p>
+              <p className="font-medium">{systemStats?.cpus || 'Loading...'}</p>
+            </div>
+            <div className="p-3 bg-primary/30 rounded-lg">
+              <p className="text-text-dim text-sm">Total Memory</p>
+              <p className="font-medium">
+                {systemStats ? `${(systemStats.totalMemory / (1024 * 1024 * 1024)).toFixed(1)} GB` : 'Loading...'}
+              </p>
+            </div>
+            <div className="p-3 bg-primary/30 rounded-lg">
+              <p className="text-text-dim text-sm">Free Memory</p>
+              <p className="font-medium">
+                {systemStats ? `${(systemStats.freeMemory / (1024 * 1024 * 1024)).toFixed(1)} GB` : 'Loading...'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* GPU Info */}
+        <div className="card">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Cpu className="text-accent" size={20} />
+            GPU Status
+          </h3>
+          
+          <div className="space-y-3">
+            <div className="p-3 bg-primary/30 rounded-lg">
+              <p className="text-text-dim text-sm">CUDA Available</p>
+              <p className={`font-medium ${gpuInfo?.cuda_available ? 'text-green-400' : 'text-red-400'}`}>
+                {gpuInfo?.cuda_available ? 'Yes' : 'No'}
+              </p>
+            </div>
+            {gpuInfo?.cuda_available && (
+              <>
+                <div className="p-3 bg-primary/30 rounded-lg">
+                  <p className="text-text-dim text-sm">Device</p>
+                  <p className="font-medium">{gpuInfo.device_name}</p>
+                </div>
+                <div className="p-3 bg-primary/30 rounded-lg">
+                  <p className="text-text-dim text-sm">VRAM</p>
+                  <p className="font-medium">
+                    {(gpuInfo.memory_total / (1024 * 1024 * 1024)).toFixed(1)} GB
+                  </p>
+                </div>
+              </>
+            )}
+            {!gpuInfo?.cuda_available && (
+              <p className="text-text-dim text-sm">
+                Training will use CPU mode. For faster training, consider using a CUDA-enabled GPU.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="card lg:col-span-2">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Power className="text-accent" size={20} />
+            Quick Actions
+          </h3>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button
+              onClick={startAllServices}
+              className="p-4 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg transition-colors text-center"
+            >
+              <Power className="mx-auto mb-2" size={24} />
+              <p className="text-sm font-medium">Start All Services</p>
+            </button>
+            <button
+              onClick={stopAllServices}
+              className="p-4 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors text-center"
+            >
+              <Power className="mx-auto mb-2" size={24} />
+              <p className="text-sm font-medium">Stop All Services</p>
+            </button>
+            <button
+              onClick={checkGpu}
+              className="p-4 bg-primary/50 hover:bg-primary rounded-lg transition-colors text-center"
+            >
+              <RefreshCw className="mx-auto mb-2" size={24} />
+              <p className="text-sm font-medium">Refresh GPU Status</p>
+            </button>
+            <button
+              onClick={loadSettings}
+              className="p-4 bg-primary/50 hover:bg-primary rounded-lg transition-colors text-center"
+            >
+              <RefreshCw className="mx-auto mb-2" size={24} />
+              <p className="text-sm font-medium">Reload Settings</p>
+            </button>
           </div>
         </div>
       </div>

@@ -5,6 +5,8 @@ import { setupSentinelHandlers, cleanupSentinel } from './ipc/sentinel';
 import { setupLegionHandlers, cleanupLegion } from './ipc/legion';
 import { setupLogHandlers, cleanupLogs } from './ipc/logs';
 import { setupArtifactHandlers } from './ipc/artifact';
+import { setupTrainingHandlers, cleanupTraining } from './ipc/training';
+import { setupSystemHandlers } from './ipc/system';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -63,9 +65,11 @@ app.whenReady().then(() => {
   setupSentinelHandlers();
   setupLegionHandlers();
   setupArtifactHandlers();
+  setupSystemHandlers();
   
   if (mainWindow) {
     setupLogHandlers(mainWindow);
+    setupTrainingHandlers(mainWindow);
   }
 
   app.on('activate', () => {
@@ -80,6 +84,7 @@ app.on('window-all-closed', () => {
   cleanupSentinel();
   cleanupLegion();
   cleanupLogs();
+  cleanupTraining();
   
   if (process.platform !== 'darwin') {
     app.quit();

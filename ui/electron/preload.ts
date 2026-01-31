@@ -30,6 +30,30 @@ contextBridge.exposeInMainWorld('electronAPI', {
     stopAgent: (processId: string) => ipcRenderer.invoke('legion:stop-agent', processId),
   },
 
+  // Training operations
+  training: {
+    status: () => ipcRenderer.invoke('training:status'),
+    start: (config: any) => ipcRenderer.invoke('training:start', config),
+    stop: () => ipcRenderer.invoke('training:stop'),
+    pause: () => ipcRenderer.invoke('training:pause'),
+    resume: () => ipcRenderer.invoke('training:resume'),
+    metrics: () => ipcRenderer.invoke('training:metrics'),
+    onOutput: (callback: (data: any) => void) => {
+      ipcRenderer.on('training:output', (_event, data) => callback(data));
+    },
+    onComplete: (callback: (data: any) => void) => {
+      ipcRenderer.on('training:complete', (_event, data) => callback(data));
+    },
+    onError: (callback: (data: any) => void) => {
+      ipcRenderer.on('training:error', (_event, data) => callback(data));
+    },
+    removeListeners: () => {
+      ipcRenderer.removeAllListeners('training:output');
+      ipcRenderer.removeAllListeners('training:complete');
+      ipcRenderer.removeAllListeners('training:error');
+    },
+  },
+
   // Logs operations
   logs: {
     list: () => ipcRenderer.invoke('logs:list'),
@@ -58,6 +82,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
     delete: (artifactId: string) => ipcRenderer.invoke('artifact:delete', artifactId),
     export: (artifactId: string, destination: string) => ipcRenderer.invoke('artifact:export', artifactId, destination),
   },
+
+  // System operations
+  system: {
+    status: () => ipcRenderer.invoke('system:status'),
+    stats: () => ipcRenderer.invoke('system:stats'),
+    getConfig: () => ipcRenderer.invoke('system:config:get'),
+    setConfig: (updates: any) => ipcRenderer.invoke('system:config:set', updates),
+    checkGpu: () => ipcRenderer.invoke('system:gpu:check'),
+    startAll: () => ipcRenderer.invoke('system:start-all'),
+    stopAll: () => ipcRenderer.invoke('system:stop-all'),
+  },
 });
 
 // Export types for TypeScript
@@ -83,6 +118,18 @@ export interface ElectronAPI {
     deployAgent: (agentId: string, config?: any) => Promise<any>;
     stopAgent: (processId: string) => Promise<any>;
   };
+  training: {
+    status: () => Promise<any>;
+    start: (config: any) => Promise<any>;
+    stop: () => Promise<any>;
+    pause: () => Promise<any>;
+    resume: () => Promise<any>;
+    metrics: () => Promise<any>;
+    onOutput: (callback: (data: any) => void) => void;
+    onComplete: (callback: (data: any) => void) => void;
+    onError: (callback: (data: any) => void) => void;
+    removeListeners: () => void;
+  };
   logs: {
     list: () => Promise<any>;
     read: (logName: string, lines?: number) => Promise<any>;
@@ -100,6 +147,15 @@ export interface ElectronAPI {
     create: (config: any) => Promise<any>;
     delete: (artifactId: string) => Promise<any>;
     export: (artifactId: string, destination: string) => Promise<any>;
+  };
+  system: {
+    status: () => Promise<any>;
+    stats: () => Promise<any>;
+    getConfig: () => Promise<any>;
+    setConfig: (updates: any) => Promise<any>;
+    checkGpu: () => Promise<any>;
+    startAll: () => Promise<any>;
+    stopAll: () => Promise<any>;
   };
 }
 
