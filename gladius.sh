@@ -41,6 +41,42 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 # =============================================================================
+# CONFIGURATION
+# =============================================================================
+
+CONFIG_FILE="$GLADIUS_ROOT/config.json"
+
+# Function to read config value using Python (jq alternative)
+get_config() {
+    local path="$1"
+    local default="$2"
+    if [ -f "$CONFIG_FILE" ]; then
+        "$PYTHON" -c "
+import json
+try:
+    with open('$CONFIG_FILE') as f:
+        config = json.load(f)
+    keys = '$path'.split('.')
+    val = config
+    for k in keys:
+        val = val.get(k, {})
+    print(val if val != {} else '$default')
+except:
+    print('$default')
+" 2>/dev/null
+    else
+        echo "$default"
+    fi
+}
+
+# Module enabled checks
+is_module_enabled() {
+    local module="$1"
+    local result=$(get_config "modules.$module.enabled" "true")
+    [ "$result" = "True" ] || [ "$result" = "true" ]
+}
+
+# =============================================================================
 # UTILITY FUNCTIONS
 # =============================================================================
 
@@ -456,9 +492,12 @@ do_start() {
     echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
     echo ""
     
-    # 7. Start LEGION Enterprise Orchestrator
+    # 7. Start LEGION Enterprise Orchestrator (check config toggle)
     echo -e "${CYAN}[7/7] LEGION Orchestrator${NC}"
-    if pgrep -f "continuous_operation.py" > /dev/null 2>&1; then
+    if ! is_module_enabled "legion"; then
+        echo -e "  ${YELLOW}⚠️${NC}  LEGION disabled in config.json"
+        echo -e "  ${CYAN}→${NC} To enable: set modules.legion.enabled = true"
+    elif pgrep -f "continuous_operation.py" > /dev/null 2>&1; then
         local lpid=$(pgrep -f "continuous_operation.py")
         echo -e "  ${GREEN}✅${NC} Already running (PID: $lpid)"
     else

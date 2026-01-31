@@ -1,0 +1,103 @@
+{
+  "version": "1.0.0",
+  "name": "GLADIUS Configuration",
+  "description": "Module toggles and system configuration for GLADIUS",
+  "updated_at": "2026-01-30T15:25:00Z",
+  
+  "modules": {
+    "sentinel": {
+      "enabled": true,
+      "description": "Guardian process - watchdog and learning daemon",
+      "components": {
+        "watchdog": true,
+        "learning_daemon": true
+      }
+    },
+    "legion": {
+      "enabled": false,
+      "description": "Enterprise orchestrator - 18 AI agents across 6 departments",
+      "components": {
+        "orchestrator": false,
+        "artifact_bridge": false
+      }
+    },
+    "gladius_ai": {
+      "enabled": true,
+      "description": "Native GLADIUS AI model and interfaces",
+      "components": {
+        "interactive": true,
+        "speak": true,
+        "build_class": true
+      }
+    },
+    "training": {
+      "enabled": true,
+      "description": "Model training pipelines",
+      "components": {
+        "dual_trainer": true,
+        "moe_trainer": true,
+        "continuous_training": false
+      }
+    },
+    "syndicate": {
+      "enabled": true,
+      "description": "Market intelligence and research daemon",
+      "components": {
+        "daemon": true,
+        "cognition": true
+      }
+    },
+    "infra_api": {
+      "enabled": true,
+      "description": "Infrastructure API (port 7000)",
+      "port": 7000
+    },
+    "dashboard": {
+      "enabled": true,
+      "description": "Dashboard backend and Web UI",
+      "components": {
+        "backend": true,
+        "web_ui": true,
+        "frontend_react": false
+      },
+      "ports": {
+        "backend": 5000,
+        "web_ui": 5002,
+        "frontend": 3000
+      }
+    },
+    "monitoring": {
+      "enabled": false,
+      "description": "Grafana and Prometheus monitoring stack",
+      "components": {
+        "grafana": false,
+        "prometheus": false
+      },
+      "ports": {
+        "grafana": 3001,
+        "prometheus": 9090
+      }
+    }
+  },
+  
+  "hardware": {
+    "prefer_gpu": true,
+    "fallback_to_cpu": true,
+    "cpu_optimizations": true
+  },
+  
+  "model": {
+    "adapter_type": "llamacpp",
+    "server_url": "http://localhost:11434",
+    "model_name": "gladius:latest",
+    "fallback_model": "qwen2.5:0.5b"
+  },
+  
+  "paths": {
+    "logs": "./logs",
+    "pids": "./.pids",
+    "workspace": "./workspace",
+    "models": "./GLADIUS/models",
+    "checkpoints": "./GLADIUS/tmp/checkpoints"
+  }
+}
