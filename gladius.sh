@@ -566,6 +566,70 @@ do_start() {
     
     echo ""
     echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${CYAN}PHASE 4: GLADIUS API & Visualization WebUI${NC}"
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+    echo ""
+    
+    # Start GLADIUS API Server first (provides /api/status for WebUI)
+    echo -e "${CYAN}[9/10] GLADIUS API Server${NC}"
+    if check_port 7001; then
+        echo -e "  ${YELLOW}⚠️${NC}  Already running on port 7001"
+    else
+        local API_SERVER="$GLADIUS_ROOT/GLADIUS/api/server.py"
+        if [ -f "$API_SERVER" ]; then
+            echo -e "  ${BLUE}→${NC} Starting GLADIUS API..."
+            cd "$GLADIUS_ROOT"
+            nohup "$PYTHON" "$API_SERVER" >> "$LOG_DIR/gladius_api.log" 2>&1 &
+            echo $! > "$PID_DIR/gladius_api.pid"
+            sleep 2
+            
+            if check_port 7001; then
+                echo -e "  ${GREEN}✅${NC} GLADIUS API running on http://localhost:7001"
+            else
+                echo -e "  ${YELLOW}⚠️${NC}  API may take a moment to start"
+            fi
+        else
+            echo -e "  ${YELLOW}⚠️${NC}  GLADIUS API server not found"
+        fi
+    fi
+    
+    echo -e "${CYAN}[10/10] WebUI Visualization${NC}"
+    
+    if is_module_enabled "webui"; then
+        local WEBUI_DIR="$GLADIUS_ROOT/ui/webui"
+        
+        if [ -d "$WEBUI_DIR" ] && [ -f "$WEBUI_DIR/package.json" ]; then
+            # Check if node_modules exists
+            if [ ! -d "$WEBUI_DIR/node_modules" ]; then
+                echo -e "  ${BLUE}→${NC} Installing WebUI dependencies..."
+                cd "$WEBUI_DIR"
+                npm install --quiet >> "$LOG_DIR/webui_install.log" 2>&1
+            fi
+            
+            # Start webapp frontend
+            echo -e "  ${BLUE}→${NC} Starting WebUI frontend..."
+            cd "$WEBUI_DIR"
+            nohup npm run dev >> "$LOG_DIR/webui_frontend.log" 2>&1 &
+            echo $! > "$PID_DIR/webui_frontend.pid"
+            sleep 3
+            
+            if check_port 3000; then
+                echo -e "  ${GREEN}✅${NC} WebUI frontend running on http://localhost:3000"
+            else
+                echo -e "  ${YELLOW}⚠️${NC}  WebUI frontend may take a moment to start"
+            fi
+            
+            cd "$GLADIUS_ROOT"
+        else
+            echo -e "  ${YELLOW}⚠️${NC}  WebUI not found at $WEBUI_DIR"
+        fi
+    else
+        echo -e "  ${YELLOW}⚠️${NC}  WebUI disabled in config.json"
+        echo -e "  ${CYAN}→${NC} To enable: set modules.webui.enabled = true"
+    fi
+    
+    echo ""
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
     echo ""
     
     # Run health check
@@ -589,6 +653,8 @@ do_start() {
     fi
     echo ""
     echo -e "  ${BLUE}▌ ACCESS POINTS${NC}"
+    echo -e "    ${CYAN}WebUI Viz${NC}        http://localhost:3000"
+    echo -e "    ${CYAN}WebUI API${NC}        http://localhost:7001"
     echo -e "    ${CYAN}Electron UI${NC}      Desktop Application"
     echo -e "    ${CYAN}Infra API${NC}        http://localhost:7000/docs"
     echo -e "    ${CYAN}Dashboard API${NC}    http://localhost:5000"
@@ -652,7 +718,7 @@ do_stop() {
     fi
     
     # Stop Grafana (Docker)
-    echo -e "${CYAN}[4/7] Grafana${NC}"
+    echo -e "${CYAN}[4/9] Grafana${NC}"
     if docker ps -q -f name=gold_grafana 2>/dev/null | grep -q .; then
         docker stop gold_grafana > /dev/null 2>&1
         docker rm gold_grafana > /dev/null 2>&1
@@ -662,7 +728,7 @@ do_stop() {
     fi
     
     # Stop Prometheus (Docker)
-    echo -e "${CYAN}[5/7] Prometheus${NC}"
+    echo -e "${CYAN}[5/9] Prometheus${NC}"
     if docker ps -q -f name=gold_prometheus 2>/dev/null | grep -q .; then
         docker stop gold_prometheus > /dev/null 2>&1
         docker rm gold_prometheus > /dev/null 2>&1
@@ -672,7 +738,7 @@ do_stop() {
     fi
     
     # Stop Syndicate Daemon
-    echo -e "${CYAN}[6/7] Syndicate Daemon${NC}"
+    echo -e "${CYAN}[6/9] Syndicate Daemon${NC}"
     pid=$(pgrep -f "run.py.*--interval-min" 2>/dev/null)
     if [ -n "$pid" ]; then
         if [ "$force" = true ]; then kill -9 $pid 2>/dev/null; else kill $pid 2>/dev/null; fi
@@ -682,13 +748,33 @@ do_stop() {
     fi
     
     # Stop LEGION Orchestrator
-    echo -e "${CYAN}[7/7] LEGION Orchestrator${NC}"
+    echo -e "${CYAN}[7/9] LEGION Orchestrator${NC}"
     pid=$(pgrep -f "continuous_operation.py" 2>/dev/null)
     if [ -n "$pid" ]; then
         if [ "$force" = true ]; then kill -9 $pid 2>/dev/null; else kill $pid 2>/dev/null; fi
         echo -e "  ${GREEN}✅${NC} Stopped (PID: $pid)"
     else
         echo -e "  ${YELLOW}─${NC}  LEGION was not running"
+    fi
+    
+    # Stop WebUI API Backend
+    echo -e "${CYAN}[8/9] WebUI API Backend${NC}"
+    pid=$(lsof -t -i:7001 2>/dev/null)
+    if [ -n "$pid" ]; then
+        if [ "$force" = true ]; then kill -9 $pid 2>/dev/null; else kill $pid 2>/dev/null; fi
+        echo -e "  ${GREEN}✅${NC} Stopped (PID: $pid)"
+    else
+        echo -e "  ${YELLOW}─${NC}  Not running"
+    fi
+    
+    # Stop WebUI Frontend
+    echo -e "${CYAN}[9/9] WebUI Frontend${NC}"
+    pid=$(lsof -t -i:3000 2>/dev/null)
+    if [ -n "$pid" ]; then
+        if [ "$force" = true ]; then kill -9 $pid 2>/dev/null; else kill $pid 2>/dev/null; fi
+        echo -e "  ${GREEN}✅${NC} Stopped (PID: $pid)"
+    else
+        echo -e "  ${YELLOW}─${NC}  Not running"
     fi
     
     # Clean up PID files

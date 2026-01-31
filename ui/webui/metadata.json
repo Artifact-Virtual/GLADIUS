@@ -1,0 +1,7 @@
+{
+  "name": "gladius-web",
+  "description": "An immersive interactive particle ecosystem representing a shapeless entity with real-time AI voice interaction.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
