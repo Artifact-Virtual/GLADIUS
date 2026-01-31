@@ -12,13 +12,13 @@
 ### gladius1.1:71M-native
 
 <!-- AGI DEVELOPMENT PROGRESS BAR -->
-<h3>🧠 AGI Development Progress</h3>
+<h3>AGI Development Progress</h3>
 <table>
 <tr>
 <td width="100%">
 <pre>
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ GLADIUS → AGI ROADMAP                                             85% / 100% │
+│ROADMAP                                             85% / 100% │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │  ████████████████████████████████████████████████████████████████░░░░░░░░░░  │
@@ -72,12 +72,12 @@ flowchart TB
 
     subgraph GLADIUS["GLADIUS 1.1:71M-native\n(Native AI — The Brain)"]
       direction LR
-      CE[Cognition Engine]
-      RT[Router<br/>(llama.cpp)]
-      TR[Trainer<br/>(CPU/GPU)]
-      CI[Chat Interface]
-      TA[Twitter Agent]
-      BC[Build Class]
+      CE["Cognition\nEngine"]
+      RT["Router\n(llama.cpp)"]
+      TR["Trainer\n(CPU/GPU)"]
+      CI["Chat\nInterface"]
+      TA["Twitter\nAgent"]
+      BC["Build\nClass"]
       CE --> RT
       CE --> TR
       CE --> CI
@@ -85,11 +85,11 @@ flowchart TB
       CE --> BC
     end
 
-    SENT[SENTINEL<br/>(Guardian / AGI Research)]
-    LEG[LEGION<br/>(26 agents)]
-    SYN[SYNDICATE<br/>(Market Data)]
-    AUT[AUTOMATA<br/>(Publish - 5 platforms)]
-    HECTOR[HEKTOR VDB<br/>(Vector Memory / Contextualization)]
+    SENT["SENTINEL\n(Guardian / AGI Research)"]
+    LEG["LEGION\n(26 agents)"]
+    SYN["SYNDICATE\n(Market Data)"]
+    AUT["AUTOMATA\n(Publish - 5 platforms)"]
+    HECTOR["HEKTOR VDB\n(Vector Memory / Contextualization)"]
 
     SENT -->|feeds research| HECTOR
     LEG -->|agent data| HECTOR
@@ -116,50 +116,29 @@ flowchart TB
 
 ## Data Flow
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        DATA FLOW ARCHITECTURE                            │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌──────────────┐                              ┌──────────────┐         │
-│  │   SENTINEL   │                              │  SYNDICATE   │         │
-│  │  (R&D Data)  │                              │(Market Data) │         │
-│  │              │                              │              │         │
-│  │ • AI/AGI    │                              │ • yfinance   │         │
-│  │   threats    │                              │ • FRED       │         │
-│  │ • xAI news   │                              │ • Current    │         │
-│  │ • Security   │                              │   affairs    │         │
-│  └──────┬───────┘                              └──────┬───────┘         │
-│         │                                             │                  │
-│         └─────────────────┬───────────────────────────┘                  │
-│                           │                                              │
-│                           ▼                                              │
-│                  ┌─────────────────┐                                    │
-│                  │   HEKTOR VDB    │                                    │
-│                  │                 │                                    │
-│                  │ • Vectorize     │                                    │
-│                  │ • Contextualize │                                    │
-│                  │ • Store/Recall  │                                    │
-│                  └────────┬────────┘                                    │
-│                           │                                              │
-│                           ▼                                              │
-│                  ┌─────────────────┐                                    │
-│                  │     GLADIUS     │                                    │
-│                  │   (71M Native)  │                                    │
-│                  │                 │                                    │
-│                  │ • Learn tools   │                                    │
-│                  │ • Adapt context │                                    │
-│                  │ • Self-improve  │                                    │
-│                  └────────┬────────┘                                    │
-│                           │                                              │
-│              ┌────────────┼────────────┐                                │
-│              ▼            ▼            ▼                                │
-│      ┌───────────┐ ┌───────────┐ ┌───────────┐                         │
-│      │   CHAT    │ │  TWITTER  │ │  BUILD    │                         │
-│      │ Interface │ │   Agent   │ │   CLASS   │                         │
-│      └───────────┘ └───────────┘ └───────────┘                         │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+  subgraph DATA_FLOW["DATA FLOW ARCHITECTURE"]
+    direction TB
+
+    SENT["SENTINEL\n(R&D Data)\n• AI/AGI threats\n• xAI news\n• Security"]
+    SYN["SYNDICATE\n(Market Data)\n• yfinance\n• FRED\n• Current affairs"]
+
+    HDB["HEKTOR VDB\n• Vectorize\n• Contextualize\n• Store/Recall"]
+
+    GL["GLADIUS\n(71M Native)\n• Learn tools\n• Adapt context\n• Self-improve"]
+
+    CHAT["Chat Interface"]
+    TW["Twitter Agent"]
+    BC["Build Class"]
+
+    SENT --> HDB
+    SYN  --> HDB
+    HDB  --> GL
+    GL   --> CHAT
+    GL   --> TW
+    GL   --> BC
+  end
 ```
 
 ---
@@ -442,35 +421,36 @@ SMTP_SSL=true
 
 GLADIUS learns through a continuous feedback cycle:
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        LEARNING & ADAPTATION LOOP                        │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│    SENTINEL (R&D)              SYNDICATE (Markets)                      │
-│         │                            │                                   │
-│         ▼                            ▼                                   │
-│    ┌─────────────────────────────────────────────┐                      │
-│    │              HEKTOR VDB                      │                      │
-│    │        (Vectorize & Contextualize)          │                      │
-│    └─────────────────────┬───────────────────────┘                      │
-│                          │                                               │
-│                          ▼                                               │
-│    ┌─────────────────────────────────────────────┐                      │
-│    │           GLADIUS COGNITION                  │                      │
-│    │  • Recall relevant context                   │                      │
-│    │  • Learn tool patterns                       │                      │
-│    │  • Adapt to new information                  │                      │
-│    └─────────────────────┬───────────────────────┘                      │
-│                          │                                               │
-│         ┌────────────────┼────────────────┐                             │
-│         ▼                ▼                ▼                             │
-│      Chat             Twitter         Build Class                       │
-│    Interface          Agent           (Tools)                           │
-│                                                                          │
-│    (Feedback from interactions feeds back into Hektor)                  │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
+```text
+┌──────────────┐     ┌──────────────┐
+│ SENTINEL     │     │ SYNDICATE    │
+│ (R&D)        │     │ (Markets)    │
+└──────┬───────┘     └──────┬───────┘
+  │                    │
+  └─────┬──────────────┘
+        ▼
+┌────────────────────────────────────────────┐
+│ HEKTOR VDB — Vectorize & Contextualize    │
+└────────────────────────────────────────────┘
+        │
+        ▼
+┌────────────────────────────────────────────┐
+│ GLADIUS COGNITION                          │
+│ • Recall relevant context                  │
+│ • Learn tool patterns                      │
+│ • Adapt to new information                 │
+└────────────────────────────────────────────┘
+     ┌────────────┬─────────────┬────────────┐
+     ▼            ▼             ▼
+┌──────────┐  ┌──────────┐  ┌──────────────┐
+│ Chat     │  │ Twitter  │  │ Build Class  │
+│ Interface│  │ Agent    │  │ (Tools)      │
+└──────────┘  └──────────┘  └──────────────┘
+  ▲             ▲               ▲
+  └─────────────┴───────────────┘
+      │
+      ▼
+   feedback → HEKTOR VDB
 ```
 
 ### Key Features:
