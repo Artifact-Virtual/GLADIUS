@@ -1,3 +1,21 @@
+---
+license: other
+license_name: proprietary
+license_link: LICENSE
+language:
+  - en
+library_name: gguf
+tags:
+  - gguf
+  - llama-cpp
+  - tool-calling
+  - function-calling
+  - agentic
+  - artifact-virtual
+pipeline_tag: text-generation
+inference: false
+---
+
 # GLADIUS Model Card
 
 ## Model Details

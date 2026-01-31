@@ -23,14 +23,391 @@ import math
 import time
 import logging
 import argparse
+import threading
 from pathlib import Path
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from typing import Optional, List, Dict, Any, Tuple
+from datetime import datetime, timedelta
+from collections import deque
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
+
+# =============================================================================
+# TERMINAL DISPLAY SYSTEM
+# =============================================================================
+
+class Colors:
+    """ANSI color codes for terminal output"""
+    RESET = '\033[0m'
+    BOLD = '\033[1m'
+    DIM = '\033[2m'
+    UNDERLINE = '\033[4m'
+    BLINK = '\033[5m'
+    
+    # Foreground
+    BLACK = '\033[30m'
+    RED = '\033[31m'
+    GREEN = '\033[32m'
+    YELLOW = '\033[33m'
+    BLUE = '\033[34m'
+    MAGENTA = '\033[35m'
+    CYAN = '\033[36m'
+    WHITE = '\033[37m'
+    
+    # Bright foreground
+    BRIGHT_BLACK = '\033[90m'
+    BRIGHT_RED = '\033[91m'
+    BRIGHT_GREEN = '\033[92m'
+    BRIGHT_YELLOW = '\033[93m'
+    BRIGHT_BLUE = '\033[94m'
+    BRIGHT_MAGENTA = '\033[95m'
+    BRIGHT_CYAN = '\033[96m'
+    BRIGHT_WHITE = '\033[97m'
+    
+    # Background
+    BG_BLACK = '\033[40m'
+    BG_RED = '\033[41m'
+    BG_GREEN = '\033[42m'
+    BG_BLUE = '\033[44m'
+    BG_MAGENTA = '\033[45m'
+    BG_CYAN = '\033[46m'
+
+
+class TrainingMetrics:
+    """Track comprehensive training metrics"""
+    def __init__(self, total_steps: int, total_epochs: int):
+        self.total_steps = total_steps
+        self.total_epochs = total_epochs
+        self.start_time = time.time()
+        self.epoch_start_time = time.time()
+        
+        # Loss tracking
+        self.loss_history = deque(maxlen=1000)
+        self.epoch_losses = []
+        self.best_loss = float('inf')
+        self.worst_loss = 0.0
+        
+        # Step tracking
+        self.current_step = 0
+        self.current_epoch = 0
+        self.steps_in_epoch = 0
+        self.tokens_processed = 0
+        
+        # Performance
+        self.step_times = deque(maxlen=100)
+        self.last_step_time = time.time()
+        
+        # Gradients
+        self.grad_norm_history = deque(maxlen=100)
+        self.learning_rates = []
+        
+        # Memory
+        self.peak_memory_mb = 0
+        self.current_memory_mb = 0
+    
+    def update(self, loss: float, grad_norm: float = 0.0, lr: float = 0.0, 
+               batch_tokens: int = 0, memory_mb: float = 0.0):
+        now = time.time()
+        step_time = now - self.last_step_time
+        self.last_step_time = now
+        
+        self.current_step += 1
+        self.steps_in_epoch += 1
+        self.tokens_processed += batch_tokens
+        
+        self.loss_history.append(loss)
+        self.step_times.append(step_time)
+        self.grad_norm_history.append(grad_norm)
+        self.learning_rates.append(lr)
+        
+        if loss < self.best_loss:
+            self.best_loss = loss
+        if loss > self.worst_loss:
+            self.worst_loss = loss
+        
+        self.current_memory_mb = memory_mb
+        if memory_mb > self.peak_memory_mb:
+            self.peak_memory_mb = memory_mb
+    
+    def start_epoch(self, epoch: int):
+        self.current_epoch = epoch
+        self.epoch_start_time = time.time()
+        self.steps_in_epoch = 0
+    
+    def end_epoch(self):
+        if self.loss_history:
+            avg = sum(list(self.loss_history)[-self.steps_in_epoch:]) / max(self.steps_in_epoch, 1)
+            self.epoch_losses.append(avg)
+    
+    @property
+    def avg_loss(self) -> float:
+        if not self.loss_history:
+            return 0.0
+        return sum(self.loss_history) / len(self.loss_history)
+    
+    @property
+    def recent_loss(self) -> float:
+        if not self.loss_history:
+            return 0.0
+        recent = list(self.loss_history)[-10:]
+        return sum(recent) / len(recent)
+    
+    @property
+    def loss_trend(self) -> str:
+        if len(self.loss_history) < 20:
+            return "━"
+        old = sum(list(self.loss_history)[-20:-10]) / 10
+        new = sum(list(self.loss_history)[-10:]) / 10
+        diff = new - old
+        if diff < -0.01:
+            return "↓"
+        elif diff > 0.01:
+            return "↑"
+        return "━"
+    
+    @property
+    def steps_per_second(self) -> float:
+        if not self.step_times:
+            return 0.0
+        return 1.0 / (sum(self.step_times) / len(self.step_times))
+    
+    @property
+    def tokens_per_second(self) -> float:
+        elapsed = time.time() - self.start_time
+        if elapsed == 0:
+            return 0.0
+        return self.tokens_processed / elapsed
+    
+    @property
+    def elapsed_time(self) -> str:
+        return str(timedelta(seconds=int(time.time() - self.start_time)))
+    
+    @property
+    def eta(self) -> str:
+        if self.current_step == 0:
+            return "calculating..."
+        elapsed = time.time() - self.start_time
+        rate = self.current_step / elapsed
+        remaining_steps = self.total_steps - self.current_step
+        if rate == 0:
+            return "unknown"
+        eta_seconds = remaining_steps / rate
+        return str(timedelta(seconds=int(eta_seconds)))
+    
+    @property
+    def progress_percent(self) -> float:
+        if self.total_steps == 0:
+            return 0.0
+        return (self.current_step / self.total_steps) * 100
+
+
+class AnimatedDisplay:
+    """Animated terminal display for training progress"""
+    
+    LOGO = r"""
+    ╔═══════════════════════════════════════════════════════════════════════╗
+    ║   ██████╗ ██╗      █████╗ ██████╗ ██╗██╗   ██╗███████╗               ║
+    ║  ██╔════╝ ██║     ██╔══██╗██╔══██╗██║██║   ██║██╔════╝               ║
+    ║  ██║  ███╗██║     ███████║██║  ██║██║██║   ██║███████╗               ║
+    ║  ██║   ██║██║     ██╔══██║██║  ██║██║██║   ██║╚════██║               ║
+    ║  ╚██████╔╝███████╗██║  ██║██████╔╝██║╚██████╔╝███████║               ║
+    ║   ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═════╝ ╚═╝ ╚═════╝ ╚══════╝               ║
+    ║                    ◆ NEURAL TRAINING ENGINE ◆                        ║
+    ╚═══════════════════════════════════════════════════════════════════════╝
+    """
+    
+    SPINNER_FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+    PULSE_FRAMES = ['◜', '◠', '◝', '◞', '◡', '◟']
+    BRAIN_FRAMES = ['🧠', '💭', '⚡', '✨', '🔮', '💫']
+    
+    def __init__(self, device: str, config_info: dict):
+        self.device = device
+        self.config_info = config_info
+        self.frame = 0
+        self.running = True
+        self._lock = threading.Lock()
+        
+    def clear_screen(self):
+        print('\033[2J\033[H', end='')
+    
+    def move_cursor(self, row: int, col: int = 1):
+        print(f'\033[{row};{col}H', end='')
+    
+    def hide_cursor(self):
+        print('\033[?25l', end='')
+    
+    def show_cursor(self):
+        print('\033[?25h', end='')
+    
+    def render_progress_bar(self, percent: float, width: int = 40, 
+                           filled_char: str = '█', empty_char: str = '░') -> str:
+        filled = int(width * percent / 100)
+        empty = width - filled
+        
+        # Gradient effect
+        bar = ''
+        for i in range(filled):
+            if i < width * 0.3:
+                bar += f'{Colors.RED}{filled_char}'
+            elif i < width * 0.6:
+                bar += f'{Colors.YELLOW}{filled_char}'
+            else:
+                bar += f'{Colors.GREEN}{filled_char}'
+        bar += f'{Colors.BRIGHT_BLACK}{empty_char * empty}{Colors.RESET}'
+        
+        return bar
+    
+    def render_mini_chart(self, values: list, width: int = 20, height: int = 5) -> List[str]:
+        """Render a mini sparkline chart"""
+        if not values:
+            return ['─' * width] * height
+        
+        # Take last 'width' values
+        vals = list(values)[-width:]
+        if not vals:
+            return ['─' * width] * height
+        
+        min_v, max_v = min(vals), max(vals)
+        range_v = max_v - min_v if max_v != min_v else 1
+        
+        # Normalize to 0-height range
+        normalized = [(v - min_v) / range_v * (height - 1) for v in vals]
+        
+        lines = []
+        chars = '▁▂▃▄▅▆▇█'
+        
+        for row in range(height - 1, -1, -1):
+            line = ''
+            for val in normalized:
+                if val >= row + 0.875:
+                    line += f'{Colors.GREEN}█{Colors.RESET}'
+                elif val >= row + 0.75:
+                    line += f'{Colors.GREEN}▇{Colors.RESET}'
+                elif val >= row + 0.625:
+                    line += f'{Colors.BRIGHT_GREEN}▆{Colors.RESET}'
+                elif val >= row + 0.5:
+                    line += f'{Colors.YELLOW}▅{Colors.RESET}'
+                elif val >= row + 0.375:
+                    line += f'{Colors.YELLOW}▄{Colors.RESET}'
+                elif val >= row + 0.25:
+                    line += f'{Colors.BRIGHT_YELLOW}▃{Colors.RESET}'
+                elif val >= row + 0.125:
+                    line += f'{Colors.RED}▂{Colors.RESET}'
+                elif val >= row:
+                    line += f'{Colors.RED}▁{Colors.RESET}'
+                else:
+                    line += f'{Colors.BRIGHT_BLACK}·{Colors.RESET}'
+            # Pad to width
+            line += ' ' * (width - len(vals))
+            lines.append(line)
+        
+        return lines
+    
+    def render_header(self, metrics: TrainingMetrics) -> str:
+        self.frame += 1
+        spinner = self.SPINNER_FRAMES[self.frame % len(self.SPINNER_FRAMES)]
+        pulse = self.PULSE_FRAMES[self.frame % len(self.PULSE_FRAMES)]
+        brain = self.BRAIN_FRAMES[self.frame % len(self.BRAIN_FRAMES)]
+        
+        return f"""
+{Colors.CYAN}{Colors.BOLD}╔══════════════════════════════════════════════════════════════════════════════╗{Colors.RESET}
+{Colors.CYAN}║{Colors.RESET}  {brain} {Colors.BOLD}{Colors.BRIGHT_WHITE}GLADIUS NEURAL TRAINING ENGINE{Colors.RESET}  {Colors.BRIGHT_CYAN}{pulse}{Colors.RESET}  {Colors.DIM}v1.1{Colors.RESET}                              {Colors.CYAN}║{Colors.RESET}
+{Colors.CYAN}║{Colors.RESET}  {Colors.BRIGHT_GREEN}{spinner}{Colors.RESET} {Colors.GREEN}Training Active{Colors.RESET}  │  {Colors.YELLOW}Device: {self.device.upper()}{Colors.RESET}  │  {Colors.MAGENTA}Params: {self.config_info.get('params', '?')}M{Colors.RESET}     {Colors.CYAN}║{Colors.RESET}
+{Colors.CYAN}╚══════════════════════════════════════════════════════════════════════════════╝{Colors.RESET}
+"""
+
+    def render_metrics(self, metrics: TrainingMetrics) -> str:
+        trend_color = Colors.GREEN if metrics.loss_trend == "↓" else (Colors.RED if metrics.loss_trend == "↑" else Colors.YELLOW)
+        
+        # Memory info
+        mem_str = f"{metrics.current_memory_mb:.0f}MB" if metrics.current_memory_mb > 0 else "N/A"
+        peak_str = f"{metrics.peak_memory_mb:.0f}MB" if metrics.peak_memory_mb > 0 else "N/A"
+        
+        # Gradient norm
+        grad_norm = list(metrics.grad_norm_history)[-1] if metrics.grad_norm_history else 0.0
+        
+        return f"""
+{Colors.BRIGHT_BLACK}┌─────────────────────────────── PROGRESS ────────────────────────────────────┐{Colors.RESET}
+{Colors.BRIGHT_BLACK}│{Colors.RESET}  {Colors.BOLD}Epoch:{Colors.RESET} {Colors.CYAN}{metrics.current_epoch}/{metrics.total_epochs}{Colors.RESET}   {Colors.BOLD}Step:{Colors.RESET} {Colors.CYAN}{metrics.current_step:,}/{metrics.total_steps:,}{Colors.RESET}   {Colors.BOLD}Progress:{Colors.RESET} {Colors.BRIGHT_WHITE}{metrics.progress_percent:.1f}%{Colors.RESET}
+{Colors.BRIGHT_BLACK}│{Colors.RESET}  [{self.render_progress_bar(metrics.progress_percent, 60)}]
+{Colors.BRIGHT_BLACK}└──────────────────────────────────────────────────────────────────────────────┘{Colors.RESET}
+
+{Colors.BRIGHT_BLACK}┌──────────────────────────────── LOSS ───────────────────────────────────────┐{Colors.RESET}
+{Colors.BRIGHT_BLACK}│{Colors.RESET}  {Colors.BOLD}Current:{Colors.RESET}  {Colors.BRIGHT_WHITE}{list(metrics.loss_history)[-1] if metrics.loss_history else 0:.6f}{Colors.RESET}  {trend_color}{metrics.loss_trend}{Colors.RESET}    {Colors.BOLD}Avg:{Colors.RESET} {Colors.YELLOW}{metrics.avg_loss:.6f}{Colors.RESET}
+{Colors.BRIGHT_BLACK}│{Colors.RESET}  {Colors.BOLD}Best:{Colors.RESET}     {Colors.GREEN}{metrics.best_loss:.6f}{Colors.RESET}         {Colors.BOLD}Recent:{Colors.RESET} {Colors.CYAN}{metrics.recent_loss:.6f}{Colors.RESET}
+{Colors.BRIGHT_BLACK}└──────────────────────────────────────────────────────────────────────────────┘{Colors.RESET}
+
+{Colors.BRIGHT_BLACK}┌───────────────────────────── PERFORMANCE ───────────────────────────────────┐{Colors.RESET}
+{Colors.BRIGHT_BLACK}│{Colors.RESET}  {Colors.BOLD}Speed:{Colors.RESET}      {Colors.CYAN}{metrics.steps_per_second:.2f}{Colors.RESET} steps/s   │  {Colors.BOLD}Tokens/s:{Colors.RESET}    {Colors.MAGENTA}{metrics.tokens_per_second:,.0f}{Colors.RESET}
+{Colors.BRIGHT_BLACK}│{Colors.RESET}  {Colors.BOLD}Elapsed:{Colors.RESET}    {Colors.YELLOW}{metrics.elapsed_time}{Colors.RESET}       │  {Colors.BOLD}ETA:{Colors.RESET}         {Colors.GREEN}{metrics.eta}{Colors.RESET}
+{Colors.BRIGHT_BLACK}│{Colors.RESET}  {Colors.BOLD}Grad Norm:{Colors.RESET}  {Colors.BRIGHT_WHITE}{grad_norm:.4f}{Colors.RESET}         │  {Colors.BOLD}LR:{Colors.RESET}          {Colors.BLUE}{metrics.learning_rates[-1] if metrics.learning_rates else 0:.2e}{Colors.RESET}
+{Colors.BRIGHT_BLACK}└──────────────────────────────────────────────────────────────────────────────┘{Colors.RESET}
+
+{Colors.BRIGHT_BLACK}┌─────────────────────────────── MEMORY ───────────────────────────────────────┐{Colors.RESET}
+{Colors.BRIGHT_BLACK}│{Colors.RESET}  {Colors.BOLD}Current:{Colors.RESET} {Colors.CYAN}{mem_str}{Colors.RESET}   │   {Colors.BOLD}Peak:{Colors.RESET} {Colors.MAGENTA}{peak_str}{Colors.RESET}   │   {Colors.BOLD}Tokens Processed:{Colors.RESET} {Colors.GREEN}{metrics.tokens_processed:,}{Colors.RESET}
+{Colors.BRIGHT_BLACK}└──────────────────────────────────────────────────────────────────────────────┘{Colors.RESET}
+"""
+
+    def render_loss_chart(self, metrics: TrainingMetrics) -> str:
+        chart_lines = self.render_mini_chart(list(metrics.loss_history), width=60, height=6)
+        chart = '\n'.join([f'{Colors.BRIGHT_BLACK}│{Colors.RESET}  {line}  {Colors.BRIGHT_BLACK}│{Colors.RESET}' for line in chart_lines])
+        
+        return f"""
+{Colors.BRIGHT_BLACK}┌───────────────────────────── LOSS CHART ─────────────────────────────────────┐{Colors.RESET}
+{chart}
+{Colors.BRIGHT_BLACK}└──────────────────────────────────────────────────────────────────────────────┘{Colors.RESET}
+"""
+
+    def render_epoch_summary(self, metrics: TrainingMetrics) -> str:
+        if not metrics.epoch_losses:
+            return ""
+        
+        summaries = []
+        for i, loss in enumerate(metrics.epoch_losses):
+            status = "✓" if i < metrics.current_epoch else "◦"
+            color = Colors.GREEN if i < metrics.current_epoch else Colors.YELLOW
+            summaries.append(f"{color}{status} Epoch {i+1}: {loss:.6f}{Colors.RESET}")
+        
+        return f"""
+{Colors.BRIGHT_BLACK}┌───────────────────────────── EPOCH HISTORY ──────────────────────────────────┐{Colors.RESET}
+{Colors.BRIGHT_BLACK}│{Colors.RESET}  {' │ '.join(summaries[-5:])}
+{Colors.BRIGHT_BLACK}└──────────────────────────────────────────────────────────────────────────────┘{Colors.RESET}
+"""
+
+    def render_full_display(self, metrics: TrainingMetrics) -> str:
+        with self._lock:
+            return (
+                self.render_header(metrics) +
+                self.render_metrics(metrics) +
+                self.render_loss_chart(metrics) +
+                self.render_epoch_summary(metrics)
+            )
+    
+    def print_startup(self):
+        """Print startup banner"""
+        print(f"{Colors.CYAN}{self.LOGO}{Colors.RESET}")
+        time.sleep(0.5)
+    
+    def print_completion(self, metrics: TrainingMetrics, gguf_path: str = None):
+        """Print training completion summary"""
+        print(f"""
+{Colors.GREEN}{Colors.BOLD}
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                          ✓ TRAINING COMPLETE                                ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  Total Steps:      {metrics.total_steps:>10,}                                          ║
+║  Final Loss:       {metrics.recent_loss:>10.6f}                                          ║
+║  Best Loss:        {metrics.best_loss:>10.6f}                                          ║
+║  Total Time:       {metrics.elapsed_time:>10}                                          ║
+║  Tokens Processed: {metrics.tokens_processed:>10,}                                          ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+{Colors.RESET}""")
+        
+        if gguf_path:
+            print(f"{Colors.MAGENTA}  ◆ GGUF exported to: {gguf_path}{Colors.RESET}\n")
 
 # =============================================================================
 # PATH CONFIGURATION
@@ -478,7 +855,7 @@ class GladiusDataset(Dataset):
 # =============================================================================
 
 class GladiusTrainer:
-    """Unified trainer for CPU and GPU"""
+    """Unified trainer for CPU and GPU with animated display"""
     
     def __init__(self, config: GladiusConfig = None, target_params_m: int = 150):
         self.device, self.device_info = detect_device()
@@ -489,21 +866,25 @@ class GladiusTrainer:
             config = GladiusConfig.for_size(actual_params)
         
         self.config = config
+        self.params_m = config.total_params / 1e6
         
         logger.info(f"Initializing GLADIUS Model")
         logger.info(f"  Device: {self.device}")
         logger.info(f"  Hidden size: {config.hidden_size}")
         logger.info(f"  Layers: {config.num_hidden_layers}")
         logger.info(f"  Heads: {config.num_attention_heads}")
-        logger.info(f"  Parameters: ~{config.total_params / 1e6:.1f}M")
+        logger.info(f"  Parameters: ~{self.params_m:.1f}M")
         
         self.model = GladiusModel(config).to(self.device)
         self.tokenizer = LlamaTokenizer(config.vocab_size)
         
+        # Learning rate
+        self.base_lr = 1e-4 if self.device.type == "cpu" else 3e-4
+        
         # Optimizer with GPU-specific settings
         self.optimizer = torch.optim.AdamW(
             self.model.parameters(),
-            lr=1e-4 if self.device.type == "cpu" else 3e-4,
+            lr=self.base_lr,
             weight_decay=0.01
         )
         
@@ -513,9 +894,41 @@ class GladiusTrainer:
         
         self.epoch = 0
         self.global_step = 0
+        
+        # Display system
+        self.display = None
+        self.metrics = None
     
-    def train(self, data_path: Path, epochs: int = 3, batch_size: int = None, max_length: int = 256):
-        """Train the model"""
+    def _get_memory_usage(self) -> float:
+        """Get current memory usage in MB"""
+        if self.device.type == "cuda":
+            return torch.cuda.memory_allocated() / 1024 / 1024
+        else:
+            try:
+                import psutil
+                process = psutil.Process()
+                return process.memory_info().rss / 1024 / 1024
+            except:
+                return 0.0
+    
+    def _get_grad_norm(self) -> float:
+        """Calculate gradient norm"""
+        total_norm = 0.0
+        for p in self.model.parameters():
+            if p.grad is not None:
+                param_norm = p.grad.data.norm(2)
+                total_norm += param_norm.item() ** 2
+        return total_norm ** 0.5
+    
+    def _get_lr(self) -> float:
+        """Get current learning rate"""
+        for param_group in self.optimizer.param_groups:
+            return param_group['lr']
+        return self.base_lr
+    
+    def train(self, data_path: Path, epochs: int = 3, batch_size: int = None, 
+              max_length: int = 256, animated: bool = True):
+        """Train the model with animated display"""
         if batch_size is None:
             batch_size = self.device_info["recommended_batch_size"]
         
@@ -527,54 +940,111 @@ class GladiusTrainer:
         self.model.train()
         total_steps = len(dataloader) * epochs
         
+        # Initialize display and metrics
+        config_info = {
+            'params': f"{self.params_m:.0f}",
+            'hidden': self.config.hidden_size,
+            'layers': self.config.num_hidden_layers,
+            'heads': self.config.num_attention_heads,
+        }
+        self.display = AnimatedDisplay(str(self.device), config_info)
+        self.metrics = TrainingMetrics(total_steps, epochs)
+        
+        # Print startup banner
+        if animated:
+            self.display.print_startup()
+            self.display.hide_cursor()
+        
         logger.info(f"Starting training:")
         logger.info(f"  Epochs: {epochs}")
         logger.info(f"  Batch size: {batch_size}")
         logger.info(f"  Total steps: {total_steps}")
         logger.info(f"  Mixed precision: {self.use_amp}")
         
-        for epoch in range(self.epoch, self.epoch + epochs):
-            epoch_loss = 0
-            step_in_epoch = 0
-            
-            for batch in dataloader:
-                input_ids = batch["input_ids"].to(self.device)
-                labels = batch["labels"].to(self.device)
+        try:
+            for epoch in range(self.epoch, self.epoch + epochs):
+                self.metrics.start_epoch(epoch + 1)
+                epoch_loss = 0
+                step_in_epoch = 0
                 
-                self.optimizer.zero_grad()
-                
-                if self.use_amp:
-                    with torch.cuda.amp.autocast():
+                for batch in dataloader:
+                    input_ids = batch["input_ids"].to(self.device)
+                    labels = batch["labels"].to(self.device)
+                    batch_tokens = input_ids.numel()
+                    
+                    self.optimizer.zero_grad()
+                    
+                    if self.use_amp:
+                        with torch.cuda.amp.autocast():
+                            outputs = self.model(input_ids, labels=labels)
+                            loss = outputs["loss"]
+                        self.scaler.scale(loss).backward()
+                        self.scaler.unscale_(self.optimizer)
+                        torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
+                        self.scaler.step(self.optimizer)
+                        self.scaler.update()
+                    else:
                         outputs = self.model(input_ids, labels=labels)
                         loss = outputs["loss"]
-                    self.scaler.scale(loss).backward()
-                    self.scaler.unscale_(self.optimizer)
-                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
-                    self.scaler.step(self.optimizer)
-                    self.scaler.update()
-                else:
-                    outputs = self.model(input_ids, labels=labels)
-                    loss = outputs["loss"]
-                    loss.backward()
-                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
-                    self.optimizer.step()
+                        loss.backward()
+                        torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
+                        self.optimizer.step()
+                    
+                    # Update metrics
+                    grad_norm = self._get_grad_norm()
+                    memory_mb = self._get_memory_usage()
+                    lr = self._get_lr()
+                    
+                    self.metrics.update(
+                        loss=loss.item(),
+                        grad_norm=grad_norm,
+                        lr=lr,
+                        batch_tokens=batch_tokens,
+                        memory_mb=memory_mb
+                    )
+                    
+                    epoch_loss += loss.item()
+                    self.global_step += 1
+                    step_in_epoch += 1
+                    
+                    # Update display
+                    if animated and self.global_step % 5 == 0:
+                        self.display.clear_screen()
+                        print(self.display.render_full_display(self.metrics))
+                    elif not animated and self.global_step % 50 == 0:
+                        logger.info(f"Step {self.global_step}/{total_steps} | Loss: {loss.item():.4f} | "
+                                   f"Grad: {grad_norm:.4f} | Mem: {memory_mb:.0f}MB")
                 
-                epoch_loss += loss.item()
-                self.global_step += 1
-                step_in_epoch += 1
+                self.metrics.end_epoch()
+                avg_loss = epoch_loss / step_in_epoch
                 
-                if self.global_step % 10 == 0:
-                    logger.info(f"Step {self.global_step}/{total_steps} | Loss: {loss.item():.4f}")
+                if not animated:
+                    logger.info(f"Epoch {epoch + 1}/{self.epoch + epochs} | Avg Loss: {avg_loss:.4f}")
+                
+                self.epoch = epoch + 1
+                self.save_checkpoint()
             
-            avg_loss = epoch_loss / step_in_epoch
-            logger.info(f"Epoch {epoch + 1}/{self.epoch + epochs} | Avg Loss: {avg_loss:.4f}")
+            # Save final model
+            self.save_model()
             
-            self.epoch = epoch + 1
+            # Print completion
+            if animated:
+                self.display.clear_screen()
+                self.display.print_completion(self.metrics)
+                self.display.show_cursor()
+            
+            return self.epoch
+            
+        except KeyboardInterrupt:
+            if animated:
+                self.display.show_cursor()
+            logger.info("\n⚠ Training interrupted by user")
             self.save_checkpoint()
-        
-        # Save final model
-        self.save_model()
-        return self.epoch
+            raise
+        except Exception as e:
+            if animated:
+                self.display.show_cursor()
+            raise
     
     def save_checkpoint(self, path: Path = None):
         """Save checkpoint (device-agnostic)"""
@@ -787,6 +1257,7 @@ def main():
     parser.add_argument("--export-gguf", action="store_true", help="Export to GGUF after training")
     parser.add_argument("--force-cpu", action="store_true", help="Force CPU training")
     parser.add_argument("--force-gpu", action="store_true", help="Force GPU training (fails if no GPU)")
+    parser.add_argument("--no-animate", action="store_true", help="Disable animated display (use simple logging)")
     
     args = parser.parse_args()
     
@@ -797,9 +1268,11 @@ def main():
         logger.error("--force-gpu specified but no GPU available")
         sys.exit(1)
     
-    logger.info("=" * 70)
-    logger.info("GLADIUS UNIFIED TRAINER")
-    logger.info("=" * 70)
+    # Print startup info if not animated
+    if args.no_animate:
+        logger.info("=" * 70)
+        logger.info("GLADIUS UNIFIED TRAINER")
+        logger.info("=" * 70)
     
     # Create trainer
     trainer = GladiusTrainer(target_params_m=args.params)
@@ -815,15 +1288,19 @@ def main():
         sys.exit(1)
     
     # Train
-    trainer.train(data_path, epochs=args.epochs, batch_size=args.batch_size, max_length=args.max_length)
+    trainer.train(data_path, epochs=args.epochs, batch_size=args.batch_size, 
+                  max_length=args.max_length, animated=not args.no_animate)
     
     # Export if requested
     if args.export_gguf:
-        trainer.export_gguf()
+        gguf_path = trainer.export_gguf()
+        if trainer.display and not args.no_animate:
+            trainer.display.print_completion(trainer.metrics, str(gguf_path) if gguf_path else None)
     
-    logger.info("=" * 70)
-    logger.info("Training complete!")
-    logger.info("=" * 70)
+    if args.no_animate:
+        logger.info("=" * 70)
+        logger.info("Training complete!")
+        logger.info("=" * 70)
 
 
 if __name__ == "__main__":
