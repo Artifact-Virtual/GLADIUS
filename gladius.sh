@@ -182,13 +182,6 @@ do_health_check() {
         echo -e "  ${YELLOW}⚠️${NC}  Electron UI        ${YELLOW}NOT RUNNING${NC}"
     fi
     
-    # Frontend (3000) - optional
-    if check_port 3000; then
-        echo -e "  ${GREEN}✅${NC} Frontend (3000)      ${GREEN}OK${NC}"
-    else
-        echo -e "  ${YELLOW}⚠️${NC}  Frontend (3000)      ${YELLOW}NOT RUNNING${NC} (optional)"
-    fi
-    
     # Syndicate Daemon
     if pgrep -f "run.py.*--interval-min" > /dev/null 2>&1; then
         local pid=$(pgrep -f "run.py.*--interval-min")
@@ -526,6 +519,49 @@ do_start() {
         else
             echo -e "  ${YELLOW}⚠️${NC}  LEGION not found at $GLADIUS_ROOT/LEGION"
         fi
+    fi
+    
+    echo ""
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${CYAN}PHASE 3: GLADIUS Training (Optional)${NC}"
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+    echo ""
+    
+    # Check if training is enabled and should auto-start
+    local auto_train=$(get_config "system.auto_start_training" "false")
+    echo -e "${CYAN}[8/8] GLADIUS Training${NC}"
+    
+    if is_module_enabled "training" && [ "$auto_train" = "True" ] || [ "$auto_train" = "true" ]; then
+        echo -e "  ${BLUE}→${NC} Launching training in new terminal..."
+        
+        # Detect terminal emulator and launch training
+        if command -v gnome-terminal &> /dev/null; then
+            gnome-terminal --title="GLADIUS Training" -- bash -c "cd '$GLADIUS_ROOT' && '$PYTHON' '$GLADIUS_ROOT/GLADIUS/training/gladius_trainer.py' --epochs 10 --export-gguf; read -p 'Press Enter to close...'" &
+            echo -e "  ${GREEN}✅${NC} Training launched in GNOME Terminal"
+        elif command -v xfce4-terminal &> /dev/null; then
+            xfce4-terminal --title="GLADIUS Training" -e "bash -c 'cd \"$GLADIUS_ROOT\" && \"$PYTHON\" \"$GLADIUS_ROOT/GLADIUS/training/gladius_trainer.py\" --epochs 10 --export-gguf; read -p \"Press Enter to close...\"'" &
+            echo -e "  ${GREEN}✅${NC} Training launched in XFCE Terminal"
+        elif command -v konsole &> /dev/null; then
+            konsole --new-tab -e bash -c "cd '$GLADIUS_ROOT' && '$PYTHON' '$GLADIUS_ROOT/GLADIUS/training/gladius_trainer.py' --epochs 10 --export-gguf; read -p 'Press Enter to close...'" &
+            echo -e "  ${GREEN}✅${NC} Training launched in Konsole"
+        elif command -v xterm &> /dev/null; then
+            xterm -title "GLADIUS Training" -e "cd '$GLADIUS_ROOT' && '$PYTHON' '$GLADIUS_ROOT/GLADIUS/training/gladius_trainer.py' --epochs 10 --export-gguf; read -p 'Press Enter to close...'" &
+            echo -e "  ${GREEN}✅${NC} Training launched in xterm"
+        elif command -v qterminal &> /dev/null; then
+            qterminal -e "bash -c 'cd \"$GLADIUS_ROOT\" && \"$PYTHON\" \"$GLADIUS_ROOT/GLADIUS/training/gladius_trainer.py\" --epochs 10 --export-gguf; read'" &
+            echo -e "  ${GREEN}✅${NC} Training launched in QTerminal"
+        else
+            echo -e "  ${YELLOW}⚠️${NC}  No GUI terminal found. Run manually:"
+            echo -e "      ${CYAN}./gladius.sh train${NC}"
+        fi
+    else
+        if ! is_module_enabled "training"; then
+            echo -e "  ${YELLOW}⚠️${NC}  Training module disabled in config.json"
+        else
+            echo -e "  ${YELLOW}⚠️${NC}  Auto-start training disabled (system.auto_start_training=false)"
+        fi
+        echo -e "  ${CYAN}→${NC} To enable: set modules.training.enabled = true AND system.auto_start_training = true"
+        echo -e "  ${CYAN}→${NC} Or run manually: ${GREEN}./gladius.sh train${NC}"
     fi
     
     echo ""
@@ -1314,28 +1350,40 @@ case "${1:-help}" in
         echo -e "  ${CYAN}Logs:${NC} $LOG_DIR/twitter_agent.log"
         ;;
     train)
-        # Run GLADIUS training pipeline
+        # Run GLADIUS unified training (auto-detects CPU/GPU)
         print_header
-        echo -e "${CYAN}Running GLADIUS Training Pipeline...${NC}"
-        echo "─────────────────────────────────────────────────────────────────"
-        "$PYTHON" "$GLADIUS_ROOT/GLADIUS/training/train_pipeline.py" "${@:2}"
-        ;;
-    train-dual)
-        # Run dual training (Qwen LoRA + Primary)
-        print_header
-        echo -e "${CYAN}Running GLADIUS Dual Training System...${NC}"
-        echo "─────────────────────────────────────────────────────────────────"
-        echo -e "  ${BLUE}Track 1:${NC} Qwen2.5-1.5B + LoRA (Operational)"
-        echo -e "  ${BLUE}Track 2:${NC} GLADIUS Primary (Custom Architecture)"
+        echo -e "${CYAN}╔═══════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${CYAN}║          GLADIUS UNIFIED TRAINER - Native GGUF                ║${NC}"
+        echo -e "${CYAN}╚═══════════════════════════════════════════════════════════════╝${NC}"
         echo ""
-        "$PYTHON" "$GLADIUS_ROOT/GLADIUS/training/dual_trainer.py" "${@:2}"
-        ;;
-    train-1b)
-        # Run 1B parameter training
-        print_header
-        echo -e "${CYAN}Running GLADIUS 1B Training...${NC}"
+        echo -e "  ${BLUE}Mode:${NC}     Auto-detect (CPU/GPU)"
+        echo -e "  ${BLUE}Output:${NC}   Native GGUF (llama.cpp compatible)"
+        echo -e "  ${BLUE}Trainer:${NC}  $GLADIUS_ROOT/GLADIUS/training/gladius_trainer.py"
+        echo ""
         echo "─────────────────────────────────────────────────────────────────"
-        "$PYTHON" "$GLADIUS_ROOT/GLADIUS/training/gladius_1b_trainer.py" "${@:2}"
+        echo ""
+        "$PYTHON" "$GLADIUS_ROOT/GLADIUS/training/gladius_trainer.py" --export-gguf "${@:2}"
+        ;;
+    train-cpu)
+        # Force CPU training
+        print_header
+        echo -e "${CYAN}Running GLADIUS Training (CPU Mode)...${NC}"
+        echo "─────────────────────────────────────────────────────────────────"
+        "$PYTHON" "$GLADIUS_ROOT/GLADIUS/training/gladius_trainer.py" --force-cpu --export-gguf "${@:2}"
+        ;;
+    train-gpu)
+        # Force GPU training
+        print_header
+        echo -e "${CYAN}Running GLADIUS Training (GPU Mode)...${NC}"
+        echo "─────────────────────────────────────────────────────────────────"
+        "$PYTHON" "$GLADIUS_ROOT/GLADIUS/training/gladius_trainer.py" --force-gpu --export-gguf "${@:2}"
+        ;;
+    train-quiet)
+        # Training without animated display
+        print_header
+        echo -e "${CYAN}Running GLADIUS Training (Quiet Mode)...${NC}"
+        echo "─────────────────────────────────────────────────────────────────"
+        "$PYTHON" "$GLADIUS_ROOT/GLADIUS/training/gladius_trainer.py" --no-animate --export-gguf "${@:2}"
         ;;
     continuous)
         # Run GLADIUS continuous autonomous mode
@@ -1372,9 +1420,16 @@ case "${1:-help}" in
         echo "  twitter-run        Start Twitter agent (autonomous)"
         echo ""
         echo -e "${CYAN}Training (Run Manually):${NC}"
-        echo "  train              Run GLADIUS training pipeline"
-        echo "  train-dual         Dual training (Qwen LoRA + Primary)"
-        echo "  train-1b           1B parameter training (HEAVY)"
+        echo "  train              Unified training (auto CPU/GPU + GGUF export)"
+        echo "  train-cpu          Force CPU training"
+        echo "  train-gpu          Force GPU training"
+        echo "  train-quiet        Training without animated display"
+        echo ""
+        echo -e "${CYAN}Training Options:${NC}"
+        echo "  --epochs N         Number of training epochs (default: 3)"
+        echo "  --params N         Target parameters in millions (auto-detected)"
+        echo "  --batch-size N     Batch size (auto-detected based on device)"
+        echo "  --resume           Resume from last checkpoint"
         echo ""
         echo -e "${CYAN}Autonomous Modes:${NC}"
         echo "  cycle              Run single autonomous cycle"
@@ -1387,12 +1442,16 @@ case "${1:-help}" in
         echo "  logs               Tail log files"
         echo ""
         echo "Examples:"
-        echo "  ./gladius.sh run                # Lightweight startup (recommended)"
-        echo "  ./gladius.sh interact           # Interactive AI session"
-        echo "  ./gladius.sh train              # Run training manually"
-        echo "  ./gladius.sh start              # Full system (heavy)"
+        echo "  ./gladius.sh run                    # Lightweight startup (recommended)"
+        echo "  ./gladius.sh interact               # Interactive AI session"
+        echo "  ./gladius.sh train                  # Run training (auto CPU/GPU)"
+        echo "  ./gladius.sh train --epochs 10     # Train for 10 epochs"
+        echo "  ./gladius.sh train --resume        # Resume from checkpoint"
+        echo "  ./gladius.sh start                  # Full system (heavy)"
         echo ""
         echo "Config: Edit config.json to enable/disable modules"
+        echo "  - Set modules.training.enabled = true"
+        echo "  - Set system.auto_start_training = true for auto-launch"
         echo ""
         ;;
 esac
