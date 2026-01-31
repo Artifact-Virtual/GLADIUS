@@ -175,12 +175,11 @@ do_health_check() {
         all_ok=false
     fi
 
-    # Web UI (5002) - template server
-    if check_http "http://127.0.0.1:5002/api/status"; then
-        local time=$(get_response_time "http://127.0.0.1:5002/api/status")
-        echo -e "  ${GREEN}✅${NC} Web UI (5002)       ${GREEN}OK${NC}  [${time}s]"
+    # Web UI (5002) - Electron UI status
+    if pgrep -f "electron" > /dev/null 2>&1; then
+        echo -e "  ${GREEN}✅${NC} Electron UI        ${GREEN}RUNNING${NC}"
     else
-        echo -e "  ${YELLOW}⚠️${NC}  Web UI (5002)       ${YELLOW}NOT RUNNING${NC}"
+        echo -e "  ${YELLOW}⚠️${NC}  Electron UI        ${YELLOW}NOT RUNNING${NC}"
     fi
     
     # Frontend (3000) - optional
@@ -412,22 +411,32 @@ do_start() {
         fi
     fi
 
-    # 3. Start Web UI (template server)
-    echo -e "${CYAN}[3/6] Web UI${NC}"
-    WEB_UI_PORT=${WEB_UI_PORT:-5002}
-    if check_port "$WEB_UI_PORT"; then
-        echo -e "  ${YELLOW}⚠️${NC}  Web UI already running on port $WEB_UI_PORT"
-    else
-        echo -e "  ${BLUE}→${NC} Starting Web UI on port $WEB_UI_PORT..."
-        cd "$GLADIUS_ROOT/Artifact/deployment/automata/dashboard/frontend/web_ui"
-        nohup env WEB_UI_PORT="$WEB_UI_PORT" "$PYTHON" start.py > "$LOG_DIR/web_ui.log" 2>&1 &
-        echo $! > "$PID_DIR/web_ui.pid"
-        sleep 2
-        if check_http "http://127.0.0.1:${WEB_UI_PORT}/api/status"; then
-            echo -e "  ${GREEN}✅${NC} Web UI started on port $WEB_UI_PORT"
-        else
-            echo -e "  ${YELLOW}⚠️${NC} Web UI may take a moment to start"
+    # 3. Start Electron UI
+    echo -e "${CYAN}[3/6] Electron UI${NC}"
+    if pgrep -f "electron.*gladius" > /dev/null 2>&1; then
+        echo -e "  ${YELLOW}⚠️${NC}  Electron UI already running"
+    elif [ -d "$GLADIUS_ROOT/ui" ]; then
+        echo -e "  ${BLUE}→${NC} Starting Electron UI..."
+        cd "$GLADIUS_ROOT/ui"
+        
+        # Build if needed
+        if [ ! -d "dist" ]; then
+            echo -e "  ${BLUE}→${NC} Building UI (first time)..."
+            npm run build > "$LOG_DIR/ui_build.log" 2>&1 || true
         fi
+        
+        # Launch Electron
+        ELECTRON_RUN_AS_NODE= nohup npm run start > "$LOG_DIR/ui.log" 2>&1 &
+        echo $! > "$PID_DIR/ui.pid"
+        sleep 3
+        
+        if pgrep -f "electron" > /dev/null 2>&1; then
+            echo -e "  ${GREEN}✅${NC} Electron UI launched"
+        else
+            echo -e "  ${YELLOW}⚠️${NC}  UI may take a moment to start"
+        fi
+    else
+        echo -e "  ${YELLOW}⚠️${NC}  UI directory not found"
     fi
 
     # 4. Start Grafana (via Docker)
@@ -544,7 +553,7 @@ do_start() {
     fi
     echo ""
     echo -e "  ${BLUE}▌ ACCESS POINTS${NC}"
-    echo -e "    ${CYAN}Web UI${NC}           http://localhost:5002"
+    echo -e "    ${CYAN}Electron UI${NC}      Desktop Application"
     echo -e "    ${CYAN}Infra API${NC}        http://localhost:7000/docs"
     echo -e "    ${CYAN}Dashboard API${NC}    http://localhost:5000"
     if check_port 3001; then
@@ -576,9 +585,9 @@ do_stop() {
     
     local force=${1:-false}
     
-    # Stop Frontend (3000)
-    echo -e "${CYAN}[1/6] Dashboard Frontend${NC}"
-    local pid=$(lsof -t -i:3000 2>/dev/null)
+    # Stop Electron UI first
+    echo -e "${CYAN}[1/7] Electron UI${NC}"
+    local pid=$(pgrep -f "electron.*gladius" 2>/dev/null || pgrep -f "electron" 2>/dev/null | head -1)
     if [ -n "$pid" ]; then
         if [ "$force" = true ]; then kill -9 $pid 2>/dev/null; else kill $pid 2>/dev/null; fi
         echo -e "  ${GREEN}✅${NC} Stopped (PID: $pid)"
@@ -596,19 +605,8 @@ do_stop() {
         echo -e "  ${YELLOW}─${NC}  Not running"
     fi
 
-    # Stop Web UI (5002)
-    echo -e "${CYAN}[3/7] Web UI${NC}"
-    WEB_UI_PORT=${WEB_UI_PORT:-5002}
-    pid=$(lsof -t -i:$WEB_UI_PORT 2>/dev/null)
-    if [ -n "$pid" ]; then
-        if [ "$force" = true ]; then kill -9 $pid 2>/dev/null; else kill $pid 2>/dev/null; fi
-        echo -e "  ${GREEN}✅${NC} Stopped (PID: $pid)"
-    else
-        echo -e "  ${YELLOW}─${NC}  Not running"
-    fi
-
     # Stop Infra API (7000)
-    echo -e "${CYAN}[4/7] Infra API${NC}"
+    echo -e "${CYAN}[3/7] Infra API${NC}"
     pid=$(lsof -t -i:7000 2>/dev/null)
     if [ -n "$pid" ]; then
         if [ "$force" = true ]; then kill -9 $pid 2>/dev/null; else kill $pid 2>/dev/null; fi
@@ -618,7 +616,7 @@ do_stop() {
     fi
     
     # Stop Grafana (Docker)
-    echo -e "${CYAN}[4/6] Grafana${NC}"
+    echo -e "${CYAN}[4/7] Grafana${NC}"
     if docker ps -q -f name=gold_grafana 2>/dev/null | grep -q .; then
         docker stop gold_grafana > /dev/null 2>&1
         docker rm gold_grafana > /dev/null 2>&1
@@ -628,7 +626,7 @@ do_stop() {
     fi
     
     # Stop Prometheus (Docker)
-    echo -e "${CYAN}[5/6] Prometheus${NC}"
+    echo -e "${CYAN}[5/7] Prometheus${NC}"
     if docker ps -q -f name=gold_prometheus 2>/dev/null | grep -q .; then
         docker stop gold_prometheus > /dev/null 2>&1
         docker rm gold_prometheus > /dev/null 2>&1
@@ -682,18 +680,12 @@ do_stop() {
     else
         echo -e "  ${GREEN}✓${NC} Port 5000 clear"
     fi
-    
-    if check_port 3000; then
-        echo -e "  ${YELLOW}○${NC} Port 3000 still in use (may be another service)"
-    else
-        echo -e "  ${GREEN}✓${NC} Port 3000 clear"
-    fi
 
-    if check_port 5002; then
-        echo -e "  ${RED}⚠️${NC}  Port 5002 still in use"
+    if pgrep -f "electron" > /dev/null 2>&1; then
+        echo -e "  ${RED}⚠️${NC}  Electron UI still running"
         remaining=$((remaining + 1))
     else
-        echo -e "  ${GREEN}✓${NC} Port 5002 clear"
+        echo -e "  ${GREEN}✓${NC} Electron UI stopped"
     fi
     
     if pgrep -f "run.py.*--interval-min" > /dev/null 2>&1; then
@@ -753,8 +745,7 @@ do_status() {
     echo -e "  ${BLUE}▌ CORE SERVICES${NC}"
     check_port 7000 && echo -e "    ${GREEN}●${NC} Infra API        :7000" || echo -e "    ${RED}○${NC} Infra API        :7000"
     check_port 5000 && echo -e "    ${GREEN}●${NC} Dashboard API    :5000" || echo -e "    ${RED}○${NC} Dashboard API    :5000"
-    check_port 5002 && echo -e "    ${GREEN}●${NC} Web UI           :5002" || echo -e "    ${YELLOW}○${NC} Web UI           :5002"
-    check_port 3000 && echo -e "    ${GREEN}●${NC} Frontend         :3000" || echo -e "    ${YELLOW}○${NC} Frontend         :3000"
+    pgrep -f "electron" > /dev/null 2>&1 && echo -e "    ${GREEN}●${NC} Electron UI      Running" || echo -e "    ${YELLOW}○${NC} Electron UI"
     
     echo ""
     echo -e "  ${BLUE}▌ MONITORING${NC}"
