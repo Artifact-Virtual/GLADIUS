@@ -214,3 +214,4 @@ arty/config.json
 Artifact/research_outputs/*
 build_class/policy.json
 .gitignore
+config.json
