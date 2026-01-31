@@ -217,3 +217,12 @@ build_class/policy.json
 config.json
 config.json
 todo
+.vectorizer_hashes.json
+GLADIUS/memory/conversations.json
+GLADIUS/memory/knowledge_texts.json
+GLADIUS/memory/knowledge.json
+GLADIUS/memory/training.json
+memory/hektor_state.json
+GLADIUS/memory/conversations.npy
+GLADIUS/memory/knowledge.npy
+GLADIUS/memory/training.npy
