@@ -295,84 +295,124 @@ class GladiusModel(nn.Module):
 # TOKENIZER (Simple BPE-style)
 # =============================================================================
 
-class SimpleTokenizer:
-    """Simple character/word tokenizer for initial training"""
+class LlamaTokenizer:
+    """
+    Llama-compatible byte-level tokenizer for GLADIUS.
+    Uses the same token format as llama.cpp for inference compatibility.
+    """
     def __init__(self, vocab_size: int = 32000):
         self.vocab_size = vocab_size
-        self.char_to_id = {}
-        self.id_to_char = {}
-        self.special_tokens = {
-            "<pad>": 0, "<unk>": 1, "<eos>": 2, "<bos>": 3,
-            "<|im_start|>": 4, "<|im_end|>": 5,
-            "system": 6, "user": 7, "assistant": 8
-        }
+        self.token_to_id = {}
+        self.id_to_token = {}
         
-        # Build basic vocab
+        # Build tokenizer
         self._build_vocab()
     
     def _build_vocab(self):
-        idx = len(self.special_tokens)
+        idx = 0
         
-        # Add special tokens
-        for token, token_id in self.special_tokens.items():
-            self.char_to_id[token] = token_id
-            self.id_to_char[token_id] = token
-        
-        # Add ASCII printable characters
-        for c in range(32, 127):
-            self.char_to_id[chr(c)] = idx
-            self.id_to_char[idx] = chr(c)
+        # Special tokens (llama convention)
+        special_tokens = [
+            "<unk>",   # 0 - unknown
+            "<s>",     # 1 - BOS
+            "</s>",    # 2 - EOS
+        ]
+        for tok in special_tokens:
+            self.token_to_id[tok] = idx
+            self.id_to_token[idx] = tok
             idx += 1
         
-        # Add common words/subwords (simplified)
-        common_words = [
-            "the", "is", "are", "was", "were", "be", "been", "have", "has",
-            "tool", "function", "response", "json", "args", "query", "search",
-            "read", "write", "file", "database", "memory", "system", "user",
-            "assistant", "GLADIUS", "Artifact", "Virtual"
-        ]
-        for word in common_words:
-            if word not in self.char_to_id:
-                self.char_to_id[word] = idx
-                self.id_to_char[idx] = word
-                idx += 1
-    
-    def encode(self, text: str) -> List[int]:
-        """Encode text to token IDs"""
-        tokens = [self.special_tokens["<bos>"]]
-        i = 0
-        while i < len(text):
-            # Try to match special tokens first
-            matched = False
-            for token in sorted(self.special_tokens.keys(), key=len, reverse=True):
-                if text[i:].startswith(token):
-                    tokens.append(self.special_tokens[token])
-                    i += len(token)
-                    matched = True
-                    break
-            
-            if not matched:
-                # Single character
-                c = text[i]
-                tokens.append(self.char_to_id.get(c, self.special_tokens["<unk>"]))
-                i += 1
+        # Byte tokens (covers all possible bytes)
+        for i in range(256):
+            if i < 32 or i >= 127:
+                tok = f"<0x{i:02X}>"
+            else:
+                tok = chr(i)
+            self.token_to_id[tok] = idx
+            self.id_to_token[idx] = tok
+            idx += 1
         
-        tokens.append(self.special_tokens["<eos>"])
+        # Common subwords for tool calling
+        common_tokens = [
+            "tool", "function", "args", "query", "search", "read", "write",
+            "file", "database", "memory", "system", "user", "assistant",
+            "json", "response", "error", "success", "true", "false", "null",
+            "the", "is", "are", "was", "were", "have", "has", "been",
+            "GLADIUS", "Artifact", "Virtual",
+            '{"', '"}', '":', '},', '"}]', '<|im_start|>', '<|im_end|>',
+        ]
+        for tok in common_tokens:
+            if tok not in self.token_to_id:
+                self.token_to_id[tok] = idx
+                self.id_to_token[idx] = tok
+                idx += 1
+        
+        # Fill remaining with unused tokens
+        while idx < self.vocab_size:
+            tok = f"<unused{idx}>"
+            self.token_to_id[tok] = idx
+            self.id_to_token[idx] = tok
+            idx += 1
+        
+        # Store special token IDs
+        self.unk_id = 0
+        self.bos_id = 1
+        self.eos_id = 2
+    
+    def encode(self, text: str, add_bos: bool = True, add_eos: bool = True) -> List[int]:
+        """Encode text to token IDs using byte-level encoding"""
+        tokens = []
+        
+        if add_bos:
+            tokens.append(self.bos_id)
+        
+        # Convert text to bytes and encode
+        for char in text:
+            byte_val = ord(char)
+            if byte_val < 32 or byte_val >= 127:
+                tok = f"<0x{byte_val:02X}>"
+            else:
+                tok = char
+            tokens.append(self.token_to_id.get(tok, self.unk_id))
+        
+        if add_eos:
+            tokens.append(self.eos_id)
+        
         return tokens
     
-    def decode(self, ids: List[int]) -> str:
+    def decode(self, ids: List[int], skip_special: bool = True) -> str:
         """Decode token IDs to text"""
-        return "".join(self.id_to_char.get(i, "<unk>") for i in ids 
-                      if i not in [0, 2, 3])  # Skip pad, eos, bos
+        chars = []
+        for token_id in ids:
+            if skip_special and token_id in [self.unk_id, self.bos_id, self.eos_id]:
+                continue
+            
+            tok = self.id_to_token.get(token_id, "")
+            
+            # Handle byte tokens
+            if tok.startswith("<0x") and tok.endswith(">"):
+                try:
+                    byte_val = int(tok[3:5], 16)
+                    chars.append(chr(byte_val))
+                except:
+                    pass
+            elif not tok.startswith("<unused"):
+                chars.append(tok)
+        
+        return "".join(chars)
     
     def save(self, path: Path):
         """Save tokenizer"""
         with open(path, 'w') as f:
             json.dump({
                 "vocab_size": self.vocab_size,
-                "char_to_id": self.char_to_id,
-                "special_tokens": self.special_tokens
-            }, f)
+                "vocab": self.token_to_id,
+                "special_tokens": {
+                    "unk": self.unk_id,
+                    "bos": self.bos_id,
+                    "eos": self.eos_id
+                }
+            }, f, indent=2)
     
     @classmethod
     def load(cls, path: Path):
@@ -380,11 +420,19 @@ class SimpleTokenizer:
         with open(path) as f:
             data = json.load(f)
         tok = cls(data["vocab_size"])
-        tok.char_to_id = data["char_to_id"]
-        tok.id_to_char = {int(k): v for k, v in data.get("id_to_char", {}).items()}
-        if not tok.id_to_char:
-            tok.id_to_char = {v: k for k, v in tok.char_to_id.items()}
+        tok.token_to_id = data["vocab"]
+        tok.id_to_token = {int(v): k for k, v in tok.token_to_id.items()}
+        special = data.get("special_tokens", {})
+        tok.unk_id = special.get("unk", 0)
+        tok.bos_id = special.get("bos", 1)
+        tok.eos_id = special.get("eos", 2)
         return tok
+
+
+# Keep SimpleTokenizer for backward compatibility
+class SimpleTokenizer(LlamaTokenizer):
+    """Alias for LlamaTokenizer for backward compatibility"""
+    pass
 
 
 # =============================================================================
@@ -393,7 +441,7 @@ class SimpleTokenizer:
 
 class GladiusDataset(Dataset):
     """Training dataset"""
-    def __init__(self, data_path: Path, tokenizer: SimpleTokenizer, max_length: int = 512):
+    def __init__(self, data_path: Path, tokenizer: LlamaTokenizer, max_length: int = 512):
         self.tokenizer = tokenizer
         self.max_length = max_length
         self.samples = []
@@ -416,13 +464,13 @@ class GladiusDataset(Dataset):
     
     def __getitem__(self, idx):
         text = self.samples[idx]
-        tokens = self.tokenizer.encode(text)
+        tokens = self.tokenizer.encode(text, add_bos=True, add_eos=True)
         
-        # Truncate or pad
+        # Truncate or pad (pad with unk_id=0)
         if len(tokens) > self.max_length:
             tokens = tokens[:self.max_length]
         else:
-            tokens = tokens + [0] * (self.max_length - len(tokens))
+            tokens = tokens + [self.tokenizer.unk_id] * (self.max_length - len(tokens))
         
         tokens = torch.tensor(tokens, dtype=torch.long)
         return {"input_ids": tokens, "labels": tokens.clone()}
@@ -445,7 +493,7 @@ class NativeTrainer:
         logger.info(f"  Parameters: ~{self.config.total_params / 1e6:.1f}M")
         
         self.model = GladiusModel(self.config).to(self.device)
-        self.tokenizer = SimpleTokenizer(self.config.vocab_size)
+        self.tokenizer = LlamaTokenizer(self.config.vocab_size)
         
         # Optimizer
         self.optimizer = torch.optim.AdamW(
@@ -521,21 +569,154 @@ class NativeTrainer:
         return path
     
     def export_gguf(self, output_path: Path = None):
-        """Export model to GGUF format"""
-        output_path = output_path or OUTPUT_DIR / "gladius_native.gguf"
+        """Export model to llama.cpp compatible GGUF format"""
+        import struct
+        import numpy as np
+        
+        # Add gguf library path
+        gguf_path = GLADIUS_DIR / "tools" / "llama.cpp" / "gguf-py"
+        if gguf_path.exists():
+            sys.path.insert(0, str(gguf_path))
+        
+        from gguf import GGUFWriter, GGMLQuantizationType, TokenType
+        
+        output_path = output_path or OUTPUT_DIR / f"gladius1.1-{int(self.config.total_params/1e6)}M.gguf"
         
         logger.info(f"Exporting to GGUF: {output_path}")
+        logger.info(f"Architecture: llama (llama.cpp compatible)")
         
-        # Save in format compatible with llama.cpp conversion
-        model_path = self.save_model()
+        # Create GGUF writer with llama architecture for compatibility
+        writer = GGUFWriter(str(output_path), "llama")
         
-        # Create a simple GGUF-compatible export
-        # Note: Full GGUF export requires llama.cpp tools
-        logger.info("Model saved in PyTorch format")
-        logger.info("To convert to GGUF, use:")
-        logger.info(f"  python -m llama_cpp.convert {model_path} --outfile {output_path}")
+        # Add metadata
+        writer.add_name("GLADIUS Native")
+        writer.add_description("GLADIUS Native LM - Artifact Virtual Enterprise - 100% Native Architecture")
+        writer.add_quantization_version(2)
         
-        return model_path
+        # Architecture metadata
+        cfg = self.config
+        writer.add_context_length(cfg.max_position_embeddings)
+        writer.add_embedding_length(cfg.hidden_size)
+        writer.add_block_count(cfg.num_hidden_layers)
+        writer.add_feed_forward_length(cfg.intermediate_size)
+        writer.add_head_count(cfg.num_attention_heads)
+        writer.add_head_count_kv(cfg.num_key_value_heads)
+        writer.add_layer_norm_rms_eps(cfg.rms_norm_eps)
+        writer.add_rope_freq_base(cfg.rope_theta)
+        writer.add_rope_dimension_count(cfg.head_dim)
+        writer.add_vocab_size(cfg.vocab_size)
+        writer.add_file_type(1)  # GGML_FTYPE_MOSTLY_F16
+        
+        # Add tokenizer
+        self._add_tokenizer_to_gguf(writer)
+        
+        # Tensor name mapping: GLADIUS -> llama.cpp
+        tensor_map = {
+            "embed_tokens.weight": "token_embd.weight",
+            "norm.weight": "output_norm.weight",
+            "lm_head.weight": "output.weight",
+        }
+        
+        # Layer tensor mappings
+        for n in range(cfg.num_hidden_layers):
+            tensor_map[f"layers.{n}.input_layernorm.weight"] = f"blk.{n}.attn_norm.weight"
+            tensor_map[f"layers.{n}.post_attention_layernorm.weight"] = f"blk.{n}.ffn_norm.weight"
+            tensor_map[f"layers.{n}.attn.q_proj.weight"] = f"blk.{n}.attn_q.weight"
+            tensor_map[f"layers.{n}.attn.k_proj.weight"] = f"blk.{n}.attn_k.weight"
+            tensor_map[f"layers.{n}.attn.v_proj.weight"] = f"blk.{n}.attn_v.weight"
+            tensor_map[f"layers.{n}.attn.o_proj.weight"] = f"blk.{n}.attn_output.weight"
+            tensor_map[f"layers.{n}.mlp.gate_proj.weight"] = f"blk.{n}.ffn_gate.weight"
+            tensor_map[f"layers.{n}.mlp.up_proj.weight"] = f"blk.{n}.ffn_up.weight"
+            tensor_map[f"layers.{n}.mlp.down_proj.weight"] = f"blk.{n}.ffn_down.weight"
+        
+        # Skip patterns (RoPE caches computed at inference)
+        skip_patterns = ["rotary_emb.inv_freq", "rotary_emb.cos_cached", "rotary_emb.sin_cached"]
+        
+        # Add tensors
+        logger.info("Adding tensors to GGUF...")
+        state_dict = self.model.state_dict()
+        tensor_count = 0
+        
+        for name, tensor in state_dict.items():
+            # Skip RoPE caches
+            if any(skip in name for skip in skip_patterns):
+                continue
+            
+            # Get llama.cpp tensor name
+            gguf_name = tensor_map.get(name)
+            if not gguf_name:
+                logger.warning(f"No mapping for tensor: {name}")
+                continue
+            
+            # Determine dtype based on tensor type
+            # Norm weights (1D) should be F32 for llama.cpp compatibility
+            # Other weights can be F16
+            if "norm" in gguf_name or tensor.dim() == 1:
+                data = tensor.numpy().astype(np.float32)
+                writer.add_tensor(gguf_name, data, raw_dtype=GGMLQuantizationType.F32)
+            else:
+                data = tensor.numpy().astype(np.float16)
+                writer.add_tensor(gguf_name, data, raw_dtype=GGMLQuantizationType.F16)
+            
+            tensor_count += 1
+            logger.debug(f"  {name} -> {gguf_name}: {data.shape} {data.dtype}")
+        
+        logger.info(f"Added {tensor_count} tensors")
+        
+        # Write GGUF file
+        logger.info("Writing GGUF file...")
+        writer.write_header_to_file()
+        writer.write_kv_data_to_file()
+        writer.write_tensors_to_file()
+        writer.close()
+        
+        # Report
+        size_mb = output_path.stat().st_size / 1024 / 1024
+        logger.info(f"✓ GGUF exported: {output_path} ({size_mb:.1f} MB)")
+        
+        return output_path
+    
+    def _add_tokenizer_to_gguf(self, writer):
+        """Add the training tokenizer to GGUF for consistent inference"""
+        from gguf import TokenType
+        
+        vocab_size = self.config.vocab_size
+        
+        # Use the same tokenizer that was used for training
+        tokens = []
+        scores = []
+        token_types = []
+        
+        # Build from our LlamaTokenizer
+        for idx in range(vocab_size):
+            tok = self.tokenizer.id_to_token.get(idx, f"<unused{idx}>")
+            tokens.append(tok.encode('utf-8'))
+            scores.append(-float(idx))
+            
+            # Determine token type
+            if tok == "<unk>":
+                token_types.append(int(TokenType.UNKNOWN))
+            elif tok in ["<s>", "</s>"]:
+                token_types.append(int(TokenType.CONTROL))
+            elif tok.startswith("<0x") and tok.endswith(">"):
+                token_types.append(int(TokenType.BYTE))
+            elif tok.startswith("<unused"):
+                token_types.append(int(TokenType.UNUSED))
+            else:
+                token_types.append(int(TokenType.NORMAL))
+        
+        # Add to GGUF
+        writer.add_tokenizer_model("llama")
+        writer.add_token_list(tokens)
+        writer.add_token_scores([float(s) for s in scores])
+        writer.add_token_types(token_types)
+        
+        # Special token IDs
+        writer.add_bos_token_id(self.tokenizer.bos_id)
+        writer.add_eos_token_id(self.tokenizer.eos_id)
+        writer.add_pad_token_id(self.tokenizer.unk_id)
+        
+        logger.info(f"Added tokenizer with {vocab_size} tokens")
 
 
 # =============================================================================
