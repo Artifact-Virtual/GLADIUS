@@ -1291,6 +1291,37 @@ case "${1:-help}" in
         echo ""
         "$PYTHON" "$GLADIUS_ROOT/GLADIUS/speak.py" "${@:2}"
         ;;
+    chat)
+        # GLADIUS Chat Server/CLI
+        print_header
+        echo -e "${CYAN}Starting GLADIUS Chat...${NC}"
+        echo ""
+        "$PYTHON" "$GLADIUS_ROOT/GLADIUS/chat_server.py" "${@:2}"
+        ;;
+    chat-server)
+        # GLADIUS Chat Server (HTTP API)
+        print_header
+        echo -e "${CYAN}Starting GLADIUS Chat Server...${NC}"
+        echo ""
+        "$PYTHON" "$GLADIUS_ROOT/GLADIUS/chat_server.py" --mode server "${@:2}"
+        ;;
+    twitter)
+        # GLADIUS Twitter Agent
+        print_header
+        echo -e "${CYAN}GLADIUS Twitter Agent${NC}"
+        echo ""
+        "$PYTHON" "$GLADIUS_ROOT/GLADIUS/twitter_agent.py" "${@:2}"
+        ;;
+    twitter-run)
+        # Start Twitter agent in autonomous mode
+        print_header
+        echo -e "${CYAN}Starting GLADIUS Twitter Agent (Autonomous)...${NC}"
+        echo ""
+        nohup "$PYTHON" "$GLADIUS_ROOT/GLADIUS/twitter_agent.py" run > "$LOG_DIR/twitter_agent.log" 2>&1 &
+        echo $! > "$PID_DIR/twitter_agent.pid"
+        echo -e "  ${GREEN}✅${NC} Twitter Agent started (PID: $!)"
+        echo -e "  ${CYAN}Logs:${NC} $LOG_DIR/twitter_agent.log"
+        ;;
     train)
         # Run GLADIUS training pipeline
         print_header
@@ -1341,6 +1372,13 @@ case "${1:-help}" in
         echo -e "${CYAN}GLADIUS AI:${NC}"
         echo "  interact           Interactive GLADIUS session"
         echo "  speak              Direct conversation interface"
+        echo "  chat               Chat CLI (with Hektor memory)"
+        echo "  chat-server        Chat HTTP API server"
+        echo ""
+        echo -e "${CYAN}Social Media:${NC}"
+        echo "  twitter test       Test Twitter connection"
+        echo "  twitter generate   Generate a tweet"
+        echo "  twitter-run        Start Twitter agent (autonomous)"
         echo ""
         echo -e "${CYAN}Training (Run Manually):${NC}"
         echo "  train              Run GLADIUS training pipeline"

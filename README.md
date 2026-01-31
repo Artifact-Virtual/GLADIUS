@@ -9,56 +9,158 @@
         ╲╱        ╲╱       ╲╱        ╲╱                     ╲╱ 
 ```
 
+### gladius1.1:71M-native
+
+<!-- AGI DEVELOPMENT PROGRESS BAR -->
+<h3>🧠 AGI Development Progress</h3>
+<table>
+<tr>
+<td width="100%">
+<pre>
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ GLADIUS → AGI ROADMAP                                             85% / 100% │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ████████████████████████████████████████████████████████████████░░░░░░░░░░  │
+│  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░  │
+│                                                                              │
+│  Phase 1: Foundation        ████████████████████  100%  ✅ COMPLETE          │
+│  Phase 2: Learning          ████████████████████  100%  ✅ COMPLETE          │
+│  Phase 3: Cognition         ████████████████████  100%  ✅ COMPLETE          │
+│  Phase 4: Tool Mastery      ██████████████████░░   90%  🔄 IN PROGRESS       │
+│  Phase 5: Self-Improvement  ████████████░░░░░░░░   60%  🔄 IN PROGRESS       │
+│  Phase 6: Autonomous Ops    ██████████░░░░░░░░░░   50%  🔄 IN PROGRESS       │
+│  Phase 7: Full AGI          ░░░░░░░░░░░░░░░░░░░░    0%  ⏳ PENDING           │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  MILESTONES                                                                  │
+│  ✅ Native GGUF Model (71M params)    ✅ Vector Memory (Hektor VDB)          │
+│  ✅ Tool Routing (100+ tools)         ✅ Autonomous Research (SENTINEL)      │
+│  ✅ CPU/GPU Auto-Detection            🔄 Self-Training Pipeline              │
+│  ✅ Chat Interface                    🔄 Twitter Autonomous Agent            │
+│  ⏳ Recursive Self-Improvement        ⏳ Multi-Agent Coordination            │
+│  ⏳ Meta-Learning                     ⏳ Consciousness Emergence             │
+└──────────────────────────────────────────────────────────────────────────────┘
+</pre>
+</td>
+</tr>
+</table>
+
 <p>
-  <img src="https://img.shields.io/badge/Status-75%25-22C55E?style=for-the-badge" alt="Progress">
+  <img src="https://img.shields.io/badge/AGI_Progress-85%25-22C55E?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyek0xMiAyMGMtNC40MSAwLTgtMy41OS04LThzMy41OS04IDgtOCA4IDMuNTkgOCA4LTMuNTkgOC04IDh6Ii8+PC9zdmc+" alt="AGI Progress">
   <img src="https://img.shields.io/badge/AI-Native_GGUF-8B5CF6?style=for-the-badge" alt="Native AI">
-  <img src="https://img.shields.io/badge/Tools-94_Commands-3776AB?style=for-the-badge" alt="Commands">
-  <img src="https://img.shields.io/badge/Agents-26_Active-6366F1?style=for-the-badge" alt="Agents">
+  <img src="https://img.shields.io/badge/Model-71M_Params-FF6B6B?style=for-the-badge" alt="Parameters">
+  <img src="https://img.shields.io/badge/Commands-94-3776AB?style=for-the-badge" alt="Commands">
+  <img src="https://img.shields.io/badge/Hektor_VDB-Integrated-6366F1?style=for-the-badge" alt="Vector DB">
 </p>
 
-**Native AI-powered enterprise system with recursive self-improvement, autonomous research, and multi-platform publishing.**
+**Native AI-powered enterprise system with recursive self-improvement, autonomous research, vector memory, and multi-platform engagement.**
 
-> HuggingFace: https://huggingface.co/amuzetnoM/Gladius
+> 🤗 HuggingFace: [amuzetnoM/Gladius](https://huggingface.co/amuzetnoM/Gladius)  
+> 📦 Vector DB: [hektor-vdb](https://pypi.org/project/hektor-vdb/)
 
-[Architecture](docs/ARCHITECTURE_MASTER.md) · [Commands](docs/COMMAND_REFERENCE.md) · [Model](docs/MODEL.md) · [Checklist](docs/FLIGHT_CHECKLIST.md)
+[Architecture](docs/ARCHITECTURE.md) · [Commands](docs/COMMAND_REFERENCE.md) · [Model](docs/MODEL.md) · [API](GLADIUS/docs/ARCHITECTURE.md)
 
 </div>
 
 ## System Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         ARTIFACT VIRTUAL                                 │
-│                     (Enterprise Infrastructure)                          │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │                        GLADIUS                                   │   │
-│  │                   (Native AI - The Brain)                        │   │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐           │   │
-│  │  │ Cognition│ │  Memory  │ │  Router  │ │  Model   │           │   │
-│  │  │  Engine  │ │  Module  │ │  (GGUF)  │ │ Trainer  │           │   │
-│  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘           │   │
-│  └─────────────────────────────────────────────────────────────────┘   │
-│                                                                         │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐          │
-│  │  SENTINEL  │ │   LEGION   │ │  SYNDICATE │ │  AUTOMATA  │          │
-│  │ (Guardian) │ │  (Agents)  │ │ (Research) │ │ (Publish)  │          │
-│  │ 24 cmds    │ │ 26 agents  │ │  Charts    │ │ 5 platforms│          │
-│  └────────────┘ └────────────┘ └────────────┘ └────────────┘          │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+  subgraph ARTIFACT_VIRTUAL["ARTIFACT VIRTUAL (Enterprise Infrastructure)"]
+    direction TB
+
+    subgraph GLADIUS["GLADIUS 1.1:71M-native\n(Native AI — The Brain)"]
+      direction LR
+      CE[Cognition Engine]
+      RT[Router<br/>(llama.cpp)]
+      TR[Trainer<br/>(CPU/GPU)]
+      CI[Chat Interface]
+      TA[Twitter Agent]
+      BC[Build Class]
+      CE --> RT
+      CE --> TR
+      CE --> CI
+      CE --> TA
+      CE --> BC
+    end
+
+    SENT[SENTINEL<br/>(Guardian / AGI Research)]
+    LEG[LEGION<br/>(26 agents)]
+    SYN[SYNDICATE<br/>(Market Data)]
+    AUT[AUTOMATA<br/>(Publish - 5 platforms)]
+    HECTOR[HEKTOR VDB<br/>(Vector Memory / Contextualization)]
+
+    SENT -->|feeds research| HECTOR
+    LEG -->|agent data| HECTOR
+    SYN -->|market & news| HECTOR
+    AUT -->|publishing events| HECTOR
+
+    HECTOR <-->|context & memory| GLADIUS
+  end
 ```
 
 ### Components
 
 | Component | Purpose | Status |
 |-----------|---------|--------|
-| **GLADIUS** | Native AI model, cognition engine, tool router | 🧠 Brain |
-| **SENTINEL** | Guardian process, security, background learning | 🛡️ Guardian |
+| **GLADIUS** | Native 71M GGUF model, llama.cpp inference, tool routing | 🧠 Brain |
+| **HEKTOR VDB** | Vector database for memory, context, and learning | 💾 Memory |
+| **SENTINEL** | R&D research on AI/AGI threats, security monitoring | 🛡️ Guardian |
+| **SYNDICATE** | Market intelligence, current affairs data | 📊 Data Feed |
 | **LEGION** | 26 AI agents for enterprise operations | 🤖 Agents |
-| **SYNDICATE** | Market research, charts, journals | 📊 Research |
-| **AUTOMATA** | Social media publishing, ERP integrations | 📱 Automation |
+| **AUTOMATA** | Social media (Twitter), ERP integrations | 📱 Automation |
+| **BUILD_CLASS** | Dynamic code generation and tool building | 🔧 Builder |
+
+---
+
+## Data Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        DATA FLOW ARCHITECTURE                            │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  ┌──────────────┐                              ┌──────────────┐         │
+│  │   SENTINEL   │                              │  SYNDICATE   │         │
+│  │  (R&D Data)  │                              │(Market Data) │         │
+│  │              │                              │              │         │
+│  │ • AI/AGI    │                              │ • yfinance   │         │
+│  │   threats    │                              │ • FRED       │         │
+│  │ • xAI news   │                              │ • Current    │         │
+│  │ • Security   │                              │   affairs    │         │
+│  └──────┬───────┘                              └──────┬───────┘         │
+│         │                                             │                  │
+│         └─────────────────┬───────────────────────────┘                  │
+│                           │                                              │
+│                           ▼                                              │
+│                  ┌─────────────────┐                                    │
+│                  │   HEKTOR VDB    │                                    │
+│                  │                 │                                    │
+│                  │ • Vectorize     │                                    │
+│                  │ • Contextualize │                                    │
+│                  │ • Store/Recall  │                                    │
+│                  └────────┬────────┘                                    │
+│                           │                                              │
+│                           ▼                                              │
+│                  ┌─────────────────┐                                    │
+│                  │     GLADIUS     │                                    │
+│                  │   (71M Native)  │                                    │
+│                  │                 │                                    │
+│                  │ • Learn tools   │                                    │
+│                  │ • Adapt context │                                    │
+│                  │ • Self-improve  │                                    │
+│                  └────────┬────────┘                                    │
+│                           │                                              │
+│              ┌────────────┼────────────┐                                │
+│              ▼            ▼            ▼                                │
+│      ┌───────────┐ ┌───────────┐ ┌───────────┐                         │
+│      │   CHAT    │ │  TWITTER  │ │  BUILD    │                         │
+│      │ Interface │ │   Agent   │ │   CLASS   │                         │
+│      └───────────┘ └───────────┘ └───────────┘                         │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -67,9 +169,10 @@
 ### Prerequisites
 
 - Python 3.10+
-- Node.js 18+ (for dashboards)
+- llama.cpp (for native GGUF inference)
+- Node.js 18+ (for UI)
 - SQLite3
-- Ollama (optional, for LLM fallback)
+- Optional: CUDA GPU (auto-detected, CPU fallback available)
 
 ### Initial Setup
 
@@ -89,45 +192,93 @@ LEGION_SECRET_KEY=$(openssl rand -hex 32)
 nano .env  # or use your preferred editor
 ```
 
-**2. Validate Configuration**
+**2. Install Dependencies**
 
 ```bash
-# Run the validation script to check your .env setup
-./scripts/validate_env.sh
+# Create virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Install Hektor VDB (vector database)
+pip install hektor-vdb sentence-transformers
 ```
 
-**3. Start the System**
+**3. Hardware Detection**
+
+The system automatically detects hardware and adjusts:
+- **GPU Available**: Uses CUDA-accelerated training and inference
+- **CPU Only**: Falls back to CPU-optimized llama.cpp with reduced batch sizes
+
+**4. Start the System**
 
 ```bash
-# Start everything
+# Lightweight startup (recommended for CPU machines)
+./gladius.sh run
+
+# Full startup (all services - requires more resources)
 ./gladius.sh start
 
 # Check system health
 ./gladius.sh health
-
-# Run a full cycle (research → analyze → publish)
-./gladius.sh cycle
-
-# Run autonomous mode (indefinite)
-./gladius.sh autonomous
 ```
 
 ---
 
 ## System Commands
 
+### Core Commands
+
 ```bash
-# Start everything
+# Lightweight startup (UI + SENTINEL only)
+./gladius.sh run
+
+# Full system startup (all services)
 ./gladius.sh start
 
 # Check system health
 ./gladius.sh health
 
-# Run a full cycle (research → analyze → publish)
-./gladius.sh cycle
+# Stop all services
+./gladius.sh stop
+```
 
-# Run autonomous mode (indefinite)
-./gladius.sh autonomous
+### GLADIUS AI Interaction
+
+```bash
+# Interactive chat session
+./gladius.sh chat
+
+# Direct conversation interface
+./gladius.sh speak
+
+# Chat API server (for integrations)
+./gladius.sh chat-server
+```
+
+### Training (Manual - Heavy Operations)
+
+```bash
+# Run training pipeline (auto-detects GPU/CPU)
+./gladius.sh train
+
+# Dual training (native + experimental)
+./gladius.sh train-dual
+```
+
+### Social Media
+
+```bash
+# Test Twitter connection
+./gladius.sh twitter test
+
+# Generate a tweet
+./gladius.sh twitter generate
+
+# Start autonomous Twitter agent
+./gladius.sh twitter-run
 ```
 
 ### Subsystem Commands
@@ -157,19 +308,21 @@ nano .env  # or use your preferred editor
 
 ## Current Status
 
-**Overall Progress: 75%**
+**Overall Progress: 85%**
 
 | Component | Progress | Details |
 |-----------|----------|---------|
-| Cognition Engine | 95% | 37+ tools, pattern router |
-| Consensus System | ✅ 100% | Discord + Email working |
-| SMTP Email | ✅ 100% | Hostinger SSL configured |
-| SENTINEL | 90% | Cloned, needs daemons |
-| LEGION | 90% | 26 agents, needs integration |
-| Syndicate | 95% | Charts, journals working |
-| Automata | 75% | 5 platforms configured |
-| Research Pipeline | 20% | Needs arXiv/MIT crawler |
-| Native Model | 50% | GGUF training in progress |
+| Native GGUF Model | ✅ 100% | gladius1.1:71M trained and exported |
+| llama.cpp Integration | ✅ 100% | Full native inference, no third-party |
+| Hektor VDB | ✅ 100% | Vector memory integrated |
+| Chat Interface | ✅ 100% | CLI + HTTP API server |
+| Twitter Agent | ✅ 100% | Autonomous engagement |
+| CPU/GPU Auto-detect | ✅ 100% | Automatic fallback |
+| SENTINEL | 95% | R&D on AI/AGI/xAI threats |
+| SYNDICATE | 95% | Market + current affairs data |
+| Training Pipeline | ✅ 100% | Dual CPU/GPU trainers |
+| LEGION | 90% | 26 agents, integration pending |
+| Electron UI | 80% | Dashboard with controls |
 
 ---
 
@@ -178,61 +331,97 @@ nano .env  # or use your preferred editor
 ```
 gladius/
 ├── gladius.sh                # Master control script
-├── .env                      # Unified configuration
+├── config.json               # Module toggles & configuration
+├── .env                      # Environment variables
 │
-├── GLADIUS/                  # 🧠 NATIVE AI MODEL (isolated)
+├── GLADIUS/                  # 🧠 NATIVE AI MODEL
 │   ├── models/               # GGUF model files
-│   ├── training/             # Training data + harness
-│   └── router/               # Tool routing
+│   │   └── native/          # gladius1.1-71M.gguf
+│   ├── training/             # Training pipelines
+│   │   └── gladius_trainer.py  # Unified CPU/GPU trainer
+│   ├── router/               # Tool routing (llama.cpp)
+│   ├── utils/
+│   │   ├── hardware.py       # GPU/CPU detection
+│   │   └── hektor_memory.py  # Vector DB integration
+│   ├── chat_server.py        # Chat CLI + HTTP API
+│   ├── twitter_agent.py      # Autonomous Twitter
+│   ├── speak.py              # Direct conversation
+│   └── docs/                 # Model documentation
 │
 ├── SENTINEL/                 # 🛡️ GUARDIAN PROCESS
-│   ├── asas_cli.py          # 24 CLI commands
+│   ├── asas_cli.py          # CLI interface
 │   ├── services/            # Learning daemons
-│   └── config/              # Constitutional rules
+│   └── config/              # Research targets (AI/AGI/xAI)
 │
 ├── LEGION/                   # 🤖 AGENT ECOSYSTEM
-│   ├── legion/              # 26 specialized agents
-│   └── config/              # Agent configuration
+│   └── legion/              # 26 specialized agents
 │
 ├── Artifact/                 # 📦 ENTERPRISE OPS
-│   ├── syndicate/           # Market research
-│   ├── deployment/          # Automata + Infra
-│   └── arty/                # Discord bot
+│   ├── syndicate/           # Market research + data
+│   └── deployment/          # Automata + Infra
 │
-├── docs/                     # Documentation
-└── obsidian_sync/           # Operator notes
+├── build_class/             # 🔧 DYNAMIC CODE BUILDER
+│   ├── adapter.py           # llama.cpp adapter
+│   └── builder.py           # Code generation
+│
+├── ui/                       # 🖥️ ELECTRON UI
+│   └── src/                 # React + Electron
+│
+└── docs/                     # 📚 DOCUMENTATION
+    ├── ARCHITECTURE.md
+    ├── COMMAND_REFERENCE.md
+    └── MODEL.md
 ```
 
 ---
 
 ## Configuration
 
-Edit `.env` for credentials:
+### config.json (Module Toggles)
+
+```json
+{
+  "system": {
+    "name": "Artifact Virtual Enterprise",
+    "ai_name": "GLADIUS",
+    "ai_version": "gladius1.1:71M-native",
+    "lightweight_mode": true,
+    "auto_start_training": false
+  },
+  "modules": {
+    "sentinel": { "enabled": true },
+    "legion": { "enabled": false },
+    "training": { "enabled": false },
+    "ui": { "enabled": true }
+  },
+  "hardware": {
+    "prefer_gpu": true,
+    "fallback_to_cpu": true
+  }
+}
+```
+
+### .env (Secrets & API Keys)
 
 ```bash
 # === GLADIUS ===
 GLADIUS_ENABLED=true
+ADAPTER_TYPE=llamacpp
+LLAMA_SERVER_URL=http://localhost:8080
 
 # === SENTINEL ===
 SENTINEL_ENABLED=true
-SENTINEL_LEARNING_LOOP=true
+SENTINEL_RESEARCH_TARGETS=AI,AGI,xAI,threats
 
-# === LEGION ===
-LEGION_ENABLED=true
+# === TWITTER ===
+TWITTER_ENABLED=true
+TWITTER_API_KEY=your_key
+TWITTER_API_SECRET=your_secret
 
 # === SMTP (Email Escalation) ===
 SMTP_HOST=smtp.hostinger.com
 SMTP_PORT=465
 SMTP_SSL=true
-SMTP_USER=ali.shakil@artifactvirtual.com
-
-# === Discord (Consensus) ===
-DISCORD_WEBHOOK_URL=your_webhook
-DISCORD_CONSENSUS_CHANNEL_ID=1327890703250096168
-
-# === Social Media ===
-TWITTER_ENABLED=true
-LINKEDIN_ENABLED=true
 ```
 
 ---
@@ -241,51 +430,70 @@ LINKEDIN_ENABLED=true
 
 | Document | Purpose |
 |----------|---------|
-| [ARCHITECTURE_MASTER.md](docs/ARCHITECTURE_MASTER.md) | Complete system architecture |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Complete system architecture |
 | [COMMAND_REFERENCE.md](docs/COMMAND_REFERENCE.md) | All 94 commands |
-| [FLIGHT_CHECKLIST.md](docs/FLIGHT_CHECKLIST.md) | Implementation progress |
 | [MODEL.md](docs/MODEL.md) | Native AI model specification |
-| [SENTINEL/SYSTEM_MAPPING.md](SENTINEL/SYSTEM_MAPPING.md) | Guardian commands |
-| [LEGION/SYSTEM_MAPPING.md](LEGION/SYSTEM_MAPPING.md) | Agent ecosystem |
+| [GLADIUS/docs/ARCHITECTURE.md](GLADIUS/docs/ARCHITECTURE.md) | Model architecture blueprint |
+| [GLADIUS/docs/MODEL_CARD.md](GLADIUS/docs/MODEL_CARD.md) | HuggingFace model card |
 
 ---
 
-## 🔄 The Learning Loop
+## The Learning Loop
 
-SENTINEL runs a continuous background process:
+GLADIUS learns through a continuous feedback cycle:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                 CONTINUOUS LEARNING LOOP                     │
-│           (Turing-safe: password-protected kill)            │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  DISCOVER → LEARN → TRAIN → UPGRADE → REVIEW → (repeat)    │
-│                                                              │
-│  • Web research: arXiv, MIT, GitHub, HuggingFace            │
-│  • Keyword extraction for direction                         │
-│  • Training data generation                                  │
-│  • Model fine-tuning                                        │
-│  • Self-review and target updates                           │
-│                                                              │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        LEARNING & ADAPTATION LOOP                        │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│    SENTINEL (R&D)              SYNDICATE (Markets)                      │
+│         │                            │                                   │
+│         ▼                            ▼                                   │
+│    ┌─────────────────────────────────────────────┐                      │
+│    │              HEKTOR VDB                      │                      │
+│    │        (Vectorize & Contextualize)          │                      │
+│    └─────────────────────┬───────────────────────┘                      │
+│                          │                                               │
+│                          ▼                                               │
+│    ┌─────────────────────────────────────────────┐                      │
+│    │           GLADIUS COGNITION                  │                      │
+│    │  • Recall relevant context                   │                      │
+│    │  • Learn tool patterns                       │                      │
+│    │  • Adapt to new information                  │                      │
+│    └─────────────────────┬───────────────────────┘                      │
+│                          │                                               │
+│         ┌────────────────┼────────────────┐                             │
+│         ▼                ▼                ▼                             │
+│      Chat             Twitter         Build Class                       │
+│    Interface          Agent           (Tools)                           │
+│                                                                          │
+│    (Feedback from interactions feeds back into Hektor)                  │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
+
+### Key Features:
+- **Hektor VDB**: High-performance vector database with SIMD acceleration
+- **SENTINEL**: Researches AI/AGI/xAI developments and threats
+- **SYNDICATE**: Feeds real-time market and news data
+- **Contextual Memory**: GLADIUS recalls relevant past interactions
+- **Tool Learning**: Discovers and adapts to available tools
 
 ---
 
-## Tool Registry (37+ Tools)
+## Tool Registry
 
-| Category | Tools | Count |
-|----------|-------|-------|
-| Database | read_db, write_db, list_databases | 3 |
-| Search | search, hybrid_search, get_context | 3 |
-| Workspace | read_file, write_file, list_dir, file_exists | 4 |
-| Memory | remember, recall, forget | 3 |
-| Charting | generate_chart, detect_trendlines, calculate_indicators, etc. | 7 |
-| Publishing | create_content, schedule_post, publish_content | 3 |
-| ERP | erp_sync_customers, erp_sync_products, erp_sync_orders, etc. | 8 |
-| Governance | create_proposal, route_proposal, get_voting_status | 3 |
-| Reasoning | contextualize_content, reason_about_audience, think_about_timing | 3 |
+| Category | Tools | Description |
+|----------|-------|-------------|
+| Memory | remember, recall, forget | Hektor VDB-backed persistent memory |
+| Search | search, hybrid_search, get_context | Semantic + keyword search |
+| Workspace | read_file, write_file, list_dir | File system operations |
+| Database | read_db, write_db, list_databases | SQLite database operations |
+| Charting | generate_chart, detect_trendlines | Technical analysis (SYNDICATE) |
+| Publishing | publish_content, schedule_post | Social media automation |
+| Build | build_class, generate_code | Dynamic code generation |
+| Twitter | post_tweet, reply, like, engage | Autonomous Twitter operations |
 
 ---
 
@@ -307,9 +515,15 @@ SENTINEL runs a continuous background process:
 ## Requirements
 
 - Python 3.10+
-- Node.js 18+ (for dashboards)
+- llama.cpp (native inference)
+- Node.js 18+ (for UI)
 - SQLite3
-- Ollama (optional, for LLM fallback)
+- Optional: CUDA GPU (for accelerated training)
+
+### Python Dependencies
+```bash
+pip install hektor-vdb sentence-transformers torch transformers
+```
 
 ---
 
@@ -323,6 +537,6 @@ Proprietary - Artifact Virtual
 
 **[Artifact Virtual](https://artifactvirtual.com)** — Building Autonomous Enterprise Intelligence
 
-*System at 75% completion | Last updated: 2026-01-14*
+*Model: gladius1.1:71M-native | System at 85% completion | Last updated: 2026-01-31*
 
 </div>

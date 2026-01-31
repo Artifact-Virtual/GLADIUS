@@ -13,53 +13,119 @@ interface LegionResponse {
 }
 
 let runningAgents: Map<string, ChildProcess> = new Map();
+let legionOrchestrator: ChildProcess | null = null;
 
 export function setupLegionHandlers() {
   // Get LEGION status
   ipcMain.handle('legion:status', async (): Promise<LegionResponse> => {
     try {
       console.log('[LEGION] Checking status...');
-      const pythonProcess = spawn(PYTHON, [
-        path.join(LEGION_PATH, 'legion_cli.py'),
-        'status'
-      ]);
-
-      return new Promise((resolve) => {
-        let stdout = '';
-        let stderr = '';
-
-        pythonProcess.stdout.on('data', (data) => {
-          stdout += data.toString();
-        });
-
-        pythonProcess.stderr.on('data', (data) => {
-          stderr += data.toString();
-        });
-
-        pythonProcess.on('close', (code) => {
-          if (code === 0) {
-            try {
-              const data = JSON.parse(stdout);
-              console.log('[LEGION] Status retrieved successfully');
-              resolve({ success: true, data });
-            } catch (e) {
-              resolve({
-                success: true,
-                data: {
-                  status: 'ready',
-                  activeAgents: runningAgents.size,
-                  output: stdout
-                }
-              });
-            }
-          } else {
-            console.error('[LEGION] Status check failed:', stderr);
-            resolve({ success: false, error: stderr || 'Status check failed' });
-          }
-        });
-      });
+      
+      const isRunning = legionOrchestrator !== null && !legionOrchestrator.killed;
+      
+      return {
+        success: true,
+        data: {
+          running: isRunning,
+          totalAgents: 26,
+          activeAgents: runningAgents.size,
+          pid: legionOrchestrator?.pid
+        }
+      };
     } catch (error) {
       console.error('[LEGION] Error getting status:', error);
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
+  // Start LEGION orchestrator
+  ipcMain.handle('legion:start', async (_, config?: any): Promise<LegionResponse> => {
+    try {
+      if (legionOrchestrator && !legionOrchestrator.killed) {
+        console.log('[LEGION] Already running');
+        return { success: false, error: 'LEGION is already running' };
+      }
+
+      console.log('[LEGION] Starting orchestrator...', config);
+      
+      legionOrchestrator = spawn(PYTHON, [
+        path.join(LEGION_PATH, 'legion', 'continuous_operation.py')
+      ], {
+        detached: false,
+        stdio: ['pipe', 'pipe', 'pipe']
+      });
+
+      legionOrchestrator.stdout?.on('data', (data) => {
+        console.log('[LEGION]', data.toString());
+      });
+
+      legionOrchestrator.stderr?.on('data', (data) => {
+        console.error('[LEGION]', data.toString());
+      });
+
+      legionOrchestrator.on('close', (code) => {
+        console.log(`[LEGION] Orchestrator exited with code ${code}`);
+        legionOrchestrator = null;
+      });
+
+      legionOrchestrator.on('error', (error) => {
+        console.error('[LEGION] Orchestrator error:', error);
+        legionOrchestrator = null;
+      });
+
+      // Wait for startup
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      if (legionOrchestrator && !legionOrchestrator.killed) {
+        console.log('[LEGION] Orchestrator started successfully');
+        return {
+          success: true,
+          data: {
+            status: 'running',
+            pid: legionOrchestrator.pid
+          }
+        };
+      } else {
+        return { success: false, error: 'Failed to start LEGION orchestrator' };
+      }
+    } catch (error) {
+      console.error('[LEGION] Error starting:', error);
+      legionOrchestrator = null;
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
+  // Stop LEGION orchestrator
+  ipcMain.handle('legion:stop', async (): Promise<LegionResponse> => {
+    try {
+      if (!legionOrchestrator || legionOrchestrator.killed) {
+        console.log('[LEGION] Not running');
+        return { success: false, error: 'LEGION is not running' };
+      }
+
+      console.log('[LEGION] Stopping orchestrator...');
+      
+      return new Promise((resolve) => {
+        const timeout = setTimeout(() => {
+          if (legionOrchestrator && !legionOrchestrator.killed) {
+            console.log('[LEGION] Force killing orchestrator');
+            legionOrchestrator.kill('SIGKILL');
+          }
+          legionOrchestrator = null;
+          resolve({ success: true, data: { status: 'stopped' } });
+        }, 5000);
+
+        legionOrchestrator!.on('close', () => {
+          clearTimeout(timeout);
+          legionOrchestrator = null;
+          console.log('[LEGION] Orchestrator stopped successfully');
+          resolve({ success: true, data: { status: 'stopped' } });
+        });
+
+        legionOrchestrator!.kill('SIGTERM');
+      });
+    } catch (error) {
+      console.error('[LEGION] Error stopping:', error);
       return { success: false, error: (error as Error).message };
     }
   });
@@ -253,7 +319,16 @@ export function setupLegionHandlers() {
 
 // Cleanup on app quit
 export function cleanupLegion() {
-  console.log('[LEGION] Cleaning up running agents...');
+  console.log('[LEGION] Cleaning up...');
+  
+  // Stop orchestrator
+  if (legionOrchestrator && !legionOrchestrator.killed) {
+    console.log('[LEGION] Stopping orchestrator');
+    legionOrchestrator.kill('SIGTERM');
+    legionOrchestrator = null;
+  }
+  
+  // Stop all agents
   for (const [processId, process] of runningAgents.entries()) {
     if (process && !process.killed) {
       console.log('[LEGION] Stopping agent:', processId);

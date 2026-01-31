@@ -1,0 +1,45 @@
+{
+  "enabled": false,
+  "bearer_token": "",
+  "api_key": "",
+  "api_secret": "",
+  "access_token": "",
+  "access_token_secret": "",
+  
+  "auto_reply": true,
+  "auto_like": true,
+  "reply_to_mentions": true,
+  "reply_to_replies": true,
+  
+  "personality": "professional_friendly",
+  "topics": [
+    "AI", "AGI", "machine learning", "automation",
+    "technology", "innovation", "software development",
+    "Artifact Virtual", "autonomous systems"
+  ],
+  
+  "response_style": {
+    "max_length": 280,
+    "include_hashtags": true,
+    "mention_author": true
+  },
+  
+  "posting_schedule": {
+    "enabled": true,
+    "posts_per_day": 3,
+    "best_times": ["09:00", "12:00", "18:00"]
+  },
+  
+  "filters": {
+    "min_follower_count": 0,
+    "block_keywords": ["spam", "giveaway", "free followers", "follow4follow"],
+    "priority_keywords": ["AI", "AGI", "machine learning", "Artifact", "GLADIUS"]
+  },
+  
+  "rate_limits": {
+    "mentions_check_seconds": 60,
+    "reply_cooldown_seconds": 30,
+    "posts_per_hour": 10,
+    "replies_per_hour": 30
+  }
+}

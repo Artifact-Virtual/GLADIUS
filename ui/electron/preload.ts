@@ -2,7 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
-contextBridge.exposeInMainWorld('electron', {
+contextBridge.exposeInMainWorld('electronAPI', {
   // GLADIUS operations
   gladius: {
     status: () => ipcRenderer.invoke('gladius:status'),
@@ -22,6 +22,8 @@ contextBridge.exposeInMainWorld('electron', {
   // LEGION operations
   legion: {
     status: () => ipcRenderer.invoke('legion:status'),
+    start: (config?: any) => ipcRenderer.invoke('legion:start', config),
+    stop: () => ipcRenderer.invoke('legion:stop'),
     listAgents: () => ipcRenderer.invoke('legion:list-agents'),
     createAgent: (config: any) => ipcRenderer.invoke('legion:create-agent', config),
     deployAgent: (agentId: string, config?: any) => ipcRenderer.invoke('legion:deploy-agent', agentId, config),
@@ -74,6 +76,8 @@ export interface ElectronAPI {
   };
   legion: {
     status: () => Promise<any>;
+    start: (config?: any) => Promise<any>;
+    stop: () => Promise<any>;
     listAgents: () => Promise<any>;
     createAgent: (config: any) => Promise<any>;
     deployAgent: (agentId: string, config?: any) => Promise<any>;
@@ -101,7 +105,7 @@ export interface ElectronAPI {
 
 declare global {
   interface Window {
-    electron: ElectronAPI;
+    electronAPI: ElectronAPI;
   }
 }
 

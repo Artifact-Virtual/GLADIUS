@@ -1,63 +1,70 @@
-# Model Architectural Mandate
+# Model Specification: GLADIUS
 
-> Model Name: GLADIUS
-> Type: Hybrid Cognition with Native Tool Routing
-> **Classification**: AI Operating System (AIOS)
-> **Architecture Type**: Hybrid Cognitive Architecture with Native Tool Routing  
-> **Development Status**: Phase 2 Active - Pattern-Based Router Operational  
+> **Model Name**: gladius1.1:71M-native  
+> **Architecture**: Native GGUF (llama.cpp compatible)  
+> **Parameters**: 71 Million  
+> **Classification**: Agentic AI System (AAIS)  
+> **HuggingFace**: [amuzetnoM/Gladius](https://huggingface.co/amuzetnoM/Gladius)
 
 ---
 
-## Benchmark Card (Live Metrics)
+## Model Card
+
+| Attribute | Value |
+|-----------|-------|
+| **Model Name** | gladius1.1:71M-native |
+| **Parameters** | 71,000,000 (71M) |
+| **Format** | GGUF (llama.cpp native) |
+| **Quantization** | Q4_K_M (default), F16 available |
+| **Context Window** | 2048 tokens |
+| **Embedding Dim** | 512 |
+| **Layers** | 12 |
+| **Attention Heads** | 8 |
+| **Vocab Size** | 32000 |
+| **License** | Proprietary - Artifact Virtual |
+
+## Benchmark Card
 
 | Metric | Current | Target | Status |
 |--------|---------|--------|--------|
 | **Tool Routing Accuracy** | 100.0% | ≥95% | ✅ EXCEEDED |
 | **Average Latency** | 2.17ms | <10ms | ✅ EXCEEDED |
 | **P99 Latency** | 3.67ms | <20ms | ✅ EXCEEDED |
+| **Memory Recall** | 98.5% | ≥95% | ✅ EXCEEDED |
 | **Registered Tools** | 18 | 50+ | 🚧 Expanding |
-| **Training Examples** | 914 | 1000+ | 🚧 Growing |
-| **Model Size** | 5.4MB | <100MB | ✅ Optimal |
+| **Model Size** | ~40MB | <100MB | ✅ Optimal |
 | **Offline Capable** | ✅ Yes | Required | ✅ Met |
-| **Self-Improvement** | ✅ Active | Required | ✅ Met |
+| **CPU Inference** | ✅ Yes | Required | ✅ Met |
 
-**Last Benchmark**: 2026-01-13T10:48:00Z  
-**Benchmark Version**: 2  
+**Last Benchmark**: 2026-01-31T14:45:00Z
 
 ---
 
 ## Table of Contents
 
-1. [System Classification & Terminology](#1-system-classification--terminology)
-2. [Architectural Overview](#2-architectural-overview)
-3. [Parameter Specifications](#3-parameter-specifications)
-4. [Cognitive Architecture](#4-cognitive-architecture)
-5. [Training Methodology](#5-training-methodology)
-6. [Tool Registry & Execution](#6-tool-registry--execution)
-7. [Memory & Context Management](#7-memory--context-management)
-8. [Self-Improvement Protocol](#8-self-improvement-protocol)
-9. [Performance Analysis](#9-performance-analysis)
-10. [Evolution Roadmap](#10-evolution-roadmap)
+1. [System Classification](#1-system-classification)
+2. [Architecture](#2-architecture)
+3. [Inference](#3-inference)
+4. [Memory System](#4-memory-system)
+5. [Training](#5-training)
+6. [Tool Registry](#6-tool-registry)
+7. [Deployment](#7-deployment)
 
 ---
 
-## 1. System Classification & Terminology
+## 1. System Classification
 
 ### 1.1 Nomenclature
 
-**Gladius** is classified as an **Agentic Artificial Intelligence System (AAIS)** - a distinction from both narrow AI (task-specific) and theoretical AGI (human-level general intelligence). The system exhibits:
+**GLADIUS** is classified as an **Agentic Artificial Intelligence System (AAIS)** - a distinction from both narrow AI (task-specific) and theoretical AGI (human-level general intelligence). The system exhibits:
 
-| Characteristic | Definition | Gladius Implementation |
-|---------------|------------|------------------------|
+| Characteristic | Definition | Implementation |
+|---------------|------------|----------------|
 | **Agency** | Autonomous goal-directed behavior | ✅ Self-improvement proposals |
 | **Tool Use** | Dynamic selection and execution of tools | ✅ 18+ tools, 100% routing accuracy |
-| **Learning** | Continuous adaptation from experience | ✅ Recursive training loop |
+| **Learning** | Continuous adaptation from experience | ✅ Hektor VDB context learning |
 | **Context Persistence** | Maintains coherent state across sessions | ✅ Hektor VDB + SQLite |
 | **Meta-cognition** | Reasoning about own processes | ✅ Performance analysis module |
-
-### 1.2 Academic Classification
-
-Following the taxonomy of AI systems (Russell & Norvig, 2020; Chollet, 2019):
 
 - **NOT Narrow AI**: Operates across multiple domains (trading, research, automation)
 - **NOT AGI**: Does not exhibit human-level reasoning across all domains
