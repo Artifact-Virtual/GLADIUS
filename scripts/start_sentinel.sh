@@ -77,6 +77,24 @@ start_detached() {
         echo -e "${GREEN}✅ SENTINEL started successfully (PID: $WATCHDOG_PID)${NC}"
         echo -e "   Logs: $LOG_DIR/watchdog.log"
         echo -e "   PID file: $PID_FILE"
+        
+        # Start Auto-Vectorizer daemon
+        echo -e "${GREEN}Starting Auto-Vectorizer...${NC}"
+        VECTORIZER_PID_FILE="$SENTINEL_DIR/vectorizer.pid"
+        
+        if [ -f "$VECTORIZER_PID_FILE" ] && kill -0 "$(cat "$VECTORIZER_PID_FILE")" 2>/dev/null; then
+            echo -e "${YELLOW}  Auto-Vectorizer already running${NC}"
+        else
+            nohup python3 services/auto_vectorizer.py start > "$LOG_DIR/vectorizer.log" 2>&1 &
+            VECTORIZER_PID=$!
+            echo "$VECTORIZER_PID" > "$VECTORIZER_PID_FILE"
+            sleep 1
+            if kill -0 "$VECTORIZER_PID" 2>/dev/null; then
+                echo -e "${GREEN}✅ Auto-Vectorizer started (PID: $VECTORIZER_PID)${NC}"
+            else
+                echo -e "${YELLOW}⚠️  Auto-Vectorizer failed to start${NC}"
+            fi
+        fi
     else
         echo -e "${RED}❌ SENTINEL failed to start${NC}"
         cat "$LOG_DIR/watchdog.log"
@@ -89,33 +107,42 @@ stop_sentinel() {
     
     if [ ! -f "$PID_FILE" ]; then
         echo -e "${YELLOW}No PID file found - SENTINEL may not be running${NC}"
-        exit 0
-    fi
-    
-    PID=$(cat "$PID_FILE")
-    
-    # Request password
-    if [ -z "$1" ]; then
-        read -s -p "Kill password: " KILL_PASSWORD
-        echo
     else
-        KILL_PASSWORD="$1"
+        PID=$(cat "$PID_FILE")
+        
+        # Request password
+        if [ -z "$1" ]; then
+            read -s -p "Kill password: " KILL_PASSWORD
+            echo
+        else
+            KILL_PASSWORD="$1"
+        fi
+        
+        # Verify password
+        PROVIDED_HASH=$(echo -n "$KILL_PASSWORD" | sha256sum | cut -d' ' -f1)
+        if [ "$PROVIDED_HASH" != "$SENTINEL_KILL_PASSWORD" ]; then
+            echo -e "${RED}❌ Invalid password${NC}"
+            exit 1
+        fi
+        
+        # Kill the watchdog process
+        if kill -TERM "$PID" 2>/dev/null; then
+            echo -e "${GREEN}✅ SENTINEL Watchdog stopped (PID: $PID)${NC}"
+            rm -f "$PID_FILE"
+        else
+            echo -e "${YELLOW}Process $PID not running${NC}"
+            rm -f "$PID_FILE"
+        fi
     fi
     
-    # Verify password
-    PROVIDED_HASH=$(echo -n "$KILL_PASSWORD" | sha256sum | cut -d' ' -f1)
-    if [ "$PROVIDED_HASH" != "$SENTINEL_KILL_PASSWORD" ]; then
-        echo -e "${RED}❌ Invalid password${NC}"
-        exit 1
-    fi
-    
-    # Kill the process
-    if kill -TERM "$PID" 2>/dev/null; then
-        echo -e "${GREEN}✅ SENTINEL stopped (PID: $PID)${NC}"
-        rm -f "$PID_FILE"
-    else
-        echo -e "${YELLOW}Process $PID not running${NC}"
-        rm -f "$PID_FILE"
+    # Also stop Auto-Vectorizer
+    VECTORIZER_PID_FILE="$SENTINEL_DIR/vectorizer.pid"
+    if [ -f "$VECTORIZER_PID_FILE" ]; then
+        VPID=$(cat "$VECTORIZER_PID_FILE")
+        if kill -TERM "$VPID" 2>/dev/null; then
+            echo -e "${GREEN}✅ Auto-Vectorizer stopped (PID: $VPID)${NC}"
+        fi
+        rm -f "$VECTORIZER_PID_FILE"
     fi
 }
 
@@ -127,12 +154,12 @@ check_status() {
     if [ -f "$PID_FILE" ]; then
         PID=$(cat "$PID_FILE")
         if kill -0 "$PID" 2>/dev/null; then
-            echo -e "  Watchdog:       ${GREEN}RUNNING${NC} (PID: $PID)"
+            echo -e "  Watchdog:        ${GREEN}RUNNING${NC} (PID: $PID)"
         else
-            echo -e "  Watchdog:       ${RED}DEAD${NC} (stale PID: $PID)"
+            echo -e "  Watchdog:        ${RED}DEAD${NC} (stale PID: $PID)"
         fi
     else
-        echo -e "  Watchdog:       ${YELLOW}NOT RUNNING${NC}"
+        echo -e "  Watchdog:        ${YELLOW}NOT RUNNING${NC}"
     fi
     
     # Check learning daemon
@@ -140,6 +167,19 @@ check_status() {
         echo -e "  Learning Daemon: ${GREEN}RUNNING${NC}"
     else
         echo -e "  Learning Daemon: ${YELLOW}NOT RUNNING${NC}"
+    fi
+    
+    # Check auto-vectorizer
+    VECTORIZER_PID_FILE="$SENTINEL_DIR/vectorizer.pid"
+    if [ -f "$VECTORIZER_PID_FILE" ]; then
+        VPID=$(cat "$VECTORIZER_PID_FILE")
+        if kill -0 "$VPID" 2>/dev/null; then
+            echo -e "  Auto-Vectorizer: ${GREEN}RUNNING${NC} (PID: $VPID)"
+        else
+            echo -e "  Auto-Vectorizer: ${RED}DEAD${NC} (stale PID: $VPID)"
+        fi
+    else
+        echo -e "  Auto-Vectorizer: ${YELLOW}NOT RUNNING${NC}"
     fi
     
     # Show latest heartbeat

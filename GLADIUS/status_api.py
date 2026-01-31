@@ -64,47 +64,75 @@ def check_gpu_available() -> bool:
         return False
 
 def get_training_status() -> dict:
-    """Get current training status from checkpoint files"""
+    """Get current training status from logs and checkpoint files"""
+    import re
     checkpoint_dir = PROJECT_ROOT / "GLADIUS" / "models" / "checkpoints"
     training_active = False
     epochs = 0
     loss = 0.0
-    progress = 0
+    progress = 0.0
     tokens = 0
     
     # Check if training process is running
     training_active, _ = check_process_running("train_cpu.py")
     if not training_active:
         training_active, _ = check_process_running("train_gpu.py")
+    if not training_active:
+        training_active, _ = check_process_running("gladius_trainer")
     
     # Try to read latest checkpoint info
     try:
         checkpoint_files = list(checkpoint_dir.glob("checkpoint_epoch_*.pt")) if checkpoint_dir.exists() else []
         if checkpoint_files:
             latest = max(checkpoint_files, key=lambda p: p.stat().st_mtime)
-            # Extract epoch from filename
             epoch_str = latest.stem.split('_')[-1]
             epochs = int(epoch_str)
-            progress = min(100, epochs * 10)  # Rough estimate
     except:
         pass
     
-    # Try to read training log for loss
+    # Try to read training log for loss and tokens
+    # Log format example:
+    # │  Epoch: 1/3   Step: 105/660   Progress: 15.9%
+    # │  Current:  1.828325  ↓    Avg: 4.727455
+    # │  Tokens Processed: 107,520
     log_file = PROJECT_ROOT / "logs" / "training.log"
-    if log_file.exists():
+    trainer_log = PROJECT_ROOT / "logs" / "trainer.log"
+    
+    log_to_read = log_file if log_file.exists() else (trainer_log if trainer_log.exists() else None)
+    
+    # ANSI escape code stripper
+    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    
+    if log_to_read:
         try:
-            with open(log_file) as f:
-                lines = f.readlines()[-20:]  # Last 20 lines
-                for line in reversed(lines):
-                    if 'loss' in line.lower():
-                        # Try to extract loss value
-                        import re
-                        match = re.search(r'loss[:\s]+([0-9.]+)', line.lower())
-                        if match:
-                            loss = float(match.group(1))
-                            break
-        except:
-            pass
+            with open(log_to_read, encoding='utf-8', errors='ignore') as f:
+                content = f.read()
+                # Strip ANSI escape codes
+                content = ansi_escape.sub('', content)
+                lines = content.split('\n')[-200:]  # Last 200 lines
+                full_text = '\n'.join(lines)
+                
+                # Extract Tokens Processed: 107,520
+                token_match = re.search(r'Tokens Processed:\s*([\d,]+)', full_text)
+                if token_match:
+                    tokens = int(token_match.group(1).replace(',', ''))
+                
+                # Extract Progress: 15.9%
+                progress_match = re.search(r'Progress:\s*([\d.]+)%', full_text)
+                if progress_match:
+                    progress = float(progress_match.group(1))
+                
+                # Extract Epoch: 1/3
+                epoch_match = re.search(r'Epoch:\s*(\d+)/\d+', full_text)
+                if epoch_match:
+                    epochs = int(epoch_match.group(1))
+                
+                # Extract Current loss: 1.828325
+                loss_match = re.search(r'Current:\s*([\d.]+)', full_text)
+                if loss_match:
+                    loss = float(loss_match.group(1))
+        except Exception as e:
+            print(f"Error reading training log: {e}")
     
     return {
         "active": training_active,
@@ -117,33 +145,52 @@ def get_training_status() -> dict:
 def get_hektor_stats() -> dict:
     """Get Hektor VDB statistics"""
     vector_count = 0
+    stores_stats = {}
     
-    # Try to read from hektor state
-    hektor_state = PROJECT_ROOT / "memory" / "hektor_state.json"
-    if hektor_state.exists():
-        try:
-            with open(hektor_state) as f:
-                data = json.load(f)
-                vector_count = data.get("vector_count", 0)
-        except:
-            pass
+    # Try to import and use actual Hektor memory
+    try:
+        from GLADIUS.utils.hektor_memory import get_memory_manager, HEKTOR_AVAILABLE
+        if HEKTOR_AVAILABLE:
+            manager = get_memory_manager()
+            all_stats = manager.stats_all()
+            for store_name, stats in all_stats.items():
+                count = stats.get("total_vectors", 0)
+                vector_count += count
+                stores_stats[store_name] = count
+    except ImportError:
+        pass
+    except Exception as e:
+        print(f"Hektor stats error: {e}")
     
-    # Fallback: estimate from data files
+    # Fallback: read from vectorizer state file
     if vector_count == 0:
-        data_dir = PROJECT_ROOT / "memory"
-        if data_dir.exists():
-            for f in data_dir.glob("*.json"):
+        vectorizer_state = PROJECT_ROOT / ".vectorizer_state.json"
+        if vectorizer_state.exists():
+            try:
+                with open(vectorizer_state) as f:
+                    data = json.load(f)
+                    stats = data.get("stats", {})
+                    vector_count = stats.get("total_processed", 0)
+            except:
+                pass
+    
+    # Fallback: read from hektor_texts.json files
+    if vector_count == 0:
+        memory_dir = PROJECT_ROOT / "GLADIUS" / "memory"
+        if memory_dir.exists():
+            for f in memory_dir.glob("*_texts.json"):
                 try:
                     with open(f) as file:
                         data = json.load(file)
-                        if isinstance(data, list):
+                        if isinstance(data, dict):
                             vector_count += len(data)
                 except:
                     pass
     
     return {
         "active": vector_count > 0,
-        "vector_count": vector_count
+        "vector_count": vector_count,
+        "stores": stores_stats
     }
 
 def get_system_metrics() -> dict:

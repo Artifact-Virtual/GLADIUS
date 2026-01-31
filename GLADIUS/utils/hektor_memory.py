@@ -23,7 +23,9 @@ try:
         DistanceMetric,
         DocumentType
     )
-    HEKTOR_AVAILABLE = True
+    # DISABLED: pyvdb has segfault issues on some systems
+    # Set to False to use SimpleVectorMemory fallback
+    HEKTOR_AVAILABLE = False  # Was True, disabled due to crash bugs
 except ImportError:
     HEKTOR_AVAILABLE = False
 
@@ -526,14 +528,47 @@ class GladiusMemoryManager:
 
 
 # Convenience function for quick access
-_default_manager: Optional[GladiusMemoryManager] = None
+_default_manager = None
 
 
-def get_memory_manager() -> GladiusMemoryManager:
-    """Get or create the default memory manager."""
+def get_memory_manager():
+    """
+    Get or create the default memory manager.
+    Falls back to SimpleVectorMemory if Hektor crashes.
+    """
     global _default_manager
     if _default_manager is None:
-        _default_manager = GladiusMemoryManager()
+        # Try Hektor first
+        if HEKTOR_AVAILABLE:
+            try:
+                _default_manager = GladiusMemoryManager()
+                # Test that it actually works
+                test_store = _default_manager.get_store("knowledge")
+                _ = test_store.count()
+                logger.info("Using Hektor VDB for vector memory")
+            except Exception as e:
+                logger.warning(f"Hektor failed ({e}), falling back to SimpleVectorMemory")
+                _default_manager = None
+        
+        # Fallback to simple vector memory
+        if _default_manager is None:
+            try:
+                # Try relative import first
+                from .simple_vector_memory import GladiusVectorMemory
+                _default_manager = GladiusVectorMemory()
+                logger.info("Using SimpleVectorMemory (fallback)")
+            except ImportError:
+                try:
+                    # Try absolute import
+                    import sys
+                    sys.path.insert(0, str(Path(__file__).parent))
+                    from simple_vector_memory import GladiusVectorMemory
+                    _default_manager = GladiusVectorMemory()
+                    logger.info("Using SimpleVectorMemory (fallback)")
+                except ImportError:
+                    logger.error("No vector memory implementation available!")
+                    raise ImportError("No vector memory available - install hektor-vdb or check simple_vector_memory.py")
+    
     return _default_manager
 
 
@@ -550,36 +585,35 @@ def recall(query: str, store: str = "conversations", top_k: int = 5) -> List[Dic
 # Test function
 def _test():
     """Test Hektor integration."""
-    print("Testing Hektor Memory Integration...")
-    print(f"Hektor available: {HEKTOR_AVAILABLE}")
+    print("Testing Vector Memory Integration...")
+    print(f"Hektor native available: {HEKTOR_AVAILABLE}")
     
-    if not HEKTOR_AVAILABLE:
-        print("Install with: pip install hektor-vdb")
-        return
-    
-    # Create test memory
-    memory = HektorMemory(
-        db_path="/tmp/gladius_hektor_test.db",
-        dimension=384
-    )
-    
-    print(f"Database initialized: {memory.stats()}")
-    
-    # Add some test data
-    id1 = memory.add_text("GLADIUS is an AI system being developed", doc_type="knowledge")
-    id2 = memory.add_text("Training uses PyTorch and exports to GGUF", doc_type="training")
-    id3 = memory.add_text("The user asked about vector databases", doc_type="conversation")
-    
-    print(f"Added vectors: {id1}, {id2}, {id3}")
-    print(f"Total vectors: {memory.count()}")
-    
-    # Query
-    results = memory.query_text("What is GLADIUS?", top_k=3)
-    print(f"\nQuery results for 'What is GLADIUS?':")
-    for r in results:
-        print(f"  Score: {r['score']:.4f} - {r['text'][:50]}...")
-    
-    print("\nHektor integration test complete!")
+    try:
+        manager = get_memory_manager()
+        print(f"Manager type: {type(manager).__name__}")
+        
+        knowledge = manager.get_store("knowledge")
+        
+        # Add some test data
+        id1 = knowledge.add_text("GLADIUS is an AI system being developed", doc_type="knowledge")
+        id2 = knowledge.add_text("Training uses PyTorch and exports to GGUF", doc_type="training")
+        id3 = knowledge.add_text("The user asked about vector databases", doc_type="conversation")
+        
+        print(f"Added vectors: {id1}, {id2}, {id3}")
+        print(f"Total vectors: {knowledge.count()}")
+        
+        # Query
+        results = knowledge.query_text("What is GLADIUS?", top_k=3)
+        print(f"\nQuery results for 'What is GLADIUS?':")
+        for r in results:
+            print(f"  Score: {r.get('score', 0):.4f} - {r.get('text', '')[:50]}...")
+        
+        print("\nVector memory test complete!")
+        
+    except Exception as e:
+        print(f"Test failed: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 if __name__ == "__main__":

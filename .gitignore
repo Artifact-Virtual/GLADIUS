@@ -226,3 +226,4 @@ memory/hektor_state.json
 GLADIUS/memory/conversations.npy
 GLADIUS/memory/knowledge.npy
 GLADIUS/memory/training.npy
+hektor_report.md

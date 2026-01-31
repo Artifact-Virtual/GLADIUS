@@ -82,7 +82,7 @@ export class GladiusService {
   public onError: (error: string) => void = () => {};
   public onConnectionChange: (connected: boolean) => void = () => {};
 
-  constructor(baseUrl: string = 'http://localhost:7001') {
+  constructor(baseUrl: string = 'http://localhost:7000') {
     this.baseUrl = baseUrl;
     // Load persisted state or use defaults
     this.currentState = this.loadPersistedState();
