@@ -7,12 +7,14 @@ import { TelemetryDashboard } from './components/telemetry/TelemetryDashboard';
 // Import pages from existing structure
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const Training = React.lazy(() => import('./pages/Training'));
-const Sentinel = React.lazy(() => import('./pages/Sentinel'));
-const Agents = React.lazy(() => import('./pages/Agents'));
-const Logs = React.lazy(() => import('./pages/Logs'));
-const Artifact = React.lazy(() => import('./pages/Artifact'));
+const Sentinel = React.lazy(() => import('./pages/SentinelPage'));
+const Agents = React.lazy(() => import('./pages/LegionPage'));
+const Logs = React.lazy(() => import('./pages/LogsPage'));
+const Artifact = React.lazy(() => import('./pages/ArtifactPage'));
 const Arty = React.lazy(() => import('./pages/Arty'));
 const Syndicate = React.lazy(() => import('./pages/Syndicate'));
+const Gladius = React.lazy(() => import('./pages/GladiusPage'));
+const Settings = React.lazy(() => import('./pages/SettingsPage'));
 
 function App() {
   return (
