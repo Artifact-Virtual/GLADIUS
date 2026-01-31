@@ -47,11 +47,11 @@ class GladiusInterface:
     
     Priorities:
     1. Direct GLADIUS model via transformers (trained Qwen LoRA)
-    2. Native GLADIUS Ollama model (gladius:latest)
+    2. Native GLADIUS Ollama model (gladius1.1:494M)
     3. Fallback to base model (qwen2.5:0.5b or llama3.2)
     """
     
-    GLADIUS_MODEL = "gladius:latest"
+    GLADIUS_MODEL = "gladius1.1:494M"
     FALLBACK_MODELS = ["qwen2.5:0.5b", "llama3.2"]
     
     def __init__(self, verbose: bool = False, direct: bool = True):

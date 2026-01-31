@@ -188,19 +188,50 @@ class WebResearcher:
         "arxiv": {
             "base_url": "https://export.arxiv.org/api/query",
             "rate_limit": 3,  # requests per minute
-            "categories": ["cs.AI", "cs.LG", "cs.CL"]
+            "categories": ["cs.AI", "cs.LG", "cs.CL", "cs.CR"]  # Added cs.CR for security/cryptography
         },
         "github_trending": {
             "base_url": "https://api.github.com/search/repositories",
             "rate_limit": 5,
-            "topics": ["llm", "gguf", "fine-tuning", "ai-agent"]
+            "topics": [
+                # Core AI/AGI
+                "llm", "gguf", "fine-tuning", "ai-agent", "agi", "artificial-general-intelligence",
+                "autonomous-agents", "multi-agent", "reasoning", "chain-of-thought",
+                # xAI and frontier
+                "grok", "mixture-of-experts", "moe", "scaling-laws", "emergent-abilities",
+                # Security & Threats
+                "ai-safety", "adversarial-attacks", "prompt-injection", "jailbreak",
+                "ai-alignment", "red-teaming", "llm-security"
+            ]
         },
         "huggingface": {
             "base_url": "https://huggingface.co/api/papers",
             "rate_limit": 10,
-            "topics": ["transformers", "llm", "tool-use"]
+            "topics": [
+                # Core
+                "transformers", "llm", "tool-use", "function-calling",
+                # AGI research
+                "reasoning", "world-models", "self-improvement", "metacognition",
+                # Security
+                "adversarial", "robustness", "safety", "alignment"
+            ]
         }
     }
+    
+    # Research keywords for discovery phase
+    RESEARCH_KEYWORDS = [
+        # AGI & Frontier AI
+        "AGI", "artificial general intelligence", "autonomous agents", "self-improving AI",
+        "recursive self-improvement", "AI scaling laws", "emergent capabilities",
+        # xAI / Grok / Frontier labs
+        "xAI", "Grok", "Claude", "GPT-5", "Gemini", "frontier models",
+        # Threats & Security
+        "AI threats", "adversarial attacks on LLMs", "prompt injection attacks",
+        "jailbreak techniques", "AI safety risks", "misalignment",
+        "scalable oversight", "AI containment", "rogue AI",
+        # Defense
+        "AI red teaming", "LLM guardrails", "constitutional AI", "RLHF safety"
+    ]
     
     def __init__(self):
         self.last_requests: Dict[str, datetime] = {}
@@ -398,14 +429,29 @@ class LearningDaemon:
         default_config = {
             "cycle_interval_minutes": 60,
             "research_keywords": [
+                # Core AI/LLM
                 "GGUF", "LLM", "fine-tuning", "tool-use", "AI agent",
-                "autonomous", "trading AI", "market analysis"
+                "autonomous agents", "function calling",
+                # AGI & Frontier
+                "AGI", "artificial general intelligence", "xAI", "Grok",
+                "emergent capabilities", "scaling laws", "reasoning",
+                # Threats & Security
+                "AI safety", "adversarial attacks", "prompt injection",
+                "jailbreak", "AI alignment", "red teaming"
             ],
             "broad_targets": [
-                "artificial intelligence", "machine learning", "deep learning"
+                "artificial intelligence", "machine learning", "deep learning",
+                "artificial general intelligence", "AI safety"
             ],
             "focused_targets": [
-                "small language models", "quantization", "efficient inference"
+                # Efficiency (for running on CPU)
+                "small language models", "quantization", "efficient inference",
+                "model distillation", "pruning",
+                # AGI research
+                "self-improvement", "recursive learning", "metacognition",
+                # Security research
+                "LLM vulnerabilities", "AI threat models", "scalable attacks",
+                "autonomous threat actors", "AI-powered malware"
             ],
             "auto_train_threshold": 100,  # Min new samples before training
             "max_discoveries_per_cycle": 20

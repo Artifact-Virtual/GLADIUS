@@ -172,7 +172,7 @@ class OllamaAdapter(BaseAdapter):
     
     def __init__(self):
         self.server_url = os.environ.get("OLLAMA_URL", "http://localhost:11434")
-        self.model = os.environ.get("LLAMA_MODEL", os.environ.get("OLLAMA_MODEL", "gladius:latest"))
+        self.model = os.environ.get("LLAMA_MODEL", os.environ.get("OLLAMA_MODEL", "gladius1.1:494M"))
         self.timeout = int(os.environ.get("LLAMA_TIMEOUT", "120"))
         
         # Check server availability

@@ -1,5 +1,5 @@
 {
-  "model": "gladius:latest",
+  "model": "gladius1.1:494M",
   "version": "0.1.0",
   "promoted_at": "2026-01-14T16:27:52.791703",
   "base_model": "qwen2.5:0.5b"

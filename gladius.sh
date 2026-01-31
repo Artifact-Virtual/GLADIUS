@@ -1121,111 +1121,108 @@ EOF
 }
 
 # =============================================================================
-# RUN - Full system startup with training and visualization
+# RUN - Lightweight system startup (UI + essential services only)
 # =============================================================================
 
 do_run() {
     print_header
     echo -e "${BLUE}╔═══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║                  GLADIUS FULL SYSTEM RUN                      ║${NC}"
+    echo -e "${BLUE}║           ARTIFACT VIRTUAL ENTERPRISE - LIGHTWEIGHT           ║${NC}"
     echo -e "${BLUE}╚═══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
     
-    # Step 1: Hardware detection
-    echo -e "${CYAN}[1/5] Hardware Detection${NC}"
+    # Check lightweight mode from config
+    local lightweight=$(get_config "system.lightweight_mode" "true")
+    if [ "$lightweight" = "True" ] || [ "$lightweight" = "true" ]; then
+        echo -e "  ${CYAN}Mode:${NC} Lightweight (CPU-friendly)"
+        echo -e "  ${CYAN}Note:${NC} Training disabled. Use './gladius.sh train' to run manually."
+        echo ""
+    fi
+    
+    mkdir -p "$LOG_DIR"
+    mkdir -p "$PID_DIR"
+    
+    # Step 1: Hardware detection (quick)
+    echo -e "${CYAN}[1/3] Hardware Detection${NC}"
     echo "─────────────────────────────────────────────────────────────────"
     "$PYTHON" "$GLADIUS_ROOT/GLADIUS/utils/hardware.py" 2>/dev/null || echo -e "  ${YELLOW}⚠️${NC}  Hardware detection module not available"
     echo ""
     
-    # Step 2: Start all services
-    echo -e "${CYAN}[2/5] Starting Core Services${NC}"
+    # Step 2: Start SENTINEL only (lightweight background daemon)
+    echo -e "${CYAN}[2/3] SENTINEL Guardian${NC}"
     echo "─────────────────────────────────────────────────────────────────"
-    do_start
-    
-    # Step 3: Check if Ollama is running with gladius model
-    echo ""
-    echo -e "${CYAN}[3/5] GLADIUS Model Check${NC}"
-    echo "─────────────────────────────────────────────────────────────────"
-    if command -v ollama &> /dev/null; then
-        if ollama list 2>/dev/null | grep -q "gladius"; then
-            echo -e "  ${GREEN}✅${NC} GLADIUS model available in Ollama"
-            local model_info=$(ollama list 2>/dev/null | grep "gladius" | head -1)
-            echo -e "  ${CYAN}→${NC} $model_info"
-        else
-            echo -e "  ${YELLOW}⚠️${NC}  GLADIUS model not found in Ollama"
-            echo -e "  ${CYAN}→${NC} Using fallback model (qwen2.5:0.5b)"
-        fi
-    else
-        echo -e "  ${YELLOW}⚠️${NC}  Ollama not installed"
-    fi
-    echo ""
-    
-    # Step 4: Trigger initial training check (background)
-    echo -e "${CYAN}[4/5] Training System Check${NC}"
-    echo "─────────────────────────────────────────────────────────────────"
-    if [ -f "$GLADIUS_ROOT/GLADIUS/training/dual_trainer.py" ]; then
-        echo -e "  ${GREEN}✅${NC} Dual Training System available"
-        echo -e "  ${CYAN}→${NC} Qwen2.5-1.5B LoRA + GLADIUS Primary"
-        
-        # Check for existing checkpoints
-        if [ -d "$GLADIUS_ROOT/GLADIUS/tmp/checkpoints" ]; then
-            local checkpoint_count=$(ls -1 "$GLADIUS_ROOT/GLADIUS/tmp/checkpoints" 2>/dev/null | wc -l)
-            if [ "$checkpoint_count" -gt 0 ]; then
-                echo -e "  ${GREEN}✅${NC} Found $checkpoint_count training checkpoints"
+    if is_module_enabled "sentinel"; then
+        if [ -f "$GLADIUS_ROOT/SENTINEL/sentinel.pid" ]; then
+            local spid=$(cat "$GLADIUS_ROOT/SENTINEL/sentinel.pid" 2>/dev/null)
+            if kill -0 "$spid" 2>/dev/null; then
+                echo -e "  ${GREEN}✅${NC} SENTINEL already running (PID: $spid)"
+            else
+                rm -f "$GLADIUS_ROOT/SENTINEL/sentinel.pid"
+                "$GLADIUS_ROOT/scripts/start_sentinel.sh" detached 2>/dev/null
+                sleep 2
+                echo -e "  ${GREEN}✅${NC} SENTINEL started"
             fi
-        fi
-        
-        # Check for LoRA adapter
-        if [ -d "$GLADIUS_ROOT/GLADIUS/models/qwen/gladius-qwen-lora" ]; then
-            echo -e "  ${GREEN}✅${NC} GLADIUS LoRA adapter found"
         else
-            echo -e "  ${YELLOW}⚠️${NC}  No LoRA adapter yet - training recommended"
+            "$GLADIUS_ROOT/scripts/start_sentinel.sh" detached 2>/dev/null
+            sleep 2
+            echo -e "  ${GREEN}✅${NC} SENTINEL started"
         fi
     else
-        echo -e "  ${YELLOW}⚠️${NC}  Training system not found"
+        echo -e "  ${YELLOW}⚠️${NC}  SENTINEL disabled in config"
     fi
     echo ""
     
-    # Step 5: Launch visualization (Web UI)
-    echo -e "${CYAN}[5/5] Visualization${NC}"
+    # Step 3: Launch Electron UI
+    echo -e "${CYAN}[3/3] Launching UI${NC}"
     echo "─────────────────────────────────────────────────────────────────"
-    if check_port 5002; then
-        echo -e "  ${GREEN}✅${NC} Web UI running at http://localhost:5002"
+    if is_module_enabled "ui"; then
+        if [ -d "$GLADIUS_ROOT/ui" ]; then
+            echo -e "  ${BLUE}→${NC} Starting Artifact Virtual UI..."
+            cd "$GLADIUS_ROOT/ui"
+            
+            # Build if needed
+            if [ ! -d "dist/electron" ]; then
+                echo -e "  ${BLUE}→${NC} Building UI (first time)..."
+                npm run build > "$LOG_DIR/ui_build.log" 2>&1
+                npm run build:electron >> "$LOG_DIR/ui_build.log" 2>&1
+            fi
+            
+            # Launch Electron (unset ELECTRON_RUN_AS_NODE)
+            ELECTRON_RUN_AS_NODE= nohup npm run start > "$LOG_DIR/ui.log" 2>&1 &
+            echo $! > "$PID_DIR/ui.pid"
+            sleep 2
+            
+            if pgrep -f "electron" > /dev/null 2>&1; then
+                echo -e "  ${GREEN}✅${NC} UI launched successfully"
+            else
+                echo -e "  ${YELLOW}⚠️${NC}  UI may take a moment to start"
+            fi
+        else
+            echo -e "  ${YELLOW}⚠️${NC}  UI directory not found"
+        fi
     else
-        echo -e "  ${YELLOW}⚠️${NC}  Web UI not running"
+        echo -e "  ${YELLOW}⚠️${NC}  UI disabled in config"
     fi
     
-    if check_port 3001; then
-        echo -e "  ${GREEN}✅${NC} Grafana running at http://localhost:3001"
-    fi
     echo ""
-    
-    # Final status
     echo -e "${GREEN}╔═══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}║                    GLADIUS SYSTEM ALIVE                       ║${NC}"
+    echo -e "${GREEN}║              ARTIFACT VIRTUAL READY                           ║${NC}"
     echo -e "${GREEN}╚═══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
-    echo -e "  ${BLUE}▌ GLADIUS AI${NC}"
-    echo -e "    ${CYAN}Interactive Mode${NC}    ./gladius.sh interact"
-    echo -e "    ${CYAN}Speak Mode${NC}          ./gladius.sh speak"
-    echo -e "    ${CYAN}Build Mode${NC}          ./gladius.sh interact --execute"
+    echo -e "  ${BLUE}▌ MODULES (use UI or CLI to enable)${NC}"
+    is_module_enabled "sentinel" && echo -e "    ${GREEN}●${NC} SENTINEL      Running" || echo -e "    ${YELLOW}○${NC} SENTINEL      Disabled"
+    is_module_enabled "legion" && echo -e "    ${GREEN}●${NC} LEGION        Enabled" || echo -e "    ${YELLOW}○${NC} LEGION        Disabled"
+    is_module_enabled "training" && echo -e "    ${GREEN}●${NC} Training      Enabled" || echo -e "    ${YELLOW}○${NC} Training      Disabled (run manually)"
+    is_module_enabled "syndicate" && echo -e "    ${GREEN}●${NC} Syndicate     Enabled" || echo -e "    ${YELLOW}○${NC} Syndicate     Disabled"
     echo ""
-    echo -e "  ${BLUE}▌ TRAINING${NC}"
-    echo -e "    ${CYAN}Quick LoRA${NC}          ./gladius.sh train"
-    echo -e "    ${CYAN}Dual Training${NC}       ./gladius.sh train-dual"
-    echo -e "    ${CYAN}1B Training${NC}         ./gladius.sh train-1b"
+    echo -e "  ${BLUE}▌ MANUAL COMMANDS${NC}"
+    echo -e "    ${CYAN}./gladius.sh train${NC}       - Run GLADIUS training"
+    echo -e "    ${CYAN}./gladius.sh interact${NC}   - Interactive AI session"
+    echo -e "    ${CYAN}./gladius.sh start${NC}      - Start all services (heavy)"
+    echo -e "    ${CYAN}./gladius.sh stop${NC}       - Stop all services"
     echo ""
-    echo -e "  ${BLUE}▌ AUTONOMOUS${NC}"
-    echo -e "    ${CYAN}Single Cycle${NC}        ./gladius.sh cycle"
-    echo -e "    ${CYAN}Continuous${NC}          ./gladius.sh continuous"
-    echo -e "    ${CYAN}Full Autonomous${NC}     ./gladius.sh autonomous"
-    echo ""
-    echo -e "  ${BLUE}▌ ACCESS POINTS${NC}"
-    echo -e "    ${CYAN}Web UI${NC}              http://localhost:5002"
-    echo -e "    ${CYAN}API Docs${NC}            http://localhost:7000/docs"
-    if check_port 3001; then
-        echo -e "    ${CYAN}Grafana${NC}             http://localhost:3001"
-    fi
+    echo -e "  ${BLUE}▌ CONFIG${NC}"
+    echo -e "    Edit ${CYAN}config.json${NC} to enable/disable modules"
     echo ""
 }
 
@@ -1327,56 +1324,46 @@ case "${1:-help}" in
         ;;
     *)
         echo ""
-        echo -e "${BLUE}GLADIUS Control Script${NC}"
+        echo -e "${BLUE}Artifact Virtual Enterprise - Control Script${NC}"
         echo ""
         echo "Usage: ./gladius.sh <command> [options]"
         echo ""
         echo -e "${CYAN}Quick Start:${NC}"
-        echo "  run                Full system startup (services + training check + viz)"
+        echo "  run                Lightweight startup (UI + SENTINEL only)"
+        echo "  start              Full system startup (all services - HEAVY)"
         echo ""
         echo -e "${CYAN}Core Commands:${NC}"
-        echo "  start              Start all services + health check"
-        echo "  stop [--force]     Stop all services + regression check"
+        echo "  stop [--force]     Stop all services"
         echo "  restart            Stop then start all services"
-        echo "  status             Quick status check (all services)"
-        echo "  health             Full health check with endpoint tests"
+        echo "  status             Quick status check"
+        echo "  health             Full health check"
         echo ""
         echo -e "${CYAN}GLADIUS AI:${NC}"
-        echo "  interact           Interactive GLADIUS session (tool routing)"
-        echo "  speak              Direct GLADIUS conversation interface"
-        echo "  train              Run GLADIUS model training pipeline"
-        echo "  train-dual         Run dual training (Qwen LoRA + Primary)"
-        echo "  train-1b           Run 1B parameter training"
-        echo "  continuous         Run GLADIUS continuous autonomous mode"
+        echo "  interact           Interactive GLADIUS session"
+        echo "  speak              Direct conversation interface"
         echo ""
-        echo -e "${CYAN}Autonomous Cognition:${NC}"
-        echo "  cycle              Run single full autonomous cycle"
-        echo "  cognition          Run cognition learning cycle only"
-        echo "  benchmark [n]      Run n learning cycles for benchmark (default: 5)"
-        echo "  autonomous [d] [m] Run indefinitely for d days, m min interval (default: 30d, 60m)"
-        echo "  auto               Alias for autonomous"
+        echo -e "${CYAN}Training (Run Manually):${NC}"
+        echo "  train              Run GLADIUS training pipeline"
+        echo "  train-dual         Dual training (Qwen LoRA + Primary)"
+        echo "  train-1b           1B parameter training (HEAVY)"
+        echo ""
+        echo -e "${CYAN}Autonomous Modes:${NC}"
+        echo "  cycle              Run single autonomous cycle"
+        echo "  cognition          Run learning cycle only"
+        echo "  continuous         Run continuous autonomous mode"
+        echo "  autonomous [d] [m] Full autonomous (d days, m min interval)"
         echo ""
         echo -e "${CYAN}Utilities:${NC}"
-        echo "  infra              Test Infra API specifically"
-        echo "  logs               Tail all log files"
-        echo ""
-        echo -e "${CYAN}Services:${NC}"
-        echo "  * Infra API (7000)         - Market data, assets, portfolios"
-        echo "  * Dashboard Backend (5000) - Automata control, content"
-        echo "  * Web UI (5002)            - Template-based UI and charts"
-        echo "  * Dashboard Frontend (3000)- React UI"
-        echo "  * Grafana (3001)           - Metrics dashboards (Docker)"
-        echo "  * Prometheus (9090)        - Metrics collection (Docker)"
-        echo "  * Syndicate Daemon         - Market intelligence + Cognition"
+        echo "  infra              Test Infra API"
+        echo "  logs               Tail log files"
         echo ""
         echo "Examples:"
-        echo "  ./gladius.sh start              # Start all services"
-        echo "  ./gladius.sh interact           # Start interactive AI session"
-        echo "  ./gladius.sh cycle              # Run single autonomous cycle"
-        echo "  ./gladius.sh cognition          # Run learning cycle only"
-        echo "  ./gladius.sh benchmark 10       # Benchmark with 10 cycles"
-        echo "  ./gladius.sh autonomous         # Run 30 days, 60min intervals"
-        echo "  ./gladius.sh autonomous 7 30    # Run 7 days, 30min intervals"
+        echo "  ./gladius.sh run                # Lightweight startup (recommended)"
+        echo "  ./gladius.sh interact           # Interactive AI session"
+        echo "  ./gladius.sh train              # Run training manually"
+        echo "  ./gladius.sh start              # Full system (heavy)"
+        echo ""
+        echo "Config: Edit config.json to enable/disable modules"
         echo ""
         ;;
 esac

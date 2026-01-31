@@ -287,7 +287,7 @@ class AutonomousOperator:
             
             # Try Ollama gladius model
             result = subprocess.run(
-                ["ollama", "run", "gladius:latest", prompt],
+                ["ollama", "run", "gladius1.1:494M", prompt],
                 capture_output=True,
                 text=True,
                 timeout=60
