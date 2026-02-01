@@ -1,0 +1,18 @@
+{
+  "experiments": [
+    {
+      "id": "EXP-001",
+      "name": "langtons_ant",
+      "type": "simulation",
+      "status": "active",
+      "created": "2026-02-01T10:11:41.886Z",
+      "model": "gladius-71m",
+      "description": "GLADIUS 71M model IS the ant in a Langton's Ant simulation"
+    }
+  ],
+  "auto_study": {
+    "enabled": true,
+    "teams": ["observer", "analyst", "reporter"],
+    "report_interval_minutes": 30
+  }
+}

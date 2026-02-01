@@ -28,6 +28,14 @@ from typing import Dict, Any, Optional, List
 GLADIUS_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(GLADIUS_ROOT))
 
+# Import Cognition Engine Tool Registry
+try:
+    from Artifact.syndicate.src.cognition.tool_calling import TOOL_REGISTRY, ToolRegistry
+    TOOLS_AVAILABLE = True
+except ImportError:
+    TOOL_REGISTRY = None
+    TOOLS_AVAILABLE = False
+
 # Terminal colors
 class Colors:
     HEADER = '\033[95m'
@@ -62,6 +70,13 @@ class GladiusInterface:
         self.history: List[Dict[str, str]] = []
         self.session_start = datetime.now()
         
+        # Initialize tool registry from Cognition Engine
+        self.tool_registry = TOOL_REGISTRY if TOOLS_AVAILABLE else None
+        self.tools_count = len(TOOL_REGISTRY.list_tools()) if self.tool_registry else 0
+        
+        if verbose and self.tool_registry:
+            print(f"{Colors.GREEN}● Cognition Engine: {self.tools_count} tools available{Colors.NC}")
+        
         # Try direct model first
         if direct:
             self._load_direct_model()
@@ -72,8 +87,12 @@ class GladiusInterface:
         else:
             self.model = "gladius-direct"
         
-        # System prompt for GLADIUS
-        self.system_prompt = """You are GLADIUS, the native AI for Artifact Virtual Enterprise.
+        # Build system prompt with tools
+        self._build_system_prompt()
+    
+    def _build_system_prompt(self):
+        """Build system prompt including all available tools from Cognition Engine"""
+        base_prompt = """You are GLADIUS, the native AI for Artifact Virtual Enterprise.
 
 You are a powerful autonomous AI designed to:
 1. Control Artifact's infrastructure (social media, ERP, publishing)
@@ -81,18 +100,27 @@ You are a powerful autonomous AI designed to:
 3. Learn continuously via SENTINEL's research daemon
 4. Evolve through self-improvement cycles
 
-When asked to perform actions, respond with JSON tool calls.
-When asked questions, respond conversationally with insight and precision.
+When asked to perform actions, respond with JSON tool calls in the format:
+{"tool": "tool_name", "args": {"param1": "value1"}}
 
+When asked questions, respond conversationally with insight and precision.
+Be concise, intelligent, and proactive.
+"""
+        
+        # Add tool documentation if available
+        if self.tool_registry:
+            tool_prompt = self.tool_registry.generate_system_prompt()
+            self.system_prompt = base_prompt + "\n\n" + tool_prompt
+        else:
+            self.system_prompt = base_prompt + """
 You have access to:
 - Syndicate (market research pipeline)
 - Discord, Twitter, LinkedIn, Facebook, Instagram
-- SMTP email system
+- SMTP email system  
 - ERP integrations (SAP, Salesforce, Dynamics, etc.)
 - File system and databases
 - Memory systems for learning
-
-Be concise, intelligent, and proactive."""
+"""
     
     def _load_direct_model(self):
         """Load GLADIUS model directly via transformers (not Ollama)"""
@@ -356,18 +384,92 @@ Be concise, intelligent, and proactive."""
                 tool_name = parsed["tool"]
                 args = parsed["args"]
                 
-                # TODO: Implement actual tool execution
-                # For now, return the parsed call
+                # Validate tool exists in registry
+                if self.tool_registry:
+                    is_valid, error = self.tool_registry.validate_call(tool_name, args)
+                    if not is_valid:
+                        return {
+                            "tool": tool_name,
+                            "args": args,
+                            "executed": False,
+                            "error": error
+                        }
+                
+                # Execute the tool
+                result = self._execute_tool(tool_name, args)
                 return {
                     "tool": tool_name,
                     "args": args,
-                    "executed": False,
-                    "note": "Tool execution pending implementation"
+                    "executed": True,
+                    "result": result
                 }
         except (json.JSONDecodeError, KeyError):
             pass
         
         return None
+    
+    def _execute_tool(self, tool_name: str, args: Dict[str, Any]) -> Any:
+        """
+        Execute a tool from the Cognition Engine.
+        
+        This connects GLADIUS to the actual tool implementations.
+        """
+        try:
+            # Import tool implementations
+            from Artifact.syndicate.src.cognition import hektor_store
+            
+            # Database tools
+            if tool_name == "search":
+                return hektor_store.search(args.get("query", ""), k=args.get("k", 5))
+            elif tool_name == "hybrid_search":
+                return hektor_store.hybrid_search(
+                    args.get("query", ""),
+                    k=args.get("k", 5),
+                    vector_weight=args.get("vector_weight", 0.7)
+                )
+            elif tool_name == "get_context":
+                return hektor_store.get_context(args.get("query", ""), k=args.get("k", 3))
+            
+            # Memory tools
+            elif tool_name == "remember":
+                return hektor_store.remember(
+                    args.get("key", ""),
+                    args.get("value", ""),
+                    args.get("metadata", {})
+                )
+            elif tool_name == "recall":
+                return hektor_store.recall(args.get("query", ""), k=args.get("k", 3))
+            
+            # Workspace tools
+            elif tool_name == "read_file":
+                path = Path(args.get("path", ""))
+                if path.exists():
+                    return {"content": path.read_text()[:10000]}
+                return {"error": "File not found"}
+            elif tool_name == "write_file":
+                path = Path(args.get("path", ""))
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(args.get("content", ""))
+                return {"path": str(path), "bytes": len(args.get("content", ""))}
+            elif tool_name == "list_dir":
+                path = Path(args.get("path", "."))
+                if path.exists():
+                    return [{"name": f.name, "type": "dir" if f.is_dir() else "file"} for f in path.iterdir()]
+                return {"error": "Path not found"}
+            
+            # Introspection tools
+            elif tool_name == "get_tools":
+                if self.tool_registry:
+                    return {t.name: t.description for t in self.tool_registry.list_tools()}
+                return {"error": "Tool registry not available"}
+            elif tool_name == "get_history":
+                return self.history[-args.get("last_n", 20):]
+            
+            # Tool not implemented yet
+            return {"note": f"Tool '{tool_name}' recognized but execution pending full implementation"}
+            
+        except Exception as e:
+            return {"error": str(e)}
     
     def get_status(self) -> Dict[str, Any]:
         """Get GLADIUS status"""
@@ -376,6 +478,8 @@ Be concise, intelligent, and proactive."""
             "is_native": "gladius:" in self.model,
             "session_start": self.session_start.isoformat(),
             "messages_exchanged": len(self.history),
+            "tools_available": self.tools_count,
+            "cognition_engine": TOOLS_AVAILABLE,
             "available": self._check_available()
         }
     
